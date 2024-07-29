@@ -1,0 +1,79 @@
+21:06:07 (lmgrd) -----------------------------------------------
+21:06:09 (lmgrd)   Please Note:
+21:06:09 (lmgrd) 
+21:06:09 (lmgrd)   This log is intended for debug purposes only.
+21:06:09 (lmgrd)   In order to capture accurate license
+21:06:09 (lmgrd)   usage data into an organized repository,
+21:06:09 (lmgrd)   please enable report logging. Use Macrovision's
+21:06:09 (lmgrd)   software license administration  solution,
+21:06:09 (lmgrd)   FLEXnet Manager, to  readily gain visibility
+21:06:09 (lmgrd)   into license usage data and to create
+21:06:09 (lmgrd)   insightful reports on critical information like
+21:06:09 (lmgrd)   license availability and usage. FLEXnet Manager
+21:06:09 (lmgrd)   can be fully automated to run these reports on
+21:06:09 (lmgrd)   schedule and can be used to track license
+21:06:09 (lmgrd)   servers and usage across a heterogeneous
+21:06:09 (lmgrd)   network of servers including Windows NT, Linux
+21:06:09 (lmgrd)   and UNIX. Contact Macrovision at
+21:06:09 (lmgrd)   www.macrovision.com for more details on how to
+21:06:09 (lmgrd)   obtain an evaluation copy of FLEXnet Manager
+21:06:09 (lmgrd)   for your enterprise.
+21:06:09 (lmgrd) 
+21:06:09 (lmgrd) -----------------------------------------------
+21:06:09 (lmgrd) 
+21:06:09 (lmgrd) 
+21:06:09 (lmgrd) FLEXnet Licensing (v11.4.100.0 build 50818 i86_re3) started on localhost (linux) (7/8/2017)
+21:06:09 (lmgrd) Copyright (c) 1988-2007 Macrovision Europe Ltd. and/or Macrovision Corporation. All Rights Reserved.
+21:06:09 (lmgrd) US Patents 5,390,297 and 5,671,412.
+21:06:09 (lmgrd) World Wide Web:  http://www.macrovision.com
+21:06:09 (lmgrd) License file(s): /usr/local/ittvis/license/license.dat
+21:06:09 (lmgrd) lmgrd tcp-port 27000
+21:06:09 (lmgrd) Starting vendor daemons ... 
+21:06:09 (lmgrd) Started /usr/local (internet tcp_port 40721 pid 2872)
+21:06:09 (lmgrd) Using vendor daemon port 12345 specified in license file
+21:06:09 (lmgrd) Started idl_lmgrd (internet tcp_port 12345 pid 2873)
+21:06:09 (lmgrd) license daemon: execute process failed: (idl_lmgrd or /usr/local/ittvis/idl70/bin/bin.linux.x86//usr/local) -T localhost 11.4 3 -c 
+21:06:09 (lmgrd) license daemon: system error code: Permission denied
+21:06:09 (lmgrd) /usr/local exited with status 45 (Child cannot exec requested server)
+21:06:09 (lmgrd) Please correct problem and restart daemons
+21:06:10 (idl_lmgrd) FLEXnet Licensing version v11.4.100.0 build 50818 i86_re3
+21:06:10 (idl_lmgrd) Server started on localhost for:	devkit		
+21:06:10 (idl_lmgrd) envi		envi_bathymetry envi_cartosat	
+21:06:10 (idl_lmgrd) envi_dem_extract envi_flash	envi_flaash	
+21:06:10 (idl_lmgrd) envi_fx		envi_rt		envi_nitf	
+21:06:10 (idl_lmgrd) envi_tfrd	idl		idl_analyst	
+21:06:10 (idl_lmgrd) idl_bridge_assist idl_cdf		idl_dataminer	
+21:06:10 (idl_lmgrd) devkit_optfeat	idl_devkit	idl_dicom	
+21:06:10 (idl_lmgrd) idl_dicomex	idl_dicomex_net idl_dicomex_net_rt 
+21:06:10 (idl_lmgrd) idl_dicomex_rw	idl_dicomex_rw_rt idl_dicomex_scp 
+21:06:10 (idl_lmgrd) idl_dm		idl_dm_rt	idl_drawx	
+21:06:10 (idl_lmgrd) idl_dxf		idl_envi	idl_fftool	
+21:06:10 (idl_lmgrd) idl_gif		idl_gmem	idl_gz		
+21:06:10 (idl_lmgrd) idl_hdf5	idl_hdf		idl_idlbridge	
+21:06:10 (idl_lmgrd) idl_imsl	idl_ion		idl_iptool	
+21:06:10 (idl_lmgrd) idl_itool	idl_itools	idl_jpeg2000	
+21:06:10 (idl_lmgrd) idl_jpeg	idl_lapack	idl_livetools	
+21:06:10 (idl_lmgrd) idl_lvsn	idl_mjpeg2000	idl_mpeg	
+21:06:10 (idl_lmgrd) idl_mrsid	idl_netcdf	idl_odbc	
+21:06:10 (idl_lmgrd) idl_ogc		idl_png		idl_qhull	
+21:06:10 (idl_lmgrd) idl_rivertools	idl_rt		idl_sem		
+21:06:10 (idl_lmgrd) idl_shape	idl_student	idl_student70	
+21:06:10 (idl_lmgrd) idl_tiff	idl_tifflzw	idl_url		
+21:06:10 (idl_lmgrd) idl_wavelet	idl_xml		insight		
+21:06:10 (idl_lmgrd) ion_java	ion_script	itools		
+21:06:10 (idl_lmgrd) MPEG		noesys		noesysplus	
+21:06:10 (idl_lmgrd) vip		
+21:06:10 (idl_lmgrd) EXTERNAL FILTERS are OFF
+21:06:10 (lmgrd) idl_lmgrd using TCP-port 12345
+21:06:10 (idl_lmgrd) TCP_NODELAY NOT enabled
+21:06:10 (idl_lmgrd) OUT: "idl" guada@deepblue  (6 licenses) 
+22:32:38 (idl_lmgrd) IN: "idl" guada@deepblue  (6 licenses) 
+ 0:00:18 (idl_lmgrd) ERROR: Non-activation-capable daemon activation invoked with non-client-request event type
+
+ 0:04:28 (lmgrd) lmgrd will now shut down all the vendor daemons
+
+ 0:04:28 (lmgrd) Shutting down idl_lmgrd pid=2873 because of signal 15
+ 0:04:28 (idl_lmgrd) Shutdown requested from guada@deepblue IP=127.0.1.1
+ 0:04:28 (idl_lmgrd) daemon shutdown requested - shutting down
+ 0:04:28 (lmgrd) Shut down FLEXnet idl_lmgrd license server system on machine deepblue
+ 0:04:28 (lmgrd) EXITING DUE TO SIGNAL 15

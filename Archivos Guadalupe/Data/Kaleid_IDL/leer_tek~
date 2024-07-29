@@ -1,0 +1,19 @@
+restore,'guadatemplate.sav'
+
+data5=read_ascii('tek0005ALL.csv',template=guada)
+
+data2=read_ascii('tek0002ALL.csv',template=guada)
+
+IDL> help,data5,/struct
+** Structure <8e442e4>, 3 tags, length=12000, data length=12000, refs=1:
+   TIME            FLOAT     Array[1000]
+   CH1             FLOAT     Array[1000]
+   CH2             FLOAT     Array[1000]
+
+
+background=16777215,color=200500  
+
+colores
+amarillo 65535
+azul 16000000
+

@@ -1,0 +1,19 @@
+PRO agregarcoma
+
+spawn,'ls tek_*_1105.txt',lista
+data=[]
+
+FOR N=0,n_elements(data) DO BEGIN
+restore,data(N)
+
+s=size(tek_r,/dimension)
+xs=s[0]
+stek_r=strtrim(tek_r,2)
+
+linewidth=1600
+stek_r[0:xs-2,*]=stek_r[0:xs-2,*]+','
+openW,lun,filename,/Get_lun,width=linewidth
+printf,lun,stek_r
+free_lun,lun
+
+ENDFOR

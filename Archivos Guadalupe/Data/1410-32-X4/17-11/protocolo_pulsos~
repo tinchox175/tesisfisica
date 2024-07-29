@@ -1,0 +1,36 @@
+PRO protocolo_pulsos
+
+
+aa=findgen(500)
+%escritura
+bb=findgen(500)*0.
+bb[0:9]=0
+bb[10:39]=3.5
+bb[40:69]=0
+bb[70:79]=0.3
+bb[80:109]=0
+bb[110:139]=3.5
+bb[140:169]=0
+bb[170:179]=0.3
+bb[180:209]=0
+%lectura
+bb[250:269]=0
+bb[270:280]=0.3
+bb[281:301]=0
+bb[321:331]=0.3
+bb[332:362]=0
+bb[363:373]=0.3
+bb[374:394]=0
+%bb[170:179]=0.3
+%bb[180:209]=0
+
+plot,aa[0:209],bb[0:209],yrange=[-1,8],xrange=[-10,499],background=16777215,$
+color=0,thick=2,ytitle='V (Volts)',xtitle='Tiempo'
+oplot,aa[250:394],bb[250:394],color=0,thick=2
+
+XYOUTS,0.3,0.2,'escritura',/norm,color=0
+XYOUTS,0.65,0.2,'lectura-relajacion',/norm,color=0
+
+WRITE_JPEG, 'protocolo_pulsos.jpg', TVRD(/true), QUALITY=100,/true
+
+END

@@ -1,0 +1,35 @@
+PRO protocolo_pulsos_lectura
+
+
+aa=findgen(500)
+%lectura
+bb=findgen(500)*0.
+bb[0:19]=0
+bb[20:30]=0.3
+bb[31:61]=0
+bb[62:72]=0.3
+bb[73:103]=0
+bb[104:114]=0.3
+bb[115:145]=0
+bb[146:156]=0.3
+bb[157:177]=0
+
+
+plot,aa[0:177],bb[0:177],yrange=[-1,6],xrange=[-50,227],background=16777215,$
+color=0,thick=2,ytitle='V (Volts)',xtitle='Tiempo'
+
+XYOUTS,24,4.5,'tr',/data,color=0
+XYOUTS,40,4.5,'twait',/data,color=0
+
+%XYOUTS,0.3,0.2,'escritura',/norm,color=0
+%XYOUTS,0.65,0.2,'lectura-relajacion',/norm,color=0
+
+WRITE_JPEG, 'protocolo_pulsoslectura.jpg', TVRD(/true), QUALITY=100,/true
+
+plot,aa[0:177],bb[0:177],yrange=[-1,6],xrange=[-50,227],background=16777215,$
+color=0,thick=2,ytitle='V (Volts)',xtitle='Time'
+
+
+WRITE_JPEG, 'protocol_pulseslectura.jpg', TVRD(/true), QUALITY=100,/true
+
+END

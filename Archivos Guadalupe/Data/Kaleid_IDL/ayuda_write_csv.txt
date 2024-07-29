@@ -1,0 +1,37 @@
+pro write_csv
+
+
+; Set up variables.
+   filename = 'test.csv'
+   s = Size(data, /Dimensions)
+   xsize = s[0]
+   lineWidth = 1600
+
+   ; Open the data file for writing.
+   OpenW, lun, filename, /Get_Lun, Width=lineWidth
+
+   ; Write the data to the file.
+   theFormat = '(' + StrTrim(xsize,2) + '(F, :, ","))'
+   PrintF, lun, data, Format=theFormat
+
+   ; Close the file.
+   Free_Lun, lun
+
+/////////////////////////////////////
+; Set up variables.
+   filename = 'test.csv'
+   s = Size(data, /Dimensions)
+   xsize = s[0]
+   lineWidth = 1600
+   comma = ","
+
+   ; Open the data file for writing.
+   OpenW, lun, filename, /Get_Lun, Width=lineWidth
+
+   ; Write the data to the file.
+   sData = StrTrim(data,2)
+   sData[0:xsize-2, *] = sData[0:xsize-2, *] + comma
+   PrintF, lun, sData
+
+   ; Close the file.
+   Free_Lun, lun

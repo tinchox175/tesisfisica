@@ -1,0 +1,31 @@
+
+
+
+tek000CH1,3.45.24
+tek001CH2,3.56.04
+tek002ALL,3.56.24
+tek003ALL,5.24.20
+tek004ALL,5.34.34
+tek005ALL,5.44.26
+tek006ALL,6.03.56
+
+
+tek00000.png,3.45
+tek00001.png,3.56
+tek00002.png,5.24
+tek00003.png,5.34
+tek00004.png,5.44 , parece que relaja
+tek00005.png,6.04
+
+
+DSC00060.JPG,5.30.10, escalon en el plateau
+DSC00061.JPG,5.30.16
+DSC00062.JPG,7.19.44, quiebre antes del eje
+DSC00063.JPG,7.19.54
+DSC00064.JPG,7.20.04,-------> 004.png
+DSC00065.JPG,7.39.40, quiebre despues del eje
+DSC00066.JPG,7.39.46
+DSC00067.JPG,7.39.54
+DSC00068.JPG,7.42.22
+DSC00069.JPG,7.42.56 -------> 005.png
+

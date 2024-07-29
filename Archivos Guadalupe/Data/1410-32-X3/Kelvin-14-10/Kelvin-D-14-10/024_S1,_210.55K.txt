@@ -1,0 +1,1 @@
+t (s)	I (A)	V (V)	R(ohm)	Ibias (A)	Rrem(ohm)	Vsense (V)	Rsense(ohm)	Vdif (V)	Rdif(ohm)	VbiasSense (V)	RremSense(ohm)	VbiasDif (V)	RremDif(ohm)	T [K]	Rterm(ohm)	IbiasNEG (A)	RremNEG(ohm)	VbiasSenseNEG (V)	RremSenseNEG(ohm)	VbiasDifNEG (V)	RremDifNEG(ohm)	PasodeV	Saturó?	Saturó? (bias)	Saturó? (biasNEG)

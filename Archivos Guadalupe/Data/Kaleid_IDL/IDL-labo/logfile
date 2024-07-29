@@ -1,0 +1,27 @@
+16:39:41 (lmgrd) -----------------------------------------------
+16:39:41 (lmgrd)   Please Note:
+16:39:41 (lmgrd) 
+16:39:41 (lmgrd)   This log is intended for debug purposes only.
+16:39:41 (lmgrd)   In order to capture accurate license
+16:39:41 (lmgrd)   usage data into an organized repository,
+16:39:41 (lmgrd)   please enable report logging. Use Macrovision's
+16:39:41 (lmgrd)   software license administration  solution,
+16:39:41 (lmgrd)   FLEXnet Manager, to  readily gain visibility
+16:39:41 (lmgrd)   into license usage data and to create
+16:39:41 (lmgrd)   insightful reports on critical information like
+16:39:41 (lmgrd)   license availability and usage. FLEXnet Manager
+16:39:41 (lmgrd)   can be fully automated to run these reports on
+16:39:41 (lmgrd)   schedule and can be used to track license
+16:39:41 (lmgrd)   servers and usage across a heterogeneous
+16:39:41 (lmgrd)   network of servers including Windows NT, Linux
+16:39:41 (lmgrd)   and UNIX. Contact Macrovision at
+16:39:41 (lmgrd)   www.macrovision.com for more details on how to
+16:39:41 (lmgrd)   obtain an evaluation copy of FLEXnet Manager
+16:39:41 (lmgrd)   for your enterprise.
+16:39:41 (lmgrd) 
+16:39:41 (lmgrd) -----------------------------------------------
+16:39:41 (lmgrd) 
+16:39:41 (lmgrd) 
+16:39:41 (lmgrd) /usr/local already running 27000@localhost
+16:39:41 (lmgrd) idl_lmgrd already running 27000@localhost
+16:39:41 (lmgrd) The license server manager (lmgrd) is already serving all vendors, exiting.

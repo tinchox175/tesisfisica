@@ -1,0 +1,54 @@
+PRO plot_IV14todas
+
+
+;--------------grafica I_V 14 y le superpongo todas las 
+;--------------I03-04-05-06-07-08-09-10-11-12-13
+
+
+ restore,'tek0014_1105.dat'
+ ;restore,filename='tek_p14_1105.dat'
+ ;restore,filename='tek_r14_1105.dat'
+ 
+ ;bordes=intarr(2,9)
+ ;a=[200,100,105,110,110,96,105,100,100]
+ ;b=[890,800,805,805,810,788,800,790,790]
+ ;bordes[0,*]=a
+ ;bordes[1,*]=b
+
+
+ ; window,1,xs=400,ys=250
+ ;plot,I_r,Rm_r,title=titulo,xtitle='I',ytitle='Rm',yrange=[0,50000],$
+ ; xrange=[-0.0001,0.0007],background=16777215,color=0,psym=4
+ ;oplot,I_p,Rm_p,color=0,psym=4
+
+ Color= [255,16000000,655355]
+ titulo='I-V14_superp-3-4-5-6-7-8-9-10-11-12-13'
+
+ set_plot,'X'
+ window,2,xs=512,ys=380
+ plot,V,I,title=titulo,ytitle='I(amperes)',xtitle='V(volts)',$
+ background=16777215,color=0,psym=4
+ 
+ ;,/nodata
+ ;oplot,I,Rm,color=0,psym=4
+ 
+ 
+ FOR N=3, 9 do begin
+      num=string(N)
+ restore,STRCOMPRESS('tek000'+ num +'_1105.dat',/REMOVE_ALL )
+ oplot,V,I,color= 250+ (N-3)*15000,psym=3
+ ENDFOR
+
+ FOR M=10, 13 do begin
+ nume=string(M)
+ restore,STRCOMPRESS('tek00'+ nume +'_1105.dat',/REMOVE_ALL )
+ IF (M eq 10) THEN ps=1 ELSE ps=3 
+ oplot,V,I,color= M * 1600000,psym=ps
+ XYOUTS,140,300,'++',color=1600000,/device
+ XYOUTS,160,300,'tek010',color=0,/device
+ ENDFOR
+
+WRITE_JPEG,titulo, TVRD(/true), QUALITY=100,/true
+ 
+
+END

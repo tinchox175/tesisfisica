@@ -1,0 +1,10 @@
+pro plot_IVRmV, tek=tek, Xi=Xi, Xf=Xf
+
+window,1
+
+plot,tek.time(Xi:Xf),tek.Ch1(Xi:Xf),background=16777215,color=100
+
+oplot,tek.time(Xi:Xf),tek.Ch2(Xi:Xf)
+
+end pro
+

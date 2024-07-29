@@ -1,0 +1,663 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jul  3 20:57:00 2024
+
+@author: Administrator
+"""
+################# IMPORTS #########################
+#%%
+import sys
+from functools import partial
+from PyQt5.Qt import *
+from PyQt5 import QtGui
+import scipy.signal
+import numpy as np
+from numpy import diff
+import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter, freqz
+import os
+import glob
+from statsmodels.nonparametric.smoothers_lowess import lowess
+import itertools
+from scipy.interpolate import lagrange
+from scipy.optimize import newton
+from scipy.optimize import curve_fit
+from matplotlib.colors import Normalize
+window_size=31 
+#%%
+################# BOTON ###########################
+#%%
+class PushButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super(PushButton, self).__init__(text, parent)
+
+        self.setText(text)
+        self.setMinimumSize(QSize(900, 250))
+        self.setMaximumSize(QSize(900, 250))
+        
+
+class MyWindow(QMainWindow):
+#%%
+    ############## INICIO LOGICA VENTANA  #################################
+#%%
+    def __init__(self):
+        super(MyWindow, self).__init__()
+        self.setWindowTitle('Graficador')
+        self.setFixedWidth(900)
+        self.rows = 6
+        self.columns = 6
+        
+        centralWidget = QWidget()
+        self.setCentralWidget(centralWidget)
+        self.main_layout = QVBoxLayout(centralWidget)
+        
+        self.label = QLabel(self, alignment=Qt.AlignRight)
+        self.label.setFont(QFont("Times", 12, QFont.Bold))
+            
+        self.layout = QGridLayout() 
+        self.main_layout.addLayout(self.layout)
+        self.main_layout.addWidget(self.label)
+#%% Ajustador de IV
+        self.modo_g = 'no_t'
+        self.texto_archivos_g = ''
+        self.var_sclc_p = 'si'
+        self.var_fit = 'no'
+        self.var_man = 'no'
+        
+        sclcp = PushButton('SCLC-P', self)
+        sclcp.clicked.connect(partial(self.sclc_p))
+        self.layout.addWidget(sclcp, 0, 4)
+        sclcp.setFixedSize(130, 50)
+        sclcp.setCheckable(True)
+        
+        otro = PushButton('Otro (X)', self)
+        otro.clicked.connect(partial(self.otro))
+        self.layout.addWidget(otro, 0, 5)
+        otro.setFixedSize(130, 50)  
+        
+        custom = PushButton('Custom', self)
+        otro.clicked.connect(partial(self.custom))
+        self.layout.addWidget(custom, 0, 6)
+        custom.setFixedSize(130, 50)
+        
+        fit = PushButton('Ajustar', self)
+        fit.clicked.connect(partial(self.fit))
+        self.layout.addWidget(fit, 1, 4)
+        fit.setFixedSize(130, 50)
+        fit.setCheckable(True)
+        
+        lim_fit = QLineEdit(self)
+        lim_fit.setPlaceholderText('Mín,Máx')
+        self.layout.addWidget(lim_fit)
+        lim_fit.textChanged.connect(self.update_lim_fit)
+        
+        p0_fit = QLineEdit(self)
+        p0_fit.setPlaceholderText('a0,b0,...')
+        self.layout.addWidget(p0_fit)
+        p0_fit.textChanged.connect(self.update_p0_fit)
+        
+        manual = PushButton('Manual', self)
+        manual.clicked.connect(partial(self.manual))
+        self.layout.addWidget(manual, 2, 4)
+        manual.setFixedSize(130, 50)
+        manual.setCheckable(True)
+        
+        lim_man = QLineEdit(self)
+        lim_man.setPlaceholderText('Mínx,Máxx')
+        self.layout.addWidget(lim_man)
+        lim_man.textChanged.connect(self.update_lim_man)
+        
+        p_man = QLineEdit(self)
+        p_man.setPlaceholderText('a,b,...')
+        self.layout.addWidget(p_man)
+        p_man.textChanged.connect(self.update_p_man)
+        
+        graph_g = PushButton('Graficar', self)
+        graph_g.clicked.connect(partial(self.graficar_g))
+        self.layout.addWidget(graph_g, 4, 4)
+        graph_g.setFixedSize(130, 50)  
+        
+        file_g = PushButton('File', self)
+        file_g.clicked.connect(partial(self.open_file_explorer_g))
+        self.layout.addWidget(file_g, 4, 5)
+        file_g.setFixedSize(130, 50)  
+        
+        modeart_g = PushButton('T?', self)
+        modeart_g.clicked.connect(partial(self.modeart_g))
+        self.layout.addWidget(modeart_g, 4, 6)
+        modeart_g.setFixedSize(130, 50)
+        modeart_g.setCheckable(True)
+    
+        scroll_area_g = QScrollArea(self)
+        scroll_area_g.setWidgetResizable(True)  # Ensures that the widget inside the scroll area can resize
+        self.main_layout.addWidget(scroll_area_g)
+        scroll_content_g = QWidget()
+        scroll_area_g.setWidget(scroll_content_g)
+        scroll_layout_g = QVBoxLayout(scroll_content_g)
+        self.archivaje_g = QLabel(self)
+        self.archivaje_g.setWordWrap(True)  # Enable word wrap for the label
+        scroll_layout_g.addWidget(self.archivaje_g)
+        self.archivaje_g.setText('Archivos:')
+#%% Logica de graficador de IVs
+        _list = ['I vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
+        len_list = len(_list)-1
+        self.seleccion = 'rdy'
+        self.modo = 'no_t'
+        self.texto_archivos = ''
+        i = 0
+        for row in range(3): 
+           for column in range(3):
+                print(len_list)
+                print(i)
+                print(_list[i])
+                button = PushButton(f'{_list[i]}', self)
+                button.clicked.connect(partial(self.onClicked, _list[i]))
+                button.setCheckable(True)
+                self.layout.addWidget(button, row+1, column)
+                button.setFixedSize(130, 50)  
+                i += 1
+                if i == len_list+1: break
+        
+        button = PushButton(f'Panorama', self)
+        button.clicked.connect(partial(self.onClicked, 'Panorama'))
+        button.setCheckable(True)
+        self.layout.addWidget(button, 0, 1)
+        button.setFixedSize(130, 50)  
+        
+        graph = PushButton('Graficar', self)
+        graph.clicked.connect(partial(self.graficar))
+        self.layout.addWidget(graph, 4, 0)
+        graph.setFixedSize(130, 50)  
+        
+        file = PushButton('File', self)
+        file.clicked.connect(partial(self.open_file_explorer))
+        self.layout.addWidget(file, 4, 1)
+        file.setFixedSize(130, 50)  
+        
+        modeart = PushButton('T?', self)
+        modeart.clicked.connect(partial(self.modeart))
+        self.layout.addWidget(modeart, 4, 2)
+        modeart.setFixedSize(130, 50)
+        modeart.setCheckable(True)
+    
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)  # Ensures that the widget inside the scroll area can resize
+        self.main_layout.addWidget(scroll_area)
+        scroll_content = QWidget()
+        scroll_area.setWidget(scroll_content)
+        scroll_layout = QVBoxLayout(scroll_content)
+        self.archivaje = QLabel(self)
+        self.archivaje.setWordWrap(True)  # Enable word wrap for the label
+        scroll_layout.addWidget(self.archivaje)
+        self.archivaje.setText('Archivos:')
+                
+    def update_lim_fit(self, text):
+    # Update variable
+        if len(text.split(',')) > 1:
+            self.lower = int(text.split(',')[0])
+            try:
+                self.upper = int(text.split(',')[1])
+            except ValueError:
+                pass
+        
+    def update_p0_fit(self, text):
+    # Update variable
+        text = text.split(',')
+        self.p0fit = []
+        for i in text:
+            try:
+                self.p0fit.append(float(i))
+            except ValueError:
+                pass
+            
+    def update_lim_man(self, text):
+    # Update variable
+        if len(text.split(',')) > 1:   
+            self.manmin = int(text.split(',')[0])
+            try:
+                self.manmax = int(text.split(',')[1])
+            except ValueError:
+                pass
+        
+    def update_p_man(self, text):
+    # Update variable
+        text = text.split(',')
+        self.p_manual = []
+        for i in text:
+            try:
+                self.p_manual.append(float(i))
+            except ValueError:
+                pass
+    
+    def open_file_explorer_g(self):
+        options = QFileDialog.Options()
+        self.fileName, _ = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)
+        self.texto_archivos_g = ''
+        for i in np.arange(0,len(self.fileName)):
+            self.texto_archivos_g = self.texto_archivos_g + self.fileName[i] + '<br>'
+        self.archivaje_g.setText(f'<html>Archivos:{self.texto_archivos_g}.</html>')
+        print(self.fileName)
+    
+    def modeart_g(self):
+        if self.modo_g=='si_t':
+            self.modo_g = 'no_t'
+        elif self.modo_g == 'no_t':
+            self.modo_g = 'si_t'
+        print(self.modo_g)
+    
+    def manual(self):
+        if self.var_man=='si':
+            self.var_man = 'no'
+        elif self.var_man == 'no':
+            self.var_man = 'si'
+    
+    def fit(self):
+        if self.var_fit=='si':
+            self.var_fit = 'no'
+        elif self.var_fit == 'no':
+            self.var_fit = 'si'
+    
+    def sclc_p(self):
+        if self.var_sclc_p=='si':
+            self.var_sclc_p = 'no'
+        elif self.var_sclc_p == 'no':
+            self.var_sclc_p = 'si'
+            
+    def otro(self):
+        if self.var_sclc_p=='si':
+            self.var_sclc_p = 'no'
+        elif self.var_sclc_p == 'no':
+            self.var_sclc_p = 'si'
+    
+    def custom(self):
+        if self.var_sclc_p=='si':
+            self.var_sclc_p = 'no'
+        elif self.var_sclc_p == 'no':
+            self.var_sclc_p = 'si'
+#%% Lógica graficar fits
+    def graficar_g(self):
+        archivo_actual = self.fileName[0]
+        data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+        self.indoff = self.newoff(data[1])
+        time = data[0] #tiempo
+        ipul = data[1] #I pulso
+        try:
+            vin1 = np.array(data[2])-(data[2][self.indoff[0]-1]+data[2][self.indoff[0]+1])/2 #V instant
+        except IndexError:
+            vin1 = np.array(data[2])
+        iin1 = data[3] #I instant
+        rin1 = data[4] #R instant
+        rre1 = data[5] #R remanente
+        ibi1 = data[6] #I bias
+        vbi1 = data[7] #V bias
+        wpul = data[14] #ancho pulso
+        peri = data[15] #periodo
+        plt.figure(figsize=(20,10))
+        if self.var_fit == 'si':
+            def sclc_p(V, A, R, c):
+                return A*V**2+V/R
+
+            l= self.lower
+            u= self.upper
+
+            # Step 3: Fit data to model using curve_fit
+            initial_guess = self.p0fit  # Initial guess for the parameters [a, b, c]
+            popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
+
+            # Extracted parameters
+            a_fit, b_fit, c_fit = popt
+
+            plt.figure(1, figsize=(20,10))
+            plt.subplot(1,3,2)
+            plt.scatter(vin1[l:u], iin1[l:u], label='Data')
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}\n R = {np.round(b_fit,3)}')
+            plt.title('Fit SCLC paralelo')
+            plt.xlabel('V')
+            plt.ylim(0,np.max(iin1))
+            plt.xlim(0,np.max(vin1))
+            plt.grid(True)
+            plt.legend()
+            plt.show()
+            plt.subplot(1,3,1)
+            plt.scatter(vin1[l:u], iin1[l:u], label='Data')
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}')
+            plt.ylabel('I')
+            plt.ylim(0,np.max(iin1))
+            plt.xlim(0,1.5)
+            plt.grid(True)
+            plt.show()
+            plt.subplot(1,3,3)
+            plt.scatter(vin1[l:u], iin1[l:u], label='Data')
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}')
+            plt.ylim(0,np.max(iin1))
+            plt.xlim(1.5,np.max(vin1))
+            plt.grid(True)
+            plt.show()
+        if self.var_man == 'si':
+            for i in np.linspace(0.05,0.1,3):
+                o, r, a = self.p_manual
+                offset = o
+                R = r
+                A = a
+                plt.subplot(1,3,2)
+                if i == 0.05:
+                    plt.scatter(vin1, iin1, label='Data',color='black')
+                else:
+                    plt.scatter(vin1, iin1, color='black')
+                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}')
+                plt.title('Fit SCLC paralelo')
+                plt.xlabel('V')
+                plt.ylim(0,np.max(iin1))
+                plt.xlim(self.manmin,self.manmax)
+                plt.grid(True)
+                plt.legend()
+                plt.show()
+                plt.subplot(1,3,1)
+                plt.scatter(vin1, iin1, label='Data', color='black')
+                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}')
+                plt.ylabel('I')
+                plt.ylim(0,np.max(iin1))
+                plt.xlim(self.manmin, (self.manmin+self.manmax)/2)
+                plt.grid(True)
+                plt.show()
+                plt.subplot(1,3,3)
+                plt.scatter(vin1, iin1, label='Data', color='black')
+                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}')
+                plt.ylim(0,np.max(iin1))
+                plt.xlim((self.manmin+self.manmax)/2,self.manmax)
+                plt.grid(True)
+                plt.show()
+
+        # Print the fitted parameters
+        print(f"Parámetros ajustados:\na = {a_fit}\nb = {b_fit}")
+        return
+
+    def onClicked(self, i):
+        if self.seleccion=='rdy':
+            self.seleccion=[]
+        if i not in self.seleccion:
+            self.seleccion.append(i)
+        elif i in self.seleccion:
+            self.seleccion.remove(i)
+
+        print(self.seleccion)
+    def open_file_explorer(self):
+        options = QFileDialog.Options()
+        self.fileName, _ = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)
+        self.texto_archivos = ''
+        for i in np.arange(0,len(self.fileName)):
+            self.texto_archivos = self.texto_archivos + self.fileName[i] + '<br>'
+        self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
+        print(self.fileName)
+    
+    def modeart(self):
+        if self.modo=='si_t':
+            self.modo = 'no_t'
+        elif self.modo == 'no_t':
+            self.modo = 'si_t'
+        print(self.modo)
+        
+    def toggle(self, boton):
+        if self.boton.isChecked():
+            self.boton.setStyleSheet("background-color: #4CAF50; color: white;")  # Set style when pressed
+        else:
+            self.toggle_button.setStyleSheet("")
+
+
+#%% Logica graficador de IVS
+    def newoff(self,y):
+        indices = []
+        for i in range(1, len(y)):
+            if (y[i] >= 0 and y[i - 1] < 0) or (y[i] < 0 and y[i - 1] >= 0):
+                indices.append(i)
+        return indices
+
+    def graficar(self):
+        for archivos in self.fileName:
+            archivo_actual = archivos
+            if self.modo == 'no_t':
+                data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+                self.indoff = self.newoff(data[1])
+                time = data[0] #tiempo
+                ipul = data[1] #I pulso
+                try:
+                    vin1 = np.array(data[2])-(data[2][self.indoff[0]-1]+data[2][self.indoff[0]+1])/2 #V instant
+                except IndexError:
+                    vin1 = np.array(data[2])
+                iin1 = data[3] #I instant
+                rin1 = data[4] #R instant
+                rre1 = data[5] #R remanente
+                ibi1 = data[6] #I bias
+                vbi1 = data[7] #V bias
+                wpul = data[14] #ancho pulso
+                peri = data[15] #periodo
+                temperatura = 'T_amb'
+            elif self.modo == 'si_t':
+                data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+                self.indoff = self.newoff(data[2])
+                time = data[0] #tiempo
+                temp = data[1] #temp(k)
+                ipul = data[2] #I pulso
+                try:
+                    vin1 = np.array(data[3])-(data[3][self.indoff[0]-1]+data[3][self.indoff[0]+1])/2 #V instant
+                except IndexError:
+                    vin1 = np.array(data[3])
+                iin1 = data[4] #I instant
+                rin1 = data[5] #R instant
+                rre1 = data[6] #R remanente
+                ibi1 = data[7] #I bias
+                vbi1 = data[8] #V bias
+                wpul = data[15] #ancho pulso
+                peri = data[16] #periodo
+                temperatura = temp[0]
+            vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
+            iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
+            didv = diff(iin1)/diff(vin1)
+            didvgol = diff(iin1gol)/diff(vin1gol)
+            ibi1gol = scipy.signal.savgol_filter(ibi1, window_size, 3)        # Ibias1 savgol
+            vbi1gol = scipy.signal.savgol_filter(vbi1, window_size, 3)        # Vbias1 savgol
+            rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol, window_size, 3) # Rrem1 savgol
+            rin1calc = vin1/iin1
+            rin1calcgol = vin1gol/iin1gol
+            gamma1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
+            gamma1gol = diff(np.log(np.abs(iin1gol)))/diff(np.log(np.abs(vin1gol))) #gamma savgol
+            if 'I vs V' in self.seleccion:
+                plt.figure()
+                # graficamos I vs V
+                plt.scatter(vin1gol, iin1gol, c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.ylabel('I [mA]')
+                plt.xlabel('V [V]')
+                plt.tight_layout()
+                plt.title(f'I vs V T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'Log(I) vs V' in self.seleccion:
+                plt.figure()
+                # graficamos la Log(abs(I)) vs V    
+                plt.scatter(vin1gol, np.log(np.abs(iin1gol)), c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.yscale('log')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                plt.xlabel('V (V)')
+                plt.ylabel('I (A)')
+                plt.title(f'Log(I) vs V T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'Log(Ibias) vs V' in self.seleccion:
+                plt.figure()
+                # graficamos Log(abs(Ibias)) vs V
+                plt.scatter(vin1gol, np.log(np.abs(ibi1gol)), c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.yscale('log')
+                plt.xlabel('V (V)')
+                plt.ylabel('I$_{bias}$ (A)')
+                plt.xlim(-max(vin1gol), max(vin1gol))
+                plt.title(f'Log(I_{bias}) vs V T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'Rinst' in self.seleccion:
+                plt.figure()
+                plt.subplot(1, 2, 1)
+                # graficamos la Rinst vs V    
+                plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                plt.xlabel('Voltage (V)')
+                plt.ylabel('R$_{inst}$ (k$\Omega$)')
+                #plt.xlim(-2, 2)
+                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                plt.title('R$_{inst}$ vs V '+f'T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                
+                plt.subplot(1, 2, 2)
+                # graficamos la Rinst vs I    
+                plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                plt.xlabel('I (A)')
+                plt.ylabel('R$_{inst}$ (k$\Omega$)')
+                #plt.xlim(-2, 2)
+                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                plt.title('R$_{inst}$ vs I '+f' T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'Rrem' in self.seleccion:
+                plt.figure()
+                plt.subplot(1,2,1)
+                # graficamos la Rrem vs V    
+                plt.scatter(vin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                plt.xlabel('Voltage (V)')
+                plt.ylabel('R$_{rem}$ (k$\Omega$)')
+                #plt.xlim(-2, 2)
+                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                plt.title('R$_{rem}$ vs V '+f'T={temperatura}')
+                plt.tight_layout()
+                plt.grid()
+                
+                plt.subplot(1,2,2)
+                # graficamos la Rrem vs I    
+                plt.scatter(iin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                plt.xlabel('I (A)')
+                plt.ylabel('R$_{rem}$ (k$\Omega$)')
+                #plt.xlim(-2, 2)
+                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                plt.title('R$_{rem}$ vs I '+f'T={temperatura}')
+                plt.tight_layout()
+                plt.grid()
+                plt.show()
+            if 'γ vs V' in self.seleccion:
+                plt.figure()
+                # graficamos la gamma vs V    
+                plt.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
+                plt.xlabel('Voltage (V)')
+                plt.ylabel('$\gamma$')
+                #plt.xlim(-2, 2)
+                plt.ylim(0, 2.5)
+                plt.title('$\gamma$ vs V '+ f'T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'γ vs √V' in self.seleccion:
+                plt.figure()
+                plt.scatter(np.sign(vin1[0:-1])*np.sqrt(np.abs(vin1[0:-1])), gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
+                plt.xlabel('V$^{1/2}$ (V$^{0.5}$)')
+                plt.ylabel('$\gamma$')
+                #plt.xlim(-2, 2)
+                plt.ylim(0, 2.5)
+                plt.title('$\gamma$ vs V$^{1/2}$ '+f'T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'γ vs 1/V' in self.seleccion:
+                plt.figure()
+                plt.scatter(1/vin1[0:-1], gamma1gol, gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                plt.colorbar(label='Tiempo [s]')
+                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
+                plt.xlabel('1/V (1/V)')
+                plt.ylabel('$\gamma$')
+                plt.xlim(-10, 10)
+                plt.ylim(0, 2.5)
+                plt.title(f'$\gamma$ vs 1/V T={temperatura}')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'Panorama' in self.seleccion:
+                # Create figure
+                fig = plt.figure()
+                fig.suptitle(f'T = {temperatura}')
+                # First subplot (top-left)
+                ax1 = plt.subplot2grid((2, 3), (0, 0))
+                sc1 = ax1.scatter(vin1gol, iin1gol, c=time, cmap='cool')
+                ax1.set_xlabel('Voltage (V)')
+                ax1.set_ylabel('I (mA)')
+                ax1.set_title('I vs V')
+
+                # Second subplot (bottom-left)
+                ax2 = plt.subplot2grid((2, 3), (1, 0))
+                sc2 = ax2.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool')
+                ax2.set_xlabel('Voltage (V)')
+                ax2.set_ylim(0,3)
+                ax2.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                ax2.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                ax2.set_ylabel('γ')
+                ax2.set_title('γ vs V')
+
+                # Third subplot (top-right)
+                ax3 = plt.subplot2grid((2, 3), (0, 1), rowspan=2)
+                sc3 = ax3.scatter(vin1gol, rin1calcgol, c=time, cmap='cool')
+                ax3.set_ylim(np.mean(rin1calcgol)*0.6,np.mean(rin1calcgol)*1.4)
+                ax3.set_xlabel('Voltage (V)')
+                ax3.set_ylabel('$R_{inst}$ (kΩ)')
+                ax3.set_title('R_inst vs V')
+
+                # Fourth subplot (bottom-right)
+                ax4 = plt.subplot2grid((2, 3), (0, 2), rowspan=2)
+                sc4 = ax4.scatter(vin1gol, rre1calcgol, c=time, cmap='cool')
+                ax4.set_ylim(np.min(rre1calcgol)*0.98,np.max(rre1calcgol)*1.02)
+                ax4.set_xlabel('Voltage (V)')
+                ax4.set_ylabel('$R_{rem}$ (kΩ)')
+                ax4.set_title('$R_{rem}$ vs V')
+                cbar4 = plt.colorbar(sc4, ax=ax4)
+                cbar4.set_label('Time [s]')
+                ax1.grid()
+                ax2.grid()
+                ax3.grid()
+                ax4.grid()
+                plt.show()
+###################### FIN LOGICA GRAF #########################
+#%% Codigo de pyqt5 para arrancar
+if __name__ == '__main__':
+    if not QApplication.instance():
+        app = QApplication(sys.argv)
+    else:
+        app = QApplication.instance() 
+    w = MyWindow()
+    w.show()
+    sys.exit(app.exec_())

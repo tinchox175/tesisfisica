@@ -1,0 +1,72 @@
+PRO plot_RmI_todas
+;xxxxxxxxxxxxxxxxxxxxxxVERVERVEVR
+;---------Rm-I de tek 01-02-04-05 del 0606
+
+  ;;;;;; lee todas las rampas y las grafica o todas las piramides truncadas 
+  ;;;;;; lee todas los plateau y las grafica o todos los picos
+
+  spawn,'ls tek_r*_0606.dat',lista   ;;; la rampa
+  ;spawn,'ls tek_pt*_0606.dat',lista  ;;; la piramide truncada
+  ;spawn,'ls tek_p0*_0606.dat',lista  ;;; el plateau
+  ;spawn,'ls tek_pi*_0606.dat',lista  ;;; el pico
+ 
+   ; lista=[]
+
+ restore,lista(0)
+	Rm=Rm_r
+	I=I_r
+	V=V_r
+	;Rm=Rm_pt
+	;I=I_pt
+	;V=V_pt
+	;Rm=Rm_p
+	;I=I_p
+	;V=V_p
+        ;Rm=Rm_pi
+	;I=I_pi
+	;V=V_pi
+
+ titulo='RmI_tek_r-0606'
+ ;titulo='RmI_tek_pt-0606'
+ ;titulo='RmI_tek_p-0606'
+ ;titulo='RmI_tek_pi-0606'
+
+ set_plot,'X'
+ ;window,1,xs=400,ys=250
+ window,1
+ plot,I,Rm,title=titulo,xtitle='!3I(amperes)',ytitle='Rm(!4X!3)',$
+ yrange=[0,6000],xrange=[0,0.012],background=16777215,color=0,/nodata
+ 
+
+ Color= [255,8005000,16000000,655355,16500000,18500000];2005000
+ titulo='RmI_r_superp-1-2-4-5'
+ ;titulo='RmI_pt_superp-1-2-4-5'
+ ;titulo='RmI_p_superp-1-2-4-5'
+ ;titulo='RmI_pi_superp-1-2-4-5'
+
+ FOR N=0, n_elements(lista)-1 do begin
+     ; num=string(N)
+ restore,lista(N)
+	I=I_r
+	Rm=Rm_r
+	;I=I_pt
+	;Rm=Rm_pt
+	;I=I_p
+	;Rm=Rm_p
+	;I=I_pi
+	;Rm=Rm_pi
+
+ oplot,I,Rm,color=Color(N);,psym=3,symsize=0.5
+ ;oplot,I,Rm,color=Color(N)
+ XYOUTS,300,300- N * 20,'+',color=Color(N),/device
+ XYOUTS,320,300-N * 20,strsplit(lista(N),'_0606.dat',/extract,/regex),$
+ color=0,/device
+ ENDFOR
+;stop
+
+ WRITE_JPEG,titulo, TVRD(/true), QUALITY=100,/true
+
+ 
+ 
+
+END

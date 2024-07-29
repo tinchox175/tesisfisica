@@ -1,0 +1,24 @@
+ dato=read_ascii('02d_escritura_tiempo.csv',data_start=1,count=130,/verbose)
+
+
+plot,data.field1[1,*],data.field1[2,*]
+
+ x=data.field1[1,0:129]
+ y=data.field1[2,0:129]
+ w=1.0/Y     
+ A=[10000,100,2,0.5]
+
+yfit = CURVEFIT(X, Y, W, A, SIGMA_A, FUNCTION_NAME = 'func_strechfit') 
+
+
+
+
+MEASURE_ERRORS=1.0/y 
+ result_a = SVDFIT(X, Y, A=A, MEASURE_ERRORS=measure_errors, $ 
+    FUNCTION_NAME='func_strechfit', SIGMA=SIGMA, YFIT=YFIT) 
+
+ yfit=mpcurvefit(x,y,w,A,function_name='func_strechfit')
+
+F=A[0]*exp(-(X/A[2])^A[3])+A[1]
+
+F=A[0]*(1-exp(-(X/A[2])^A[3]))+A[1]

@@ -1,0 +1,16 @@
+pro gamma , 
+ 
+
+Y=ln(abs(I))
+X=ln(abs(V))
+
+gamma= deriv()
+
+window,0
+plot,sqrt(V),gamma
+window,1
+plot,1/V, gamma 
+
+
+END
+

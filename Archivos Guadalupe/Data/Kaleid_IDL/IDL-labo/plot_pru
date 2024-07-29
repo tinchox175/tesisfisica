@@ -1,0 +1,79 @@
+PRO plot_pru
+
+restore,'11-05/tek_r06_1105.dat'
+	Rm=Rm_r
+	I=I_r
+	V=V_r
+titulo='switching_1105_1205'
+window,1,xs=800,ys=500
+ plot,V,I,title=titulo,ytitle='!3I(amperes)',xtitle='V(volts)',$
+ yrange=[-0.0005,.008],xrange=[0,20],xstyle=1,ystyle=1,$
+ background=16777215,color=0,/nodata
+   
+oplot,V,I,color=250,psym=4
+XYOUTS,100,275,'---',color=250,/device
+XYOUTS,130,275,'tek_r_06_1105',color=0,/device
+
+restore,'11-05/tek_r10_1105.dat'
+	I=I_r
+	V=V_r
+oplot,V,I,color=6453321,psym=4,symsize=0.5
+oplot,V,I,color=6453321
+XYOUTS,100,300,'---',color=6453321,/device
+XYOUTS,130,300,'tek_r10_1105',color=0,/device
+
+restore,'12-05/tek_r05_1205.dat'
+        I=I_r
+	V=V_r
+oplot,V,I,color=16534000,psym=4,symsize=0.5
+oplot,V,I,color=16534000
+XYOUTS,100,325,'---',color=16534000,/device
+XYOUTS,130,325,'tek_r05_1205',color=0,/device
+
+restore,'12-05/tek_r06_1205.dat'
+        I=I_r
+	V=V_r
+oplot,V,I,color=2346421,psym=4,symsize=0.5
+oplot,V,I,color=2346421
+
+spawn,'ls 11-05/tek_pa*_1105.dat',lista11a
+spawn,'ls 11-05/tek_pb*_1105.dat',lista11b
+lista11=[lista11a,lista11b]
+;stop
+FOR N=0,n_elements(lista11)-1 DO BEGIN
+	restore,lista11(N)
+        V=V_p
+        I=I_p
+oplot,V,I,color=16000000,psym=1,symsize=0.5
+ENDFOR
+
+XYOUTS,100,350,'+++',color=16000000,/device
+XYOUTS,130,350,'tek_p_16-17_1105 ',color=0,/device
+
+spawn,'ls 12-05/tek_p*02_1205.dat',lista02
+spawn,'ls 12-05/tek_p*03_1205.dat',lista03
+spawn,'ls 12-05/tek_p*04_1205.dat',lista04
+lista12=[lista03,lista04]
+
+FOR M=0,n_elements(lista02)-1 DO BEGIN
+	restore,lista02(M)
+        V=V_p
+        I=I_p
+oplot,V,I,color=18500000,psym=1,symsize=0.5
+ENDFOR
+XYOUTS,100,375,'+++',color=18500000,/device
+XYOUTS,130,375,'tek_p02_1205 ',color=0,/device
+
+FOR M=0,n_elements(lista12)-1 DO BEGIN
+	restore,lista12(M)
+        V=V_p
+        I=I_p
+oplot,V,I,color=2005000,psym=1,symsize=0.5
+ENDFOR
+XYOUTS,100,400,'+++',color=2005000,/device
+XYOUTS,130,400,'tek_p_03-04_1205 ',color=0,/device
+
+titulo='switching_1105_1205'
+WRITE_JPEG,titulo, TVRD(/true), QUALITY=100,/true
+
+END

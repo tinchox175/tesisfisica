@@ -1,0 +1,35 @@
+PRO protocolo_pulsos_escritura
+
+
+aa=findgen(500)
+%escritura
+bb=findgen(500)*0.
+bb[0:19]=0
+bb[20:40]=3.5
+bb[41:101]=0
+bb[102:122]=0.3
+bb[123:183]=0
+bb[184:204]=3.5
+bb[205:265]=0
+bb[266:286]=0.3
+bb[287:307]=0
+
+
+plot,aa[0:307],bb[0:307],yrange=[-1,6],xrange=[-50,450],background=16777215,$
+color=0,thick=2,ytitle='V (Volts)',xtitle='Tiempo'
+
+XYOUTS,30,4.5,'tw',/data,color=0
+XYOUTS,70,4.5,'twait',/data,color=0
+XYOUTS,110,4.5,'tr',/data,color=0
+%XYOUTS,0.3,0.2,'escritura',/norm,color=0
+%XYOUTS,0.65,0.2,'lectura-relajacion',/norm,color=0
+
+WRITE_JPEG, 'protocolo_pulsosescritura.jpg', TVRD(/true), QUALITY=100,/true
+
+plot,aa[0:307],bb[0:307],yrange=[-1,6],xrange=[-50,450],background=16777215,$
+color=0,thick=2,ytitle='V (Volts)',xtitle='Time'
+
+
+WRITE_JPEG, 'protocol_pulseswrite.jpg', TVRD(/true), QUALITY=100,/true
+
+END
