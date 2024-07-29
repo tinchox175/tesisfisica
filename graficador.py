@@ -116,34 +116,21 @@ class MyWindow(QMainWindow):
         graph_g.clicked.connect(partial(self.graficar_g))
         self.layout.addWidget(graph_g, 4, 4)
         graph_g.setFixedSize(130, 50)  
-        
-        file_g = PushButton('File', self)
-        file_g.clicked.connect(partial(self.open_file_explorer_g))
-        self.layout.addWidget(file_g, 4, 5)
-        file_g.setFixedSize(130, 50)  
-        
-        modeart_g = PushButton('T?', self)
-        modeart_g.clicked.connect(partial(self.modeart_g))
-        self.layout.addWidget(modeart_g, 4, 6)
-        modeart_g.setFixedSize(130, 50)
-        modeart_g.setCheckable(True)
     
-        scroll_area_g = QScrollArea(self)
-        scroll_area_g.setWidgetResizable(True)  # Ensures that the widget inside the scroll area can resize
-        self.main_layout.addWidget(scroll_area_g)
-        scroll_content_g = QWidget()
-        scroll_area_g.setWidget(scroll_content_g)
-        scroll_layout_g = QVBoxLayout(scroll_content_g)
-        self.archivaje_g = QLabel(self)
-        self.archivaje_g.setWordWrap(True)  # Enable word wrap for the label
-        scroll_layout_g.addWidget(self.archivaje_g)
-        self.archivaje_g.setText('Archivos:')
 #%% Logica de graficador de IVs
         _list = ['I vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
         len_list = len(_list)-1
         self.seleccion = 'rdy'
         self.modo = 'no_t'
-        self.texto_archivos = ''
+        self.texto_archivos = np.loadtxt('tempfile.txt', delimiter='<br>',unpack=True, dtype='str')
+        self.fileName = []
+        try:
+            for i in self.texto_archivos:
+                self.fileName.append(i)
+        except TypeError:
+            self.fileName = [str(self.texto_archivos)]
+        print(self.fileName)
+        
         i = 0
         for row in range(3): 
            for column in range(3):
@@ -189,14 +176,15 @@ class MyWindow(QMainWindow):
         self.archivaje = QLabel(self)
         self.archivaje.setWordWrap(True)  # Enable word wrap for the label
         scroll_layout.addWidget(self.archivaje)
-        self.archivaje.setText('Archivos:')
+        self.archivaje.setText('Archivos:'+ str(self.fileName))
                 
     def update_lim_fit(self, text):
     # Update variable
         if len(text.split(',')) > 1:
-            self.lower = int(text.split(',')[0])
             try:
+                self.lower = int(text.split(',')[0])
                 self.upper = int(text.split(',')[1])
+                print(self.lower, self.upper)
             except ValueError:
                 pass
         
@@ -228,23 +216,7 @@ class MyWindow(QMainWindow):
                 self.p_manual.append(float(i))
             except ValueError:
                 pass
-    
-    def open_file_explorer_g(self):
-        options = QFileDialog.Options()
-        self.fileName, _ = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)
-        self.texto_archivos_g = ''
-        for i in np.arange(0,len(self.fileName)):
-            self.texto_archivos_g = self.texto_archivos_g + self.fileName[i] + '<br>'
-        self.archivaje_g.setText(f'<html>Archivos:{self.texto_archivos_g}.</html>')
-        print(self.fileName)
-    
-    def modeart_g(self):
-        if self.modo_g=='si_t':
-            self.modo_g = 'no_t'
-        elif self.modo_g == 'no_t':
-            self.modo_g = 'si_t'
-        print(self.modo_g)
-    
+       
     def manual(self):
         if self.var_man=='si':
             self.var_man = 'no'
@@ -277,63 +249,102 @@ class MyWindow(QMainWindow):
 #%% Lógica graficar fits
     def graficar_g(self):
         archivo_actual = self.fileName[0]
+        print(archivo_actual)
         data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
         self.indoff = self.newoff(data[1])
-        time = data[0] #tiempo
-        ipul = data[1] #I pulso
-        try:
-            vin1 = np.array(data[2])-(data[2][self.indoff[0]-1]+data[2][self.indoff[0]+1])/2 #V instant
-        except IndexError:
-            vin1 = np.array(data[2])
-        iin1 = data[3] #I instant
-        rin1 = data[4] #R instant
-        rre1 = data[5] #R remanente
-        ibi1 = data[6] #I bias
-        vbi1 = data[7] #V bias
-        wpul = data[14] #ancho pulso
-        peri = data[15] #periodo
+        if self.modo == 'no_t':
+            data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            self.indoff = self.newoff(data[1])
+            time = data[0] #tiempo
+            ipul = data[1] #I pulso
+            try:
+                vin1 = np.array(data[2])-(data[2][self.indoff[0]-1]+data[2][self.indoff[0]+1])/2 #V instant
+            except IndexError:
+                vin1 = np.array(data[2])
+            iin1 = data[3] #I instant
+            rin1 = data[4] #R instant
+            rre1 = data[5] #R remanente
+            ibi1 = data[6] #I bias
+            vbi1 = data[7] #V bias
+            wpul = data[14] #ancho pulso
+            peri = data[15] #periodo
+            temperatura = 'T_amb'
+        elif self.modo == 'si_t':
+            data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            self.indoff = self.newoff(data[2])
+            time = data[0] #tiempo
+            temp = data[1] #temp(k)
+            ipul = data[2] #I pulso
+            try:
+                vin1 = np.array(data[3])-(data[3][self.indoff[0]-1]+data[3][self.indoff[0]+1])/2 #V instant
+            except IndexError:
+                vin1 = np.array(data[3])
+            iin1 = data[4] #I instant
+            rin1 = data[5] #R instant
+            rre1 = data[6] #R remanente
+            ibi1 = data[7] #I bias
+            vbi1 = data[8] #V bias
+            wpul = data[15] #ancho pulso
+            peri = data[16] #periodo
+            temperatura = temp[0]
         plt.figure(figsize=(20,10))
         if self.var_fit == 'si':
             def sclc_p(V, A, R, c):
                 return A*V**2+V/R
-
-            l= self.lower
-            u= self.upper
+            try:
+                l = self.lower
+            except AttributeError:
+                l = int(0)
+                print('L es ' + l)
+            try:
+                u = self.upper
+            except AttributeError:
+                u = int(-1)
 
             # Step 3: Fit data to model using curve_fit
-            initial_guess = self.p0fit  # Initial guess for the parameters [a, b, c]
-            popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
-
+            try:
+                initial_guess = self.p0fit  # Initial guess for the parameters [a, b, c]
+            except AttributeError:
+                initial_guess = [0, 0, 0]
+            print(l,u)
+            try:
+                popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
+            except TypeError:
+                popt, pcov = curve_fit(sclc_p, vin1[0:-1], iin1[0:-1], p0=initial_guess)
+                l = 0
+                u = -1
             # Extracted parameters
             a_fit, b_fit, c_fit = popt
 
             plt.figure(1, figsize=(20,10))
             plt.subplot(1,3,2)
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}\n R = {np.round(b_fit,3)}')
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}\n R = {np.round(b_fit,3)}', c='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
-            plt.ylim(0,np.max(iin1))
+            # plt.ylim(0,np.max(iin1))
             plt.xlim(0,np.max(vin1))
             plt.grid(True)
             plt.legend()
             plt.show()
             plt.subplot(1,3,1)
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}')
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}', c='orange')
             plt.ylabel('I')
-            plt.ylim(0,np.max(iin1))
-            plt.xlim(0,1.5)
+            # plt.ylim(0,np.max(iin1))
+            plt.xlim(0,np.max(vin1)/2)
             plt.grid(True)
             plt.show()
             plt.subplot(1,3,3)
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}')
-            plt.ylim(0,np.max(iin1))
-            plt.xlim(1.5,np.max(vin1))
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}', c='orange')
+            # plt.ylim(0,np.max(iin1))
+            plt.xlim(np.max(vin1)/2,np.max(vin1))
             plt.grid(True)
             plt.show()
         if self.var_man == 'si':
+            def sclc_p(V, A, R, c):
+                return A*V**2+V/R
             for i in np.linspace(0.05,0.1,3):
                 o, r, a = self.p_manual
                 offset = o
@@ -368,8 +379,6 @@ class MyWindow(QMainWindow):
                 plt.grid(True)
                 plt.show()
 
-        # Print the fitted parameters
-        print(f"Parámetros ajustados:\na = {a_fit}\nb = {b_fit}")
         return
 
     def onClicked(self, i):
@@ -388,6 +397,7 @@ class MyWindow(QMainWindow):
         for i in np.arange(0,len(self.fileName)):
             self.texto_archivos = self.texto_archivos + self.fileName[i] + '<br>'
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
+        np.savetxt('tempfile.txt', [self.texto_archivos[:-4]], delimiter=',', fmt='%s')
         print(self.fileName)
     
     def modeart(self):
