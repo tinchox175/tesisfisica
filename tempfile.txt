@@ -1,1 +1,1 @@
-C:/tesis git/tesisfisica/IVs/703/1410-32-X3_03-07-24/200.txt
+C:/tesis git/tesisfisica/IVs/703/1410-32-X3_03-07-24/200.txt<s>0.0,100.0<s>0.0,1000.0,0.0<s>0.0,100.0<s>0.0,1000.0,0.0

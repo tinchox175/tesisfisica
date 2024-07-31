@@ -42,6 +42,7 @@ class MyWindow(QMainWindow):
 #%%
     def __init__(self):
         super(MyWindow, self).__init__()
+        self.memoria = np.loadtxt('tempfile.txt', delimiter='<s>',unpack=True, dtype='str')
         self.setWindowTitle('Graficador')
         self.setFixedWidth(900)
         self.rows = 6
@@ -59,7 +60,6 @@ class MyWindow(QMainWindow):
         self.main_layout.addWidget(self.label)
 #%% Ajustador de IV
         self.modo_g = 'no_t'
-        self.texto_archivos_g = ''
         self.var_sclc_p = 'si'
         self.var_fit = 'no'
         self.var_man = 'no'
@@ -87,12 +87,12 @@ class MyWindow(QMainWindow):
         fit.setCheckable(True)
         
         lim_fit = QLineEdit(self)
-        lim_fit.setPlaceholderText('Mín,Máx')
+        lim_fit.setPlaceholderText(self.memoria[1])
         self.layout.addWidget(lim_fit)
         lim_fit.textChanged.connect(self.update_lim_fit)
         
         p0_fit = QLineEdit(self)
-        p0_fit.setPlaceholderText('a0,b0,...')
+        p0_fit.setPlaceholderText(self.memoria[2])
         self.layout.addWidget(p0_fit)
         p0_fit.textChanged.connect(self.update_p0_fit)
         
@@ -103,12 +103,12 @@ class MyWindow(QMainWindow):
         manual.setCheckable(True)
         
         lim_man = QLineEdit(self)
-        lim_man.setPlaceholderText('Mínx,Máxx')
+        lim_man.setPlaceholderText(self.memoria[3])
         self.layout.addWidget(lim_man)
         lim_man.textChanged.connect(self.update_lim_man)
         
         p_man = QLineEdit(self)
-        p_man.setPlaceholderText('a,b,...')
+        p_man.setPlaceholderText(self.memoria[4])
         self.layout.addWidget(p_man)
         p_man.textChanged.connect(self.update_p_man)
         
@@ -120,23 +120,38 @@ class MyWindow(QMainWindow):
 #%% Logica de graficador de IVs
         _list = ['I vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
         len_list = len(_list)-1
+        #pongo variables base y algunas de la memoria
         self.seleccion = 'rdy'
         self.modo = 'no_t'
-        self.texto_archivos = np.loadtxt('tempfile.txt', delimiter='<br>',unpack=True, dtype='str')
+        self.texto_archivos = self.memoria[0]
+        self.p0fit = []
+        self.p_manual = []
+        self.lower = float(self.memoria[1].split(',')[0])
+        self.upper = float(self.memoria[1].split(',')[1])
+        for i in self.memoria[2].split(','):
+            self.p0fit.append(float(i))
+        self.manmin = float(self.memoria[3].split(',')[0])
+        self.manmax = float(self.memoria[3].split(',')[1])
+        for i in self.memoria[4].split(','):
+            self.p_manual.append(float(i))
         self.fileName = []
         try:
-            for i in self.texto_archivos:
-                self.fileName.append(i)
+            if type(self.texto_archivos)!='list':
+                index = self.texto_archivos.find('IVs')
+                self.texto_archivos = self.texto_archivos[index:]
+                self.fileName = self.texto_archivos
+                print(self.fileName)
+            else:
+                for i in self.texto_archivos:
+                    index = self.texto_archivos.find('IVs')
+                    self.texto_archivos = self.texto_archivos[index:]
+                    self.fileName.append(i)
         except TypeError:
             self.fileName = [str(self.texto_archivos)]
-        print(self.fileName)
         
         i = 0
         for row in range(3): 
            for column in range(3):
-                print(len_list)
-                print(i)
-                print(_list[i])
                 button = PushButton(f'{_list[i]}', self)
                 button.clicked.connect(partial(self.onClicked, _list[i]))
                 button.setCheckable(True)
@@ -248,10 +263,14 @@ class MyWindow(QMainWindow):
             self.var_sclc_p = 'si'
 #%% Lógica graficar fits
     def graficar_g(self):
-        archivo_actual = self.fileName[0]
+        print(str(type(self.fileName)))
+        print('<class \'str\'>')
+        print(str(type(self.fileName)) == '<class \'str\'>')
+        if str(type(self.fileName)) == '<class \'str\'>':
+            archivo_actual = self.fileName
+        elif str(type(self.fileName)) == '<class \'list\'>':
+            archivo_actual = self.fileName[0]
         print(archivo_actual)
-        data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-        self.indoff = self.newoff(data[1])
         if self.modo == 'no_t':
             data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
             self.indoff = self.newoff(data[1])
@@ -322,8 +341,8 @@ class MyWindow(QMainWindow):
             plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}\n R = {np.round(b_fit,3)}', c='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
-            # plt.ylim(0,np.max(iin1))
-            plt.xlim(0,np.max(vin1))
+            plt.ylim(np.min(iin1),np.max(iin1))
+            plt.xlim(np.min(vin1),np.max(vin1))
             plt.grid(True)
             plt.legend()
             plt.show()
@@ -331,14 +350,14 @@ class MyWindow(QMainWindow):
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
             plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}', c='orange')
             plt.ylabel('I')
-            # plt.ylim(0,np.max(iin1))
-            plt.xlim(0,np.max(vin1)/2)
+            plt.ylim(np.min(iin1),0)
+            plt.xlim(np.min(vin1),np.max(vin1)/2)
             plt.grid(True)
             plt.show()
             plt.subplot(1,3,3)
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
             plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}', c='orange')
-            # plt.ylim(0,np.max(iin1))
+            plt.ylim(0,np.max(iin1))
             plt.xlim(np.max(vin1)/2,np.max(vin1))
             plt.grid(True)
             plt.show()
@@ -355,27 +374,27 @@ class MyWindow(QMainWindow):
                     plt.scatter(vin1, iin1, label='Data',color='black')
                 else:
                     plt.scatter(vin1, iin1, color='black')
-                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}')
+                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}', color='orange')
                 plt.title('Fit SCLC paralelo')
                 plt.xlabel('V')
-                plt.ylim(0,np.max(iin1))
-                plt.xlim(self.manmin,self.manmax)
+                plt.ylim(np.min(iin1),np.max(iin1))
+                plt.xlim(np.min(vin1),np.max(vin1))
                 plt.grid(True)
                 plt.legend()
                 plt.show()
                 plt.subplot(1,3,1)
                 plt.scatter(vin1, iin1, label='Data', color='black')
-                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}')
+                plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
                 plt.ylabel('I')
-                plt.ylim(0,np.max(iin1))
-                plt.xlim(self.manmin, (self.manmin+self.manmax)/2)
+                plt.ylim(np.min(iin1),0)
+                plt.xlim(np.min(vin1), (np.min(vin1)+np.max(vin1))/2)
                 plt.grid(True)
                 plt.show()
                 plt.subplot(1,3,3)
                 plt.scatter(vin1, iin1, label='Data', color='black')
-                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}')
+                plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
                 plt.ylim(0,np.max(iin1))
-                plt.xlim((self.manmin+self.manmax)/2,self.manmax)
+                plt.xlim((np.min(vin1)+np.max(vin1))/2, np.max(vin1))
                 plt.grid(True)
                 plt.show()
 
@@ -397,7 +416,7 @@ class MyWindow(QMainWindow):
         for i in np.arange(0,len(self.fileName)):
             self.texto_archivos = self.texto_archivos + self.fileName[i] + '<br>'
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
-        np.savetxt('tempfile.txt', [self.texto_archivos[:-4]], delimiter=',', fmt='%s')
+        np.savetxt('tempfile.txt', [self.texto_archivos[:-4]+r'<s>'+str(self.lower)+r','+str(self.upper)+r'<s>'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'<s>'+str(self.manmin)+','+str(self.manmax)+'<s>'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
         print(self.fileName)
     
     def modeart(self):
