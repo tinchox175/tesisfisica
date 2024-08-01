@@ -78,6 +78,11 @@ class MyWindow(QMainWindow):
                 i += 1
                 if i == len_list+1: break
             
+        eis = PushButton('EIS file', self)
+        eis.clicked.connect(partial(self.eiser))
+        self.layout.addWidget(eis, 3, 1)
+        eis.setFixedSize(130, 50)  
+            
         graph = PushButton('Graficar', self)
         graph.clicked.connect(partial(self.graficar))
         self.layout.addWidget(graph, 4, 0)
@@ -141,8 +146,33 @@ class MyWindow(QMainWindow):
             self.boton.setStyleSheet("background-color: #4CAF50; color: white;")  # Set style when pressed
         else:
             self.toggle_button.setStyleSheet("")
-
-
+            
+    def eiser(self):
+        for archivos in self.fileName:
+            path = './'
+            os.chdir(path)
+            archivo_actual = archivos
+            data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
+            f = data[0] #frecuencia
+            zreal = data[1] #lectura promedio A (Z real)
+            SD_A = data[2] #sigma A
+            zimag = data[3] #lectura promedio B (Z img)
+            SD_B = data[4] #sigma B
+            Amp = data[5] #amplitud
+            index = archivo_actual.find('IVs')
+            archivo_actual = archivo_actual[index:]
+            path = './eis'
+            os.chdir(path)
+            filename = str(archivo_actual)
+            filename = filename.split(r'/')
+            print(filename)
+            filename = filename[2]+filename[3]
+            output = open(str(filename)+'_eis.txt', 'w')
+            output.write(str(len(f)) + '\n' )
+            for i in np.arange(len(f)):
+                output.write(f'{zreal[i]} {-zimag[i]} {f[i]}\n')
+            output.close()
+            os.chdir(os.path.dirname(path))
 #%% Logica graficador de IVS
 
     def graficar(self):
