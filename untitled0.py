@@ -7,7 +7,6 @@ Created on Mon Jul 29 18:35:38 2024
 
 import numpy as np
 
-file = np.loadtxt('tempfile.txt', delimiter=',',unpack=True, dtype='str')
-print('hola')
-print(file)
-np.savetxt('tempfile.txt', ['finger'], delimiter=',', fmt='%s')
+print(type([1]))
+
+type([1])=='list'

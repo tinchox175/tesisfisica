@@ -23,6 +23,8 @@ from scipy.interpolate import lagrange
 from scipy.optimize import newton
 from scipy.optimize import curve_fit
 from matplotlib.colors import Normalize
+from os.path import abspath, dirname
+os.chdir(dirname(abspath(__file__)))
 window_size=31 
 #%%
 ################# BOTON ###########################
@@ -42,7 +44,11 @@ class MyWindow(QMainWindow):
 #%%
     def __init__(self):
         super(MyWindow, self).__init__()
-        self.memoria = np.loadtxt('tempfile.txt', delimiter='<s>',unpack=True, dtype='str')
+        # try:
+        self.memoria = np.loadtxt('tempfile.txt', delimiter='@',unpack=True, dtype='str')
+        # except TypeError:
+            # print('ai')
+            # self.memoria = ['','0,0','0,0,0','0,0','0,0,0']
         self.setWindowTitle('Graficador')
         self.setFixedWidth(900)
         self.rows = 6
@@ -123,7 +129,7 @@ class MyWindow(QMainWindow):
         #pongo variables base y algunas de la memoria
         self.seleccion = 'rdy'
         self.modo = 'no_t'
-        self.texto_archivos = self.memoria[0]
+        self.texto_archivos = self.memoria[0].split('¡')
         self.p0fit = []
         self.p_manual = []
         self.lower = float(self.memoria[1].split(',')[0])
@@ -136,15 +142,15 @@ class MyWindow(QMainWindow):
             self.p_manual.append(float(i))
         self.fileName = []
         try:
-            if type(self.texto_archivos)!='list':
-                index = self.texto_archivos.find('IVs')
+            if type(self.texto_archivos)!=list:
+                index = self.texto_archivos.find(r'/IVs')
                 self.texto_archivos = self.texto_archivos[index:]
                 self.fileName = self.texto_archivos
                 print(self.fileName)
             else:
                 for i in self.texto_archivos:
-                    index = self.texto_archivos.find('IVs')
-                    self.texto_archivos = self.texto_archivos[index:]
+                    index = i.find(r'/IVs')
+                    i = i[index:]
                     self.fileName.append(i)
         except TypeError:
             self.fileName = [str(self.texto_archivos)]
@@ -272,7 +278,10 @@ class MyWindow(QMainWindow):
             archivo_actual = self.fileName[0]
         print(archivo_actual)
         if self.modo == 'no_t':
-            data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            try:
+                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            except (FileNotFoundError, PermissionError) as e:
+                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
             self.indoff = self.newoff(data[1])
             time = data[0] #tiempo
             ipul = data[1] #I pulso
@@ -289,7 +298,10 @@ class MyWindow(QMainWindow):
             peri = data[15] #periodo
             temperatura = 'T_amb'
         elif self.modo == 'si_t':
-            data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            try:
+                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            except (FileNotFoundError, PermissionError) as e:
+                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
             self.indoff = self.newoff(data[2])
             time = data[0] #tiempo
             temp = data[1] #temp(k)
@@ -335,7 +347,7 @@ class MyWindow(QMainWindow):
             # Extracted parameters
             a_fit, b_fit, c_fit = popt
 
-            plt.figure(1, figsize=(20,10))
+            plt.figure(figsize=(20,10))
             plt.subplot(1,3,2)
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
             plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}\n R = {np.round(b_fit,3)}', c='orange')
@@ -364,39 +376,36 @@ class MyWindow(QMainWindow):
         if self.var_man == 'si':
             def sclc_p(V, A, R, c):
                 return A*V**2+V/R
-            for i in np.linspace(0.05,0.1,3):
-                o, r, a = self.p_manual
-                offset = o
-                R = r
-                A = a
-                plt.subplot(1,3,2)
-                if i == 0.05:
-                    plt.scatter(vin1, iin1, label='Data',color='black')
-                else:
-                    plt.scatter(vin1, iin1, color='black')
-                plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}', color='orange')
-                plt.title('Fit SCLC paralelo')
-                plt.xlabel('V')
-                plt.ylim(np.min(iin1),np.max(iin1))
-                plt.xlim(np.min(vin1),np.max(vin1))
-                plt.grid(True)
-                plt.legend()
-                plt.show()
-                plt.subplot(1,3,1)
-                plt.scatter(vin1, iin1, label='Data', color='black')
-                plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
-                plt.ylabel('I')
-                plt.ylim(np.min(iin1),0)
-                plt.xlim(np.min(vin1), (np.min(vin1)+np.max(vin1))/2)
-                plt.grid(True)
-                plt.show()
-                plt.subplot(1,3,3)
-                plt.scatter(vin1, iin1, label='Data', color='black')
-                plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
-                plt.ylim(0,np.max(iin1))
-                plt.xlim((np.min(vin1)+np.max(vin1))/2, np.max(vin1))
-                plt.grid(True)
-                plt.show()
+            o, r, a = self.p_manual
+            offset = o
+            R = r
+            A = a
+            plt.figure(figsize=(20,10))
+            plt.subplot(1,3,2)
+            plt.scatter(vin1, iin1, label='Data',color='black')
+            plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}', color='orange')
+            plt.title('Fit SCLC paralelo')
+            plt.xlabel('V')
+            plt.ylim(np.min(iin1),np.max(iin1))
+            plt.xlim(np.min(vin1),np.max(vin1))
+            plt.grid(True)
+            plt.legend()
+            plt.show()
+            plt.subplot(1,3,1)
+            plt.scatter(vin1, iin1, label='Data', color='black')
+            plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
+            plt.ylabel('I')
+            plt.ylim(np.min(iin1),0)
+            plt.xlim(np.min(vin1), (np.min(vin1)+np.max(vin1))/2)
+            plt.grid(True)
+            plt.show()
+            plt.subplot(1,3,3)
+            plt.scatter(vin1, iin1, label='Data', color='black')
+            plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
+            plt.ylim(0,np.max(iin1))
+            plt.xlim((np.min(vin1)+np.max(vin1))/2, np.max(vin1))
+            plt.grid(True)
+            plt.show()
 
         return
 
@@ -414,10 +423,14 @@ class MyWindow(QMainWindow):
         self.fileName, _ = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)
         self.texto_archivos = ''
         for i in np.arange(0,len(self.fileName)):
-            self.texto_archivos = self.texto_archivos + self.fileName[i] + '<br>'
+            print(self.fileName[i])
+            index = self.fileName[i].find(r'/IVs')
+            archtemp = self.fileName[i][index:]
+            print(self.fileName[i][index:])
+            self.texto_archivos = self.texto_archivos + archtemp + '¡'
+            self.fileName[i] = self.fileName[i][index:]
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
-        np.savetxt('tempfile.txt', [self.texto_archivos[:-4]+r'<s>'+str(self.lower)+r','+str(self.upper)+r'<s>'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'<s>'+str(self.manmin)+','+str(self.manmax)+'<s>'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
-        print(self.fileName)
+        np.savetxt('tempfile.txt', [self.texto_archivos[:-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
     
     def modeart(self):
         if self.modo=='si_t':
@@ -442,10 +455,16 @@ class MyWindow(QMainWindow):
         return indices
 
     def graficar(self):
+        print(self.fileName)
+        print(type(self.fileName))
+        print(len(self.fileName))
         for archivos in self.fileName:
             archivo_actual = archivos
             if self.modo == 'no_t':
-                data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+                try:
+                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+                except (FileNotFoundError, PermissionError) as e:
+                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
                 self.indoff = self.newoff(data[1])
                 time = data[0] #tiempo
                 ipul = data[1] #I pulso
@@ -462,7 +481,10 @@ class MyWindow(QMainWindow):
                 peri = data[15] #periodo
                 temperatura = 'T_amb'
             elif self.modo == 'si_t':
-                data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+                try:
+                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+                except (FileNotFoundError, PermissionError) as e:
+                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
                 self.indoff = self.newoff(data[2])
                 time = data[0] #tiempo
                 temp = data[1] #temp(k)

@@ -23,6 +23,9 @@ from scipy.interpolate import lagrange
 from scipy.optimize import newton
 from scipy.optimize import curve_fit
 from matplotlib.colors import Normalize
+from os.path import abspath, dirname
+os.chdir(dirname(abspath(__file__)))
+print(os.getcwd())
 window_size=31 
 #%%
 ################# BOTON ###########################
@@ -46,6 +49,8 @@ class MyWindow(QMainWindow):
         self.setFixedWidth(300)
         self.rows = 6
         self.columns = 6
+        self.memoria = np.loadtxt('tempfilelcr.txt' ,unpack=True, dtype='str')
+        print(self.memoria)
         
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
@@ -63,13 +68,20 @@ class MyWindow(QMainWindow):
         self.vbias = 0
         len_list = len(_list)-1
         self.seleccion = 'rdy'
-        self.texto_archivos = ''
+        self.texto_archivos = self.memoria
+        self.fileName = []
+        try:
+            index = str(self.texto_archivos).find(r'/IVs')
+            print(index)
+            self.texto_archivos = str(self.texto_archivos)[index:]
+            self.fileName = os.getcwd()+self.texto_archivos
+            print(self.fileName)
+        except TypeError:
+            self.fileName = [str(self.texto_archivos)]
+            print('3')
         i = 0
         for row in range(3): 
            for column in range(2):
-                print(len_list)
-                print(i)
-                print(_list[i])
                 button = PushButton(f'{_list[i]}', self)
                 button.clicked.connect(partial(self.onClicked, _list[i]))
                 button.setCheckable(True)
@@ -103,7 +115,7 @@ class MyWindow(QMainWindow):
         self.archivaje = QLabel(self)
         self.archivaje.setWordWrap(True)  # Enable word wrap for the label
         scroll_layout.addWidget(self.archivaje)
-        self.archivaje.setText('Archivos:')
+        self.archivaje.setText('Archivos:'+ str(self.fileName))
             
     def N_esimo(self, lst, n):
             # 'list ==> list, return every nth element in lst for n > 0'
@@ -134,13 +146,11 @@ class MyWindow(QMainWindow):
         print(self.seleccion)
     def open_file_explorer(self):
         options = QFileDialog.Options()
-        self.fileName, _ = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)
-        self.texto_archivos = ''
-        for i in np.arange(0,len(self.fileName)):
-            self.texto_archivos = self.texto_archivos + self.fileName[i] + '<br>'
+        self.fileName = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)[0]
+        self.texto_archivos = self.fileName
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
-        print(self.fileName)
-        
+        np.savetxt('tempfilelcr.txt', [self.texto_archivos], fmt='%s')
+
     def toggle(self, boton):
         if self.boton.isChecked():
             self.boton.setStyleSheet("background-color: #4CAF50; color: white;")  # Set style when pressed
@@ -176,16 +186,21 @@ class MyWindow(QMainWindow):
 #%% Logica graficador de IVS
 
     def graficar(self):
-        for archivos in self.fileName:
-            archivo_actual = archivos
+        try:
+            archivo_actual = self.fileName[0]
+            print(self.fileName)
             data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
-            f = data[0] #frecuencia
-            zreal = data[1] #lectura promedio A (Z real)
-            SD_A = data[2] #sigma A
-            zimag = data[3] #lectura promedio B (Z img)
-            SD_B = data[4] #sigma B
-            Amp = data[5] #amplitud
-            vbias = float(archivo_actual.split('/')[-1].split('_')[1])
+        except FileNotFoundError:
+            archivo_actual = self.fileName
+            print(self.fileName)
+            data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
+        f = data[0] #frecuencia
+        zreal = data[1] #lectura promedio A (Z real)
+        SD_A = data[2] #sigma A
+        zimag = data[3] #lectura promedio B (Z img)
+        SD_B = data[4] #sigma B
+        Amp = data[5] #amplitud
+        vbias = float(archivo_actual.split('/')[-1].split('_')[-2])
         zrealgol = scipy.signal.savgol_filter(zreal, window_size, 7)
         zimaggol = scipy.signal.savgol_filter(zimag, window_size, 7)
         z = zreal +1j*zimag
