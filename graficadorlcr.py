@@ -50,6 +50,7 @@ class MyWindow(QMainWindow):
         self.rows = 6
         self.columns = 6
         self.memoria = np.loadtxt('tempfilelcr.txt' ,unpack=True, dtype='str')
+        self.setWindowIcon(QtGui.QIcon('snowflake.png'))
         print(self.memoria)
         
         centralWidget = QWidget()

@@ -53,6 +53,7 @@ class MyWindow(QMainWindow):
         self.setFixedWidth(900)
         self.rows = 6
         self.columns = 6
+        self.setWindowIcon(QtGui.QIcon('snowflake.png'))
         
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
@@ -182,11 +183,10 @@ class MyWindow(QMainWindow):
         self.layout.addWidget(file, 4, 1)
         file.setFixedSize(130, 50)  
         
-        modeart = PushButton('T?', self)
-        modeart.clicked.connect(partial(self.modeart))
-        self.layout.addWidget(modeart, 4, 2)
-        modeart.setFixedSize(130, 50)
-        modeart.setCheckable(True)
+        closer = PushButton('Cerrar', self)
+        closer.clicked.connect(partial(self.closer))
+        self.layout.addWidget(closer, 4, 5)
+        closer.setFixedSize(130, 50)
     
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)  # Ensures that the widget inside the scroll area can resize
@@ -208,6 +208,14 @@ class MyWindow(QMainWindow):
                 print(self.lower, self.upper)
             except ValueError:
                 pass
+        try:
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        except TypeError:
+            try:
+                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            except (IndexError, TypeError) as e:
+                pass
+            pass
         
     def update_p0_fit(self, text):
     # Update variable
@@ -218,16 +226,30 @@ class MyWindow(QMainWindow):
                 self.p0fit.append(float(i))
             except ValueError:
                 pass
-            
+        try:
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        except (IndexError, TypeError) as e:
+            pass    
     def update_lim_man(self, text):
     # Update variable
         if len(text.split(',')) > 1:   
-            self.manmin = int(text.split(',')[0])
             try:
+                self.manmin = int(text.split(',')[0])
                 self.manmax = int(text.split(',')[1])
             except ValueError:
                 pass
-        
+        print(self.manmin, self.manmax)
+        print(self.texto_archivos)
+        print(type(self.texto_archivos))
+        np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        try:
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        except TypeError:
+            try:
+                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            except (IndexError, TypeError) as e:
+                pass
+            pass
     def update_p_man(self, text):
     # Update variable
         text = text.split(',')
@@ -237,7 +259,11 @@ class MyWindow(QMainWindow):
                 self.p_manual.append(float(i))
             except ValueError:
                 pass
-       
+        try:
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        except (IndexError, TypeError) as e:
+            pass
+        
     def manual(self):
         if self.var_man=='si':
             self.var_man = 'no'
@@ -269,56 +295,52 @@ class MyWindow(QMainWindow):
             self.var_sclc_p = 'si'
 #%% Lógica graficar fits
     def graficar_g(self):
-        print(str(type(self.fileName)))
-        print('<class \'str\'>')
-        print(str(type(self.fileName)) == '<class \'str\'>')
+        print(self.fileName)
         if str(type(self.fileName)) == '<class \'str\'>':
             archivo_actual = self.fileName
         elif str(type(self.fileName)) == '<class \'list\'>':
             archivo_actual = self.fileName[0]
-        print(archivo_actual)
+        data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+        data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
+        if '(K)' in data_t[1][0]:
+            self.modo = 'si_t'
+        elif '(K)' not in data_t[1][0]:
+            self.modo = 'no_t'
+        else:
+            print('ups')
         if self.modo == 'no_t':
-            try:
-                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-            except (FileNotFoundError, PermissionError) as e:
-                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
             self.indoff = self.newoff(data[1])
-            time = data[0] #tiempo
-            ipul = data[1] #I pulso
+            time = data[0][~np.isnan(data[0])] #tiempo
+            ipul = data[1][~np.isnan(data[1])] #I pulso
             try:
-                vin1 = np.array(data[2])-(data[2][self.indoff[0]-1]+data[2][self.indoff[0]+1])/2 #V instant
+                vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
             except IndexError:
-                vin1 = np.array(data[2])
-            iin1 = data[3] #I instant
-            rin1 = data[4] #R instant
-            rre1 = data[5] #R remanente
-            ibi1 = data[6] #I bias
-            vbi1 = data[7] #V bias
-            wpul = data[14] #ancho pulso
-            peri = data[15] #periodo
+                vin1 = np.array(data[2][~np.isnan(data[2])])
+            iin1 = data[3][~np.isnan(data[3])] #I instant
+            rin1 = data[4][~np.isnan(data[4])] #R instant
+            rre1 = data[5][~np.isnan(data[5])] #R remanente
+            ibi1 = data[6][~np.isnan(data[6])] #I bias
+            vbi1 = data[7][~np.isnan(data[7])] #V bias
+            wpul = data[14][~np.isnan(data[14])] #ancho pulso
+            peri = data[15][~np.isnan(data[15])] #periodo
             temperatura = 'T_amb'
         elif self.modo == 'si_t':
-            try:
-                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-            except (FileNotFoundError, PermissionError) as e:
-                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
             self.indoff = self.newoff(data[2])
-            time = data[0] #tiempo
-            temp = data[1] #temp(k)
-            ipul = data[2] #I pulso
+            time = data[0][~np.isnan(data[0])] #tiempo
+            temp = data[1][~np.isnan(data[1])] #temp(k)
+            ipul = data[2][~np.isnan(data[0])] #I pulso
             try:
-                vin1 = np.array(data[3])-(data[3][self.indoff[0]-1]+data[3][self.indoff[0]+1])/2 #V instant
+                vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
             except IndexError:
-                vin1 = np.array(data[3])
-            iin1 = data[4] #I instant
-            rin1 = data[5] #R instant
-            rre1 = data[6] #R remanente
-            ibi1 = data[7] #I bias
-            vbi1 = data[8] #V bias
-            wpul = data[15] #ancho pulso
-            peri = data[16] #periodo
+                vin1 = np.array(data[3][~np.isnan(data[3])])
+            iin1 = data[4][~np.isnan(data[4])] #I instant
+            rin1 = data[5][~np.isnan(data[5])] #R instant
+            rre1 = data[6][~np.isnan(data[6])] #R remanente
+            ibi1 = data[7][~np.isnan(data[7])] #I bias
+            vbi1 = data[8][~np.isnan(data[8])] #V bias
+            wpul = data[15][~np.isnan(data[15])] #ancho pulso
+            peri = data[16][~np.isnan(data[16])] #periodo
             temperatura = temp[0]
-        plt.figure(figsize=(20,10))
         if self.var_fit == 'si':
             def sclc_p(V, A, R, c):
                 return A*V**2+V/R
@@ -341,72 +363,50 @@ class MyWindow(QMainWindow):
             try:
                 popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
             except TypeError:
-                popt, pcov = curve_fit(sclc_p, vin1[0:-1], iin1[0:-1], p0=initial_guess)
+                popt, pcov = curve_fit(sclc_p, vin1[0:-1], iin1[0:-1], p0=[0,0,0])
                 l = 0
                 u = -1
             # Extracted parameters
             a_fit, b_fit, c_fit = popt
-
+            self.popt = popt
             plt.figure(figsize=(20,10))
-            plt.subplot(1,3,2)
+            mng_g = plt.get_current_fig_manager()
+            mng_g.window.showMaximized()
             plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}\n R = {np.round(b_fit,3)}', c='orange')
+            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'Ajuste SCLC', c='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
-            plt.ylim(np.min(iin1),np.max(iin1))
-            plt.xlim(np.min(vin1),np.max(vin1))
+            plt.ylabel('I (mA)')
+            plt.ylim(np.min(iin1[l:u]-np.abs(np.min(iin1[l:u]))/10),np.max(iin1+np.abs(np.max(iin1[l:u]))/10))
+            plt.xlim(np.min(vin1[l:u]-np.abs(np.min(vin1[l:u]))/10),np.max(vin1+np.abs(np.max(vin1[l:u]))/10))
             plt.grid(True)
             plt.legend()
             plt.show()
-            plt.subplot(1,3,1)
-            plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}', c='orange')
-            plt.ylabel('I')
-            plt.ylim(np.min(iin1),0)
-            plt.xlim(np.min(vin1),np.max(vin1)/2)
-            plt.grid(True)
-            plt.show()
-            plt.subplot(1,3,3)
-            plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'A = {np.round(a_fit,3)}', c='orange')
-            plt.ylim(0,np.max(iin1))
-            plt.xlim(np.max(vin1)/2,np.max(vin1))
-            plt.grid(True)
-            plt.show()
+            self.w2 = VentanaAjustes(self.popt)
+            self.w2.show()
         if self.var_man == 'si':
             def sclc_p(V, A, R, c):
                 return A*V**2+V/R
-            o, r, a = self.p_manual
-            offset = o
-            R = r
-            A = a
+            try:
+                A, R, offset = self.p_manual
+            except TypeError:
+                A, R, offset = [0,0,0]
+            print(self.p_manual)
             plt.figure(figsize=(20,10))
-            plt.subplot(1,3,2)
-            plt.scatter(vin1, iin1, label='Data',color='black')
-            plt.plot(vin1, sclc_p(vin1, A, R, offset), label=f'A = {np.round(A,3)}\n R = {np.round(R,3)}', color='orange')
+            mng_g2 = plt.get_current_fig_manager()
+            mng_g2.window.showMaximized()
+            self.manmin = int(self.manmin)
+            self.manmax = int(self.manmax)
+            plt.scatter(vin1[self.manmin:self.manmax], iin1[self.manmin:self.manmax], label='Data',color='black')
+            plt.plot(vin1[self.manmin:self.manmax], sclc_p(vin1[self.manmin:self.manmax], A, R, offset), label=f'Ajuste manual', color='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
-            plt.ylim(np.min(iin1),np.max(iin1))
-            plt.xlim(np.min(vin1),np.max(vin1))
+            plt.ylabel('I (mA)')
+            plt.ylim(np.min(iin1[self.manmin:self.manmax])-np.abs(np.min(iin1)/10),np.max(iin1[self.manmin:self.manmax])+np.max(iin1)/10)
+            plt.xlim(np.min(vin1[self.manmin:self.manmax])-np.abs(np.min(vin1)/10),np.max(vin1[self.manmin:self.manmax])+np.max(vin1)/10)
             plt.grid(True)
             plt.legend()
             plt.show()
-            plt.subplot(1,3,1)
-            plt.scatter(vin1, iin1, label='Data', color='black')
-            plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
-            plt.ylabel('I')
-            plt.ylim(np.min(iin1),0)
-            plt.xlim(np.min(vin1), (np.min(vin1)+np.max(vin1))/2)
-            plt.grid(True)
-            plt.show()
-            plt.subplot(1,3,3)
-            plt.scatter(vin1, iin1, label='Data', color='black')
-            plt.plot(vin1, sclc_p(vin1, A, R, offset), color='orange')
-            plt.ylim(0,np.max(iin1))
-            plt.xlim((np.min(vin1)+np.max(vin1))/2, np.max(vin1))
-            plt.grid(True)
-            plt.show()
-
         return
 
     def onClicked(self, i):
@@ -432,12 +432,8 @@ class MyWindow(QMainWindow):
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
         np.savetxt('tempfile.txt', [self.texto_archivos[:-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
     
-    def modeart(self):
-        if self.modo=='si_t':
-            self.modo = 'no_t'
-        elif self.modo == 'no_t':
-            self.modo = 'si_t'
-        print(self.modo)
+    def closer(self):
+        plt.close('all')
         
     def toggle(self, boton):
         if self.boton.isChecked():
@@ -456,50 +452,48 @@ class MyWindow(QMainWindow):
 
     def graficar(self):
         print(self.fileName)
-        print(type(self.fileName))
-        print(len(self.fileName))
         for archivos in self.fileName:
             archivo_actual = archivos
+            data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
+            if '(K)' in data_t[1][0]:
+                self.modo = 'si_t'
+            elif '(K)' not in data_t[1][0]:
+                self.modo = 'no_t'
+            else:
+                print('ups')
             if self.modo == 'no_t':
-                try:
-                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-                except (FileNotFoundError, PermissionError) as e:
-                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
                 self.indoff = self.newoff(data[1])
-                time = data[0] #tiempo
-                ipul = data[1] #I pulso
+                time = data[0][~np.isnan(data[0])] #tiempo
+                ipul = data[1][~np.isnan(data[1])] #I pulso
                 try:
-                    vin1 = np.array(data[2])-(data[2][self.indoff[0]-1]+data[2][self.indoff[0]+1])/2 #V instant
+                    vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
                 except IndexError:
-                    vin1 = np.array(data[2])
-                iin1 = data[3] #I instant
-                rin1 = data[4] #R instant
-                rre1 = data[5] #R remanente
-                ibi1 = data[6] #I bias
-                vbi1 = data[7] #V bias
-                wpul = data[14] #ancho pulso
-                peri = data[15] #periodo
+                    vin1 = np.array(data[2][~np.isnan(data[2])])
+                iin1 = data[3][~np.isnan(data[3])] #I instant
+                rin1 = data[4][~np.isnan(data[4])] #R instant
+                rre1 = data[5][~np.isnan(data[5])] #R remanente
+                ibi1 = data[6][~np.isnan(data[6])] #I bias
+                vbi1 = data[7][~np.isnan(data[7])] #V bias
+                wpul = data[14][~np.isnan(data[14])] #ancho pulso
+                peri = data[15][~np.isnan(data[15])] #periodo
                 temperatura = 'T_amb'
             elif self.modo == 'si_t':
-                try:
-                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-                except (FileNotFoundError, PermissionError) as e:
-                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
                 self.indoff = self.newoff(data[2])
-                time = data[0] #tiempo
-                temp = data[1] #temp(k)
-                ipul = data[2] #I pulso
+                time = data[0][~np.isnan(data[0])] #tiempo
+                temp = data[1][~np.isnan(data[1])] #temp(k)
+                ipul = data[2][~np.isnan(data[0])] #I pulso
                 try:
-                    vin1 = np.array(data[3])-(data[3][self.indoff[0]-1]+data[3][self.indoff[0]+1])/2 #V instant
+                    vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
                 except IndexError:
-                    vin1 = np.array(data[3])
-                iin1 = data[4] #I instant
-                rin1 = data[5] #R instant
-                rre1 = data[6] #R remanente
-                ibi1 = data[7] #I bias
-                vbi1 = data[8] #V bias
-                wpul = data[15] #ancho pulso
-                peri = data[16] #periodo
+                    vin1 = np.array(data[3][~np.isnan(data[3])])
+                iin1 = data[4][~np.isnan(data[4])] #I instant
+                rin1 = data[5][~np.isnan(data[5])] #R instant
+                rre1 = data[6][~np.isnan(data[6])] #R remanente
+                ibi1 = data[7][~np.isnan(data[7])] #I bias
+                vbi1 = data[8][~np.isnan(data[8])] #V bias
+                wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                peri = data[16][~np.isnan(data[16])] #periodo
                 temperatura = temp[0]
             vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
             iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
@@ -662,6 +656,8 @@ class MyWindow(QMainWindow):
             if 'Panorama' in self.seleccion:
                 # Create figure
                 fig = plt.figure()
+                mng = plt.get_current_fig_manager()
+                mng.window.showMaximized()
                 fig.suptitle(f'T = {temperatura}')
                 # First subplot (top-left)
                 ax1 = plt.subplot2grid((2, 3), (0, 0))
@@ -683,7 +679,7 @@ class MyWindow(QMainWindow):
                 # Third subplot (top-right)
                 ax3 = plt.subplot2grid((2, 3), (0, 1), rowspan=2)
                 sc3 = ax3.scatter(vin1gol, rin1calcgol, c=time, cmap='cool')
-                ax3.set_ylim(np.mean(rin1calcgol)*0.6,np.mean(rin1calcgol)*1.4)
+                ax3.set_ylim(np.nanmax(np.mean(rin1calcgol))*0.6,np.nanmax(np.mean(rin1calcgol))*1.4)
                 ax3.set_xlabel('Voltage (V)')
                 ax3.set_ylabel('$R_{inst}$ (kΩ)')
                 ax3.set_title('R_inst vs V')
@@ -691,7 +687,7 @@ class MyWindow(QMainWindow):
                 # Fourth subplot (bottom-right)
                 ax4 = plt.subplot2grid((2, 3), (0, 2), rowspan=2)
                 sc4 = ax4.scatter(vin1gol, rre1calcgol, c=time, cmap='cool')
-                ax4.set_ylim(np.min(rre1calcgol)*0.98,np.max(rre1calcgol)*1.02)
+                ax4.set_ylim(np.nanmin(rre1calcgol)*0.98,np.nanmax(rre1calcgol)*1.02)
                 ax4.set_xlabel('Voltage (V)')
                 ax4.set_ylabel('$R_{rem}$ (kΩ)')
                 ax4.set_title('$R_{rem}$ vs V')
@@ -703,6 +699,33 @@ class MyWindow(QMainWindow):
                 ax4.grid()
                 plt.show()
 ###################### FIN LOGICA GRAF #########################
+#%%
+class VentanaAjustes(QWidget):
+    def __init__(self, popt):
+        super().__init__()
+        # Set up the secondary window
+        self.setWindowTitle('Secondary Window')
+        self.setGeometry(200, 200, 300, 200)
+        self.setWindowIcon(QtGui.QIcon('snowflake.png'))
+        
+        # Create layout and widgets
+        layout = QVBoxLayout()
+        
+        # Create non-editable text displays
+        self.text_display0 = QLineEdit(r'A*V**2+V/R')
+        self.text_display0.setReadOnly(True)
+        layout.addWidget(self.text_display0)
+        
+        self.text_display1 = QLineEdit('A = '+str(np.round(popt[0],3)))
+        self.text_display1.setReadOnly(True)
+        layout.addWidget(self.text_display1)
+        
+        self.text_display2 = QLineEdit('R = '+str(np.round(popt[1],3))+' kOhm')
+        self.text_display2.setReadOnly(True)
+        layout.addWidget(self.text_display2)
+        
+        # Set layout
+        self.setLayout(layout)
 #%% Codigo de pyqt5 para arrancar
 if __name__ == '__main__':
     if not QApplication.instance():
