@@ -52,6 +52,8 @@ class MyWindow(QMainWindow):
         self.memoria = np.loadtxt('tempfilelcr.txt' ,unpack=True, dtype='str')
         self.setWindowIcon(QtGui.QIcon('snowflake.png'))
         print(self.memoria)
+        os.chdir(dirname(abspath(__file__)))
+        self.home = os.getcwd()
         
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
@@ -74,8 +76,8 @@ class MyWindow(QMainWindow):
         try:
             index = str(self.texto_archivos).find(r'/IVs')
             print(index)
-            self.texto_archivos = str(self.texto_archivos)[index:]
-            self.fileName = os.getcwd()+self.texto_archivos
+            self.texto_archivos = str(self.texto_archivos)[index:-2]
+            self.fileName = [os.getcwd()+self.texto_archivos]
             print(self.fileName)
         except TypeError:
             self.fileName = [str(self.texto_archivos)]
@@ -160,7 +162,7 @@ class MyWindow(QMainWindow):
             
     def eiser(self):
         for archivos in self.fileName:
-            path = './'
+            path = self.home
             os.chdir(path)
             archivo_actual = archivos
             data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
@@ -183,7 +185,7 @@ class MyWindow(QMainWindow):
             for i in np.arange(len(f)):
                 output.write(f'{zreal[i]} {-zimag[i]} {f[i]}\n')
             output.close()
-            os.chdir(os.path.dirname(path))
+            os.chdir(self.home+r'/IVs')
 #%% Logica graficador de IVS
 
     def graficar(self):

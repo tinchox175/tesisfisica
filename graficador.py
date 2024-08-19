@@ -46,9 +46,6 @@ class MyWindow(QMainWindow):
         super(MyWindow, self).__init__()
         # try:
         self.memoria = np.loadtxt('tempfile.txt', delimiter='@',unpack=True, dtype='str')
-        # except TypeError:
-            # print('ai')
-            # self.memoria = ['','0,0','0,0,0','0,0','0,0,0']
         self.setWindowTitle('Graficador')
         self.setFixedWidth(900)
         self.rows = 6
@@ -77,15 +74,16 @@ class MyWindow(QMainWindow):
         sclcp.setFixedSize(130, 50)
         sclcp.setCheckable(True)
         
-        otro = PushButton('Otro (X)', self)
-        otro.clicked.connect(partial(self.otro))
-        self.layout.addWidget(otro, 0, 5)
-        otro.setFixedSize(130, 50)  
+        residuos = PushButton('Residuos', self)
+        residuos.clicked.connect(partial(self.residuos))
+        residuos.setCheckable(True)
+        self.layout.addWidget(residuos, 0, 5)
+        residuos.setFixedSize(130, 50)  
         
-        custom = PushButton('Custom', self)
-        otro.clicked.connect(partial(self.custom))
-        self.layout.addWidget(custom, 0, 6)
-        custom.setFixedSize(130, 50)
+        residuos = PushButton('Residuos', self)
+        residuos.clicked.connect(partial(self.residuos))
+        self.layout.addWidget(residuos, 0, 6)
+        residuos.setFixedSize(130, 50)  
         
         fit = PushButton('Ajustar', self)
         fit.clicked.connect(partial(self.fit))
@@ -109,14 +107,31 @@ class MyWindow(QMainWindow):
         manual.setFixedSize(130, 50)
         manual.setCheckable(True)
         
+        self.sign = PushButton('Signo (Todo)', self)
+        self.layout.addWidget(self.sign, 3, 5)
+        self.sign.setFixedSize(130, 50)
+        self.menu = QMenu(self)
+        
+        action1 = QAction('Todos', self)
+        action2 = QAction('Positivos', self)
+        action3 = QAction('Negativos', self)
+        action1.triggered.connect(partial(self.sgn, 'todo'))
+        action2.triggered.connect(partial(self.sgn, 'pos'))
+        action3.triggered.connect(partial(self.sgn, 'neg'))    
+        self.menu.addAction(action1)
+        self.menu.addAction(action2)
+        self.menu.addAction(action3)
+        self.sign.setMenu(self.menu)
+        
+        
         lim_man = QLineEdit(self)
         lim_man.setPlaceholderText(self.memoria[3])
-        self.layout.addWidget(lim_man)
+        self.layout.addWidget(lim_man, 2, 5)
         lim_man.textChanged.connect(self.update_lim_man)
         
         p_man = QLineEdit(self)
         p_man.setPlaceholderText(self.memoria[4])
-        self.layout.addWidget(p_man)
+        self.layout.addWidget(p_man, 2, 6)
         p_man.textChanged.connect(self.update_p_man)
         
         graph_g = PushButton('Graficar', self)
@@ -128,8 +143,11 @@ class MyWindow(QMainWindow):
         _list = ['I vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
         len_list = len(_list)-1
         #pongo variables base y algunas de la memoria
+        self.secondary_windows = []
         self.seleccion = 'rdy'
+        self.var_res = 'no'
         self.modo = 'no_t'
+        self.posneg = 'todo'
         self.texto_archivos = self.memoria[0].split('¡')
         self.p0fit = []
         self.p_manual = []
@@ -209,10 +227,10 @@ class MyWindow(QMainWindow):
             except ValueError:
                 pass
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
         except TypeError:
             try:
-                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
             except (IndexError, TypeError) as e:
                 pass
             pass
@@ -241,12 +259,12 @@ class MyWindow(QMainWindow):
         print(self.manmin, self.manmax)
         print(self.texto_archivos)
         print(type(self.texto_archivos))
-        np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
         except TypeError:
             try:
-                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
             except (IndexError, TypeError) as e:
                 pass
             pass
@@ -260,9 +278,20 @@ class MyWindow(QMainWindow):
             except ValueError:
                 pass
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
         except (IndexError, TypeError) as e:
             pass
+        
+    def sgn(self, sg):
+       if sg == 'todo':
+           self.posneg = 'todo'
+           self.sign.setText('Signo (Todo)')
+       elif sg == 'pos':
+           self.posneg = 'pos'
+           self.sign.setText('Signo (+)')
+       elif sg == 'neg':
+           self.posneg = 'neg'
+           self.sign.setText('Signo (-)')
         
     def manual(self):
         if self.var_man=='si':
@@ -282,17 +311,18 @@ class MyWindow(QMainWindow):
         elif self.var_sclc_p == 'no':
             self.var_sclc_p = 'si'
             
-    def otro(self):
-        if self.var_sclc_p=='si':
-            self.var_sclc_p = 'no'
-        elif self.var_sclc_p == 'no':
-            self.var_sclc_p = 'si'
+    def residuos(self):
+        if self.var_res=='si':
+            self.var_res = 'no'
+        elif self.var_res == 'no':
+            self.var_res = 'si'
     
     def custom(self):
         if self.var_sclc_p=='si':
             self.var_sclc_p = 'no'
         elif self.var_sclc_p == 'no':
             self.var_sclc_p = 'si'
+            
 #%% Lógica graficar fits
     def graficar_g(self):
         print(self.fileName)
@@ -342,48 +372,60 @@ class MyWindow(QMainWindow):
             peri = data[16][~np.isnan(data[16])] #periodo
             temperatura = temp[0]
         if self.var_fit == 'si':
-            def sclc_p(V, A, R, c):
-                return A*V**2+V/R
+            print(self.p0fit)
+            def sclc_p(V, A, R):
+                return A*np.abs(V)**2+V/R
             try:
-                l = self.lower
+                l = int(self.lower)
             except AttributeError:
                 l = int(0)
                 print('L es ' + l)
             try:
-                u = self.upper
+                u = int(self.upper)
             except AttributeError:
                 u = int(-1)
-
-            # Step 3: Fit data to model using curve_fit
-            try:
-                initial_guess = self.p0fit  # Initial guess for the parameters [a, b, c]
-            except AttributeError:
-                initial_guess = [0, 0, 0]
-            print(l,u)
-            try:
-                popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
-            except TypeError:
-                popt, pcov = curve_fit(sclc_p, vin1[0:-1], iin1[0:-1], p0=[0,0,0])
+            if self.posneg == 'pos':
                 l = 0
-                u = -1
-            # Extracted parameters
-            a_fit, b_fit, c_fit = popt
+                u = self.busca_pos(vin1)
+            elif self.posneg == 'neg':
+                l = self.busca_neg(vin1)[0]
+                u = self.busca_neg(vin1)[1]
+            try:
+                initial_guess = self.p0fit
+            except AttributeError:
+                initial_guess = [0, 0]
+            popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
+            
+            a_fit, b_fit = popt
+            a_cov, b_cov = pcov
+            print(pcov)
             self.popt = popt
+            self.pcov = pcov
             plt.figure(figsize=(20,10))
             mng_g = plt.get_current_fig_manager()
             mng_g.window.showMaximized()
-            plt.scatter(vin1[l:u], iin1[l:u], label='Data')
-            plt.plot(vin1[l:u], sclc_p(vin1[l:u], *popt), label=f'Ajuste SCLC', c='orange')
+            plt.scatter(vin1[l:u], np.abs(iin1[l:u]), label='Data')
+            plt.plot(vin1[l:u], np.abs(sclc_p(vin1[l:u], *popt)), label=f'Ajuste SCLC', c='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
-            plt.ylabel('I (mA)')
+            plt.ylabel('|I| (mA)')
             plt.ylim(np.min(iin1[l:u]-np.abs(np.min(iin1[l:u]))/10),np.max(iin1+np.abs(np.max(iin1[l:u]))/10))
             plt.xlim(np.min(vin1[l:u]-np.abs(np.min(vin1[l:u]))/10),np.max(vin1+np.abs(np.max(vin1[l:u]))/10))
             plt.grid(True)
             plt.legend()
             plt.show()
-            self.w2 = VentanaAjustes(self.popt)
+            self.w2 = VentanaAjustes(self.popt, self.pcov)
             self.w2.show()
+            self.secondary_windows.append(self.w2)
+            if self.var_res == 'si':
+                plt.figure()
+                plt.scatter(vin1[l:u], (iin1[l:u]-sclc_p(vin1[l:u], *popt)), marker='o', label='Residuos', c='orange', zorder=10)
+                plt.plot(vin1[l:u], (iin1[l:u]-sclc_p(vin1[l:u], *popt)), zorder=1)
+                plt.grid(zorder=0)
+                plt.xlabel('Voltaje [V]')
+                plt.ylabel('|I| [mA]')
+                plt.show()
+            print(self.secondary_windows)
         if self.var_man == 'si':
             def sclc_p(V, A, R, c):
                 return A*V**2+V/R
@@ -391,7 +433,6 @@ class MyWindow(QMainWindow):
                 A, R, offset = self.p_manual
             except TypeError:
                 A, R, offset = [0,0,0]
-            print(self.p_manual)
             plt.figure(figsize=(20,10))
             mng_g2 = plt.get_current_fig_manager()
             mng_g2.window.showMaximized()
@@ -408,6 +449,34 @@ class MyWindow(QMainWindow):
             plt.legend()
             plt.show()
         return
+    
+    def busca_pos(self, vin1):
+        for i in np.arange(0,len(vin1)):
+            if vin1[i]>0:
+                pass
+            else:
+                upp = i
+                break
+        return upp
+                
+    def busca_neg(self, vin1):
+        for i in np.arange(0,len(vin1)):
+            if vin1[i]>0:
+                pass
+            elif vin1[i]<0:
+                low = i
+                for j in np.arange(i, len(vin1)):
+                    if vin1[j] < 0:
+                        pass
+                        if j == len(vin1)-1:
+                            upp = -1
+                break
+            else:
+                low = 0
+                upp = -1
+                break
+        return [low,upp]
+                
 
     def onClicked(self, i):
         if self.seleccion=='rdy':
@@ -430,10 +499,13 @@ class MyWindow(QMainWindow):
             self.texto_archivos = self.texto_archivos + archtemp + '¡'
             self.fileName[i] = self.fileName[i][index:]
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
-        np.savetxt('tempfile.txt', [self.texto_archivos[:-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        np.savetxt('tempfile.txt', [self.texto_archivos[:-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
     
     def closer(self):
         plt.close('all')
+        for window in self.secondary_windows:
+            window.close()
+        self.secondary_windows.clear()
         
     def toggle(self, boton):
         if self.boton.isChecked():
@@ -506,17 +578,17 @@ class MyWindow(QMainWindow):
             rin1calcgol = vin1gol/iin1gol
             gamma1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
             gamma1gol = diff(np.log(np.abs(iin1gol)))/diff(np.log(np.abs(vin1gol))) #gamma savgol
-            if 'I vs V' in self.seleccion:
+            if '|I| vs V' in self.seleccion:
                 plt.figure()
                 # graficamos I vs V
-                plt.scatter(vin1gol, iin1gol, c=time, cmap='cool', norm=Normalize())
+                plt.scatter(vin1gol, np.abs(iin1gol), c=time, cmap='cool', norm=Normalize())
                 plt.colorbar(label='Tiempo [s]')
                 plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                 plt.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.ylabel('I [mA]')
+                plt.ylabel('|I| [mA]')
                 plt.xlabel('V [V]')
                 plt.tight_layout()
-                plt.title(f'I vs V T={temperatura}')
+                plt.title(f'|I| vs V T={temperatura}')
                 plt.grid()
                 plt.tight_layout()
                 plt.show()
@@ -701,31 +773,65 @@ class MyWindow(QMainWindow):
 ###################### FIN LOGICA GRAF #########################
 #%%
 class VentanaAjustes(QWidget):
-    def __init__(self, popt):
+    def __init__(self, popt, pcov):
         super().__init__()
         # Set up the secondary window
-        self.setWindowTitle('Secondary Window')
+        self.setWindowTitle(' ')
         self.setGeometry(200, 200, 300, 200)
         self.setWindowIcon(QtGui.QIcon('snowflake.png'))
-        
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        errores = np.sqrt(np.diag(pcov))
         # Create layout and widgets
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
+        h_layout1 = QHBoxLayout()
+        h_layout2 = QHBoxLayout()
+        
+        self.copy_button1 = QPushButton('♻', self)
+        self.copy_button1.setFixedSize(30, 30)  # Set the button to be square
+        self.copy_button1.clicked.connect(partial(self.copy_to_clipboard1, popt, errores))
+        
+        self.copy_button2 = QPushButton('♻', self)
+        self.copy_button2.setFixedSize(30, 30)  # Set the button to be square
+        self.copy_button2.clicked.connect(partial(self.copy_to_clipboard2, popt, errores))
         
         # Create non-editable text displays
         self.text_display0 = QLineEdit(r'A*V**2+V/R')
         self.text_display0.setReadOnly(True)
         layout.addWidget(self.text_display0)
         
-        self.text_display1 = QLineEdit('A = '+str(np.round(popt[0],3)))
+        self.text_display1 = QLineEdit('A = '+str(np.format_float_scientific(popt[0],precision=3))+' ± '+str(np.format_float_scientific(errores[0], precision=3)))
         self.text_display1.setReadOnly(True)
         layout.addWidget(self.text_display1)
         
-        self.text_display2 = QLineEdit('R = '+str(np.round(popt[1],3))+' kOhm')
+        self.text_display2 = QLineEdit('R = '+str(np.round(popt[1],3))+' ± '+str(np.round(errores[1],3))+' kOhm')
         self.text_display2.setReadOnly(True)
-        layout.addWidget(self.text_display2)
         
-        # Set layout
+        h_layout1.addWidget(self.text_display1)
+        h_layout1.addWidget(self.copy_button1)
+        
+        h_layout2.addWidget(self.text_display2)
+        h_layout2.addWidget(self.copy_button2)
+        
+        layout.addLayout(h_layout1)
+        layout.addLayout(h_layout2)
+        
         self.setLayout(layout)
+        
+    def copy_to_clipboard1(self,popt,errores):
+        text1 = str(np.format_float_scientific(popt[0],precision=3))
+        text2 = str(np.format_float_scientific(errores[0],precision=3))
+        text = text1 + '±' + text2
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
+        return
+    
+    def copy_to_clipboard2(self,popt, errores):
+        text1 = str(np.round(popt[1],3))
+        text2 = str(np.round(errores[1],3))
+        text = text1 + '±' + text2
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
+        return
 #%% Codigo de pyqt5 para arrancar
 if __name__ == '__main__':
     if not QApplication.instance():
