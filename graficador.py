@@ -140,7 +140,7 @@ class MyWindow(QMainWindow):
         graph_g.setFixedSize(130, 50)  
     
 #%% Logica de graficador de IVs
-        _list = ['I vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
+        _list = ['|I| vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
         len_list = len(_list)-1
         #pongo variables base y algunas de la memoria
         self.secondary_windows = []
