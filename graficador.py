@@ -136,11 +136,12 @@ class MyWindow(QMainWindow):
         
         graph_g = PushButton('Graficar', self)
         graph_g.clicked.connect(partial(self.graficar_g))
+        graph_g.clicked.connect(partial(self.multi_g))
         self.layout.addWidget(graph_g, 4, 4)
         graph_g.setFixedSize(130, 50)  
     
 #%% Logica de graficador de IVs
-        _list = ['|I| vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
+        _list = ['I vs V', 'Log(I) vs V', 'Log(Ibias) vs V', 'Rinst', 'Rrem', 'γ vs V', 'γ vs √V', 'γ vs 1/V']
         len_list = len(_list)-1
         #pongo variables base y algunas de la memoria
         self.secondary_windows = []
@@ -324,6 +325,11 @@ class MyWindow(QMainWindow):
             self.var_sclc_p = 'si'
             
 #%% Lógica graficar fits
+    def multi_g(self):
+        if type(self.fileName) == str:
+            print(self.fileName+'str')
+        elif type(self.fileName) == list:
+            print(self.fileName+'list')
     def graficar_g(self):
         print(self.fileName)
         if str(type(self.fileName)) == '<class \'str\'>':
@@ -406,7 +412,7 @@ class MyWindow(QMainWindow):
             mng_g.window.showMaximized()
             plt.scatter(vin1[l:u], np.abs(iin1[l:u]), label='Data')
             plt.plot(vin1[l:u], np.abs(sclc_p(vin1[l:u], *popt)), label=f'Ajuste SCLC', c='orange')
-            plt.title('Fit SCLC paralelo')
+            plt.title(f'Fit SCLC paralelo T={temp}')
             plt.xlabel('V')
             plt.ylabel('|I| (mA)')
             plt.ylim(np.min(iin1[l:u]-np.abs(np.min(iin1[l:u]))/10),np.max(iin1+np.abs(np.max(iin1[l:u]))/10))
