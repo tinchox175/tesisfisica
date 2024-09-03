@@ -7,7 +7,6 @@ Created on Wed Aug 28 14:42:05 2024
 import os
 import os.path
 import sys
-os.chdir("C:/tesis git/tesisfisica/criostato")
 import dearpygui.dearpygui as dpg # type: ignore
 import k224
 import pymeasure.instruments.agilent as agi # type: ignore
@@ -168,11 +167,13 @@ def update_PID(sender, app_data, user_data):
 with dpg.window(label="LS 340", width=w, height=200, pos=(0,330)):
     P = dpg.add_input_text(default_value=f"{dpg.get_value("P_m")}", width=40, tag="P_in", pos=(20,40), callback=update_PID)
     dpg.add_text("P", pos=(20,20))
-    I = dpg.add_input_text(default_value=f"{dpg.get_value("I_m")}", width=40, tag="I_in", pos=(150,40), callback=update_PID)
+    I = dpg.add_input_text(default_value=f"{dpg.get_value("I_m")}", width=40, tag="I_in", pos=(140,40), callback=update_PID)
     dpg.add_text("I", pos=(150,20))
     D = dpg.add_input_text(default_value=f"{dpg.get_value("D_m")}", width=40,tag="D_in", pos=(270,40), callback=update_PID)
     dpg.add_text("D", pos=(270,20))
-    with dpg.group(tag="g_hr", pos=(20,80)):
+    T_est = dpg.add_input_text(default_value=f"60", width=40,tag="T_est", pos=(20,82))
+    dpg.add_text("Tiempo estable (s)", pos=(20,62))
+    with dpg.group(tag="g_hr", pos=(140,82)):
         with dpg.menu(label="Heater Range:"):
             dpg.add_menu_item(label="OFF", callback=update_HR, user_data = "0")
             dpg.add_menu_item(label="1", callback=update_HR, user_data = "1")
@@ -180,7 +181,8 @@ with dpg.window(label="LS 340", width=w, height=200, pos=(0,330)):
             dpg.add_menu_item(label="3", callback=update_HR, user_data = "3")
             dpg.add_menu_item(label="4", callback=update_HR, user_data = "4")
             dpg.add_menu_item(label="MAX", callback=update_HR, user_data = "5")
-    heater_display_text = dpg.add_text(dpg.get_value("HR"), pos=(118, 77.5))
+    heater_display_text = dpg.add_text(dpg.get_value("HR"), pos=(240, 79))
+
 
 def crea_tablas(sender, app_data, user_data):
     T0 = float(dpg.get_value("T0"))
@@ -207,7 +209,80 @@ def reset_table(sender, app_data, user_data):
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
 
-with dpg.window(label="Medición", width=w, height=650, pos=(w,0)):
+def temperatura(row):
+    """""
+    Pseudocódigo:
+    T, rate, estable = row
+    controller.setpoint = T[i]
+    controller.rate = rate[i]
+    tiempo_total = 0
+    if estable[i] == 1:
+        tiempo_est = 0
+        while abs(T_real-setpoint) > setpoint*0.01:
+            time.sleep(1)
+            data_ls = controller.msr()
+            dpg.set_value("T_actual", data_ls[0])
+            dpg.set_value("T_setpoint", data_ls[1])
+            dpg.set_value("rate", data_ls[2])
+            dpg.set_value("Pwr", data_ls[3])
+            add_row(data_ls, f'control_temperatura_{muestra}')
+            tiempo_est +=1
+            tiempo_total +=1
+            dpg.set_value("Tiempo ciclo", tiempo_est)
+        tiempo_est = 0
+        while abs(T_real-setpoint) < setpoint*0.01:
+            time.sleep(1)
+            data_ls = controller.msr()
+            dpg.set_value("T_actual", data_ls[0])
+            dpg.set_value("T_setpoint", data_ls[1])
+            dpg.set_value("rate", data_ls[2])
+            dpg.set_value("Pwr", data_ls[3])
+            add_row(data_ls, f'control_temperatura_{muestra}')
+            tiempo_est +=1
+            tiempo_total +=1
+            if tiempo_est < int(dpg.get_value("T_est)):
+                pass
+            elif tiempo_est > int(dpg.get_value("T_est):
+                break
+        temperatura(row)
+    elif estable[i] == 0:
+        tiempo_est = 0
+        while abs(T_real-setpoint) > setpoint*0.01:
+            time.sleep(1)
+            data_ls = controller.msr()
+            dpg.set_value("T_actual", data_ls[0])
+            dpg.set_value("T_setpoint", data_ls[1])
+            dpg.set_value("rate", data_ls[2])
+            dpg.set_value("Pwr", data_ls[3])
+            add_row(data_ls, f'control_temperatura_{muestra}')
+            tiempo_est +=1
+            tiempo_total +=1
+            dpg.set_value("Tiempo ciclo", tiempo_est)
+    return
+    """""
+    return
+
+def medir():
+    """""
+    Pseudocódigo:
+    data = 4_terminales()
+    plots(data)
+    add_row(data, f'medicion_{lista_setpoints[i]}_{muestra}') ???
+    """""
+
+def medicion_T_full(sender, app_data, user_data):
+    """""
+    Pseudocódigo:
+    create_window('info')
+    create_file(f"control_temperatura_{muestra}")
+    for i in rows:
+        create_file(f"medicion_{lista_setpoints[i]}_{muestra}") ???
+        temperatura(i)
+        medir()
+    """""
+    return
+
+with dpg.window(label="Medición", width=w+30, height=700, pos=(w,0)):
     T0m = dpg.add_input_text(default_value=f"{295}", width=40, tag="T0", pos=(20,40))
     dpg.add_text("T inicial (K)", pos=(20,20))
     Tm = dpg.add_input_text(default_value=f"{100}", width=40, tag="TF", pos=(150,40))
@@ -226,11 +301,16 @@ with dpg.window(label="Medición", width=w, height=650, pos=(w,0)):
             dpg.add_table_column(label="T (K)")
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
-    dpg.add_button(label="Limpiar", callback=reset_table, pos=(150,560))
-    dpg.add_text("T actual (K)", pos=(34,580))
-    dpg.add_text("T setpoint (K)", pos=(w/2+34,580))
-    dpg.add_text("Rate (K/min)", pos=(34,620))
-    dpg.add_text("Potencia (K)", pos=(w/2+34,620))
+    dpg.add_button(label="Limpiar", callback=reset_table, pos=(20,560))
+    dpg.add_text("T actual (K)", tag="T_actual", pos=(34,580))
+    t_actual_display = dpg.add_text("0.00 K", pos=(34,600))
+    dpg.add_text("T setpoint (K)", tag="T_setpoint", pos=(w/2+34,580))
+    setp_actual_display = dpg.add_text("0.00 K", pos=(w/2+34,600))
+    dpg.add_text("Rate (K/min)", tag="rate", pos=(34,620))
+    rate_actual_display = dpg.add_text("0.00", pos=(34,640))
+    dpg.add_text("Potencia", tag="Pwr", pos=(w/2+34,620))
+    pot_actual_display = dpg.add_text("0.00 %", pos=(w/2+34,640))
+    dpg.add_button(label="Comenzar", callback=print('lesgoo'), pos=(140,670))
 
 with dpg.window(label='I bias', pos=(600,400)):
     with dpg.plot(label="I vs N Plot", height=250, width=250):
