@@ -1,0 +1,7 @@
+[autorun]
+OPEN=Bin\i386\ShelExec SensorCD.exe
+icon=cd_icon.ico
+[autorun.alpha]
+OPEN=Bin\Alpha\ShelExec SensorCD.exe
+[autorun.x86]
+OPEN=Bin\i386\ShelExec SensorCD.exe

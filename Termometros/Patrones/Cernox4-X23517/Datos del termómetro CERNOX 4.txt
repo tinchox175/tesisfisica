@@ -1,0 +1,4 @@
+Calibration Report: 423509                                                    Sales Order: 13426
+Sensor Model: CX-1050-SD-1.4L                                            Serial Number: X23517
+Sensor Type: Cernox Resistor                                                Sensor Excitation: 2mV±50%
+Temperature Range: 1.40K to 325K

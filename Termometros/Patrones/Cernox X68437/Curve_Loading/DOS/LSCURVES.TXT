@@ -1,0 +1,165 @@
+	INSTRUCTIONS FOR USING LSCURVES AND THE BREAKPOINTS FILES
+	FOR LAKE SHORE CALIBRATED TEMPERATURE SENSORS TO PROGRAM
+		LAKE SHORE TEMPERATURE CONTROLLERS.
+
+Version 3.0, Revision A of LSCURVES (effective date 6/30/99) added
+functional support for the Model 321 temperature controller, also
+fixed a problem with converting the contents of the .330 data files
+into the proper format for dumping the curve to the instrument, and
+corrected a problem with programming a serial instrument at 300 baud.
+
+The LSCURVES program is a DOS replacement for all versions of the DUMP
+program previously supplied by Lake Shore Cryotronics for transferring
+data for our calibrated temperature sensors into Lake Shore temperature
+monitors and controllers.  LSCURVES has additional functionality not
+found in any version of DUMP:
+
+1. LSCURVES is capable of loading data into any of the following Lake
+Shore temperature controllers:  81C, 82C, 91C, 93C, 218, 234, 321, 330,
+and 340.
+
+2. LSCURVES can load data using a PC RS-232 serial interface (must be
+COM1 or COM2) or a National Instruments PCII or PCIIA GPIB interface.
+The GPIB board in the computer must be configured as GPIB0; the
+instrument is accessed by specifying the IEEE address (factory default
+is 12) instead of the configured device name as with the old DUMP
+program.  In order to load curves over the GPIB interface using the
+LSCURVES program, the DOS GPIB driver MUST be installed on the user's
+computer.
+
+  *********************************************************************
+  ** PLEASE REFER TO THE "REMOTE OPERATION" SECTION OF YOUR          **
+  ** INSTRUMENT'S USER'S MANUAL FOR INSTRUCTIONS ON CONFIGURING      **
+  ** YOUR COMPUTER'S GPIB OR RS-232 INTERFACE FOR COMMUNICATION WITH **
+  ** YOUR LAKE SHORE INSTRUMENT.                                     **
+  *********************************************************************
+
+3. LSCURVES confirms the instrument model with the "*IDN?" query for
+newer Lake Shore instruments, checks older models by using a query for
+configuration data.
+
+4. LSCURVES reads the instrument's stored curve data to determine the
+next available curve location for data storage, although you are
+permitted to overwrite existing user-stored or factory-stored curves
+(but not the permanently installed standard curves) if you choose.
+
+Four data files are provided with each calibrated sensor from Lake
+Shore along with the program LSCURVES.EXE and the file LSCURVES.TXT
+containing these instructions.  The data files will usually consist of
+the sensor's serial number with four different file extensions: .91C,
+.330, .34A, and .340.  The LSCURVES program does not use the file name
+or extension to identify the data format but instead checks the
+contents of the file to make sure the data is compatible with the
+instrument.
+
+The .91C file is the older "data string" file format consisting of a
+single long character record which is the concatenation of the curve
+header information and the breakpoints list.  This file is the same
+format as those used by the different versions of the DUMP program.
+These files may be loaded into any of the instruments listed above
+except for the Model 340 temperature controller, except that the Model
+321 and 330 temperature controllers will only accept curves for
+"linear" devices (diodes, platinum or rhodium-iron resistors,
+thermocouples are o.k.; germanium, carbon glass, Cernox, and ruthenium
+oxide are NOT compatible with the 321 or the 330).  This file is
+included for backward-compatibility with existing customer programs
+and Lake Shore test programs which require the old format.  Old files
+in the "data string" format already in the possession of customers may
+be used with LSCURVES provided that they are re-named to have a .91C
+file extension.
+
+The .330 file is a more "nicely" formatted breakpoints table which
+contains the same information as in the .91C file, but is more easily
+read and understood using a text editor.  LSCURVES can also read and
+load data from the .330 files into Lake Shore temperature controllers.
+
+The .34A and .340 files are usable only with Model 340 temperature
+controllers.  The .34A file format is an older one included for
+compatibility with existing customer programs and Lake Shore test
+programs which require this file format.  The .340 files are "user-
+readable" text files which contain all of the same information as the
+.34A files; both formats can be read and loaded into Model 340
+temperature controllers by LSCURVES.  The Model 218 Temperature
+Monitor uses the same file format as the Model 340 Temperature
+Controller.
+
+When the LSCURVES program is started, copyright information and a brief
+description of the program are displayed.  Below that the user is
+prompted to press a key:  F1 to select GPIB instrument communication,
+F2 to indicate RS-232 communication, or Esc to quit.
+
+If GPIB communication is selected, the user is prompted for the
+instrument's address and the program attempts to initialize the GPIB0
+interface and the device at the selected address.  If RS-232, the user
+is prompted for the COM port (1 or 2).
+
+Next the user is asked to specify the intrument model.  If RS-232
+communication has been specified, the user then must specify the
+baud rate for communication from a list of the valid values for the
+designated instrument.  LSCURVES then tries to initialize the port.
+If the GPIB board is not properly configured or the wrong COM port
+or baud rate has been entered, the program may hang at this point;
+if this happens, you must re-set the equipment and re-check the
+configuration parameters.
+
+After successful port initialization the user is prompted for the
+instrument model.  LSCURVES tries to confirm the identification; newer
+Lake Shore instruments respond to the "*IDN?" query with positive
+identification of the instrument model; the older instruments models
+(81C, 82C, 91C, 93C) cannot be distinguished from each other at this
+point but are asked for interface configuration information (the "W2"
+query) to confirm that they behave as one of these controllers should.
+
+After the temperature controller is initialized the user is given the
+opportunity to specify print options.  If the Enter key is pressed
+without changing the print options, LSCURVES will try to print the
+CalCurve configuration sheets to a generic ASCII printer attached to
+LPT1.  The user may specify LPT2 or give the path for a newtowk
+printer.  In addition, if the printer supports the Hewlett-Packard
+Printer Coltrol Language (Version 5 or later), a "nicer" print
+format is available for the configuration sheets.
+
+After selecting print options, the user is prompted for a file name
+containing curve information to be transferred.  Any valid directory
+path may be included with the file name.  The file name is not
+required to end with the file name extensions mentioned above since
+LSCURVES reads the data file to ensure that all required information
+is present in the designated curve format.
+
+Next, LSCURVES reads the intrument's stored curve information to
+determine the next available curve location.  The user is prompted
+for a curve location and the program re-checks to find out if that
+location is currently occupied by another curve.  The user is
+permitted to overwrite an existing curve if it is not one of the
+permanently installed standard curves, but a warning and an
+additional prompt are displayed to confirm that you want to over-
+write.
+
+The data as sent to the instrument is displayed on the computer screen,
+then the program attempts to read back and display the curve data from
+the instrument.  Note that RS-232 curve programming takes longer than
+GPIB communication because the interface is slower and because the
+data must be broken down into smaller pieces to create the curve in the
+instrument.  A Model 340 temperature controller takes several seconds
+to permanently update the "curve flash" before the curve may be read
+back.
+
+After the curve is read back from the instrument and displayed,
+LSCURVES asks whether the user wishes to print the configuration
+information for the CalCurve just installed, using the previously
+entered print options.  At this point you may press Y to get a
+printout or N if no printout is desired.
+
+Next, LSCURVES asks whether the user wants to transfer another curve
+file.  Pressing Y will cause LSCURVES to prompt the user for another
+file name.  Pressing N will end the program.
+
+If you have questions or problems regarding using LSCURVES, please
+contact Lake Shore Cryotronics, Inc. to request the assistance of a
+service engineer:
+
+	Lake Shore Cryotronics, Inc.
+	575 McCorkle Blvd.
+	Westerfille, OH 43082
+	Phone:  (614) 891-2244
+	E-Mail: info@lakeshore.com

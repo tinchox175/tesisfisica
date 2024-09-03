@@ -1,73 +1,48 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 28 14:34:07 2024
+#%%
+import pyvisa
 
-@author: Administrator
-"""
+class LakeShore340:
+    def __init__(self, gpib_address):
+        self.rm = pyvisa.ResourceManager()
+        self.instrument = self.rm.open_resource(f'GPIB::{gpib_address}::INSTR')
+        self.instrument.timeout = 5000  # Set timeout in milliseconds
 
-from instruments.generic_scpi import SCPIInstrument
-from instruments.units import ureg as u
-from instruments.util_fns import ProxyList
+    def query(self, command):
+        """Send a query to the instrument and return the response."""
+        try:
+            response = self.instrument.query(command)
+            return response.strip()
+        except Exception as e:
+            print(f"Error querying the instrument: {e}")
+            return None
 
-# CLASSES #####################################################################
+    def write(self, command):
+        """Send a command to the instrument."""
+        try:
+            self.instrument.write(command)
+        except Exception as e:
+            print(f"Error writing to the instrument: {e}")
 
-class Lakeshore340(SCPIInstrument):
-    """
-    The Lakeshore340 is a multi-sensor cryogenic temperature controller.
+    def read_temperature(self, channel=1):
+        """Read the temperature from the specified channel (1 or 2)."""
+        command = f'KRDG? {channel}'
+        return self.query(command)
 
-    Example usage:
+    def set_setpoint(self, setpoint, channel=1):
+        """Set the temperature setpoint for the specified channel (1 or 2)."""
+        command = f'SETP {channel},{setpoint}'
+        self.write(command)
 
-    >>> import instruments as ik
-    >>> import instruments.units as u
-    >>> inst = ik.lakeshore.Lakeshore340.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> print(inst.sensor[0].temperature)
-    >>> print(inst.sensor[1].temperature)
-    """
+    def get_setpoint(self, channel=1):
+        """Get the temperature setpoint for the specified channel (1 or 2)."""
+        command = f'SETP? {channel}'
+        return self.query(command)
 
-    # INNER CLASSES ##
+    def set_pid(self, p, i, d):
+        """Set PID parameters."""
+        command = f'PID {p}, {i}, {d}'
+        return self.query(command)
 
-    class Sensor:
-        """
-        Class representing a sensor attached to the Lakeshore 340.
-
-        .. warning:: This class should NOT be manually created by the user. It is
-            designed to be initialized by the `Lakeshore340` class.
-        """
-
-        def __init__(self, parent, idx):
-            self._parent = parent
-            self._idx = idx + 1
-
-        # PROPERTIES ##
-
-        @property
-        def temperature(self):
-            """
-            Gets the temperature of the specified sensor.
-
-            :units: Kelvin
-            :type: `~pint.Quantity`
-            """
-            value = self._parent.query(f"KRDG?{self._idx}")
-            return u.Quantity(float(value), u.kelvin)
-
-
-
-    # PROPERTIES ##
-
-    @property
-    def sensor(self):
-        """
-        Gets a specific sensor object. The desired sensor is specified like
-        one would access a list.
-
-        For instance, this would query the temperature of the first sensor::
-
-        >>> bridge = Lakeshore340.open_serial("COM5")
-        >>> print(bridge.sensor[0].temperature)
-
-        The Lakeshore 340 supports up to 2 sensors (index 0-1).
-
-        :rtype: `~Lakeshore340.Sensor`
-        """
-        return ProxyList(self, Lakeshore340.Sensor, range(2))
+    def close(self):
+        """Close the connection to the instrument."""
+        self.instrument.close()

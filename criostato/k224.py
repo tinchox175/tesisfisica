@@ -99,7 +99,7 @@ class KEITHLEY_224(object):
 
     @voltage.setter
     def voltage(self, voltage):
-        if (voltage < 1) or (voltage > float(self.vlim)):
+        if (abs(voltage) < 1) or (abs(voltage) > abs(float(self.vlim))):
             self._voltage = float(self.vlim)
             self._inst.write('V'+ _format_e(float(self.vlim))+'X')
             print('Over V-Lim')
@@ -113,9 +113,9 @@ class KEITHLEY_224(object):
 
     @current.setter
     def current(self, current):
-        if (current < -0.101) or (current > float(self.ilim)):
-            self._current = float(self.ilim)
-            self._inst.write('I' + _format_e(float(self.ilim)) + 'X')
+        if (abs(current) > abs(float(self.ilim))):
+            self._current = current/abs(current)*float(self.ilim)
+            self._inst.write('I' + _format_e(current/abs(current)*float(self.ilim)) + 'X')
             print('Over I-Lim')
         else:
             self._current = current

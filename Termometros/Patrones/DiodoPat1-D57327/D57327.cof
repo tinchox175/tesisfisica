@@ -1,0 +1,79 @@
+Number of fit ranges:                   4
+FIT RANGE:                              1
+Fit type for range 1:                   LIN
+Order of fit range 1:                   10
+Zlower for fit range 1:                 1.317477097
+Zupper for fit range 1:                 1.710198953
+Lower Voltage limit for fit range 1:    1.3613
+Upper Voltage limit for fit range 1:    1.7079
+C(0) Equation  1:                       7.50712383868461E+00
+C(1) Equation  1:                      -6.01348225647298E+00
+C(2) Equation  1:                       2.90434576036568E-01
+C(3) Equation  1:                      -3.63315123081525E-01
+C(4) Equation  1:                      -6.92080944843824E-02
+C(5) Equation  1:                      -3.60657740053061E-02
+C(6) Equation  1:                      -3.38466624375434E-02
+C(7) Equation  1:                      -2.44620533008558E-02
+C(8) Equation  1:                      -1.69194539823320E-02
+C(9) Equation  1:                      -1.11331177923770E-02
+C(10) Equation  1:                     -1.10196610672620E-02
+FIT RANGE:                              2
+Fit type for range 2:                   LIN
+Order of fit range 2:                   10
+Zlower for fit range 2:                 1.116668165
+Zupper for fit range 2:                 1.413936711
+Lower Voltage limit for fit range 2:    1.1234
+Upper Voltage limit for fit range 2:    1.3613
+C(0) Equation  2:                       1.72913135742336E+01
+C(1) Equation  2:                      -7.80781244317548E+00
+C(2) Equation  2:                       5.01325297730178E-01
+C(3) Equation  2:                      -3.29411653991605E-02
+C(4) Equation  2:                       1.85972457977035E-01
+C(5) Equation  2:                      -2.18775286257778E-01
+C(6) Equation  2:                       1.76951594590380E-01
+C(7) Equation  2:                      -9.60595666684576E-02
+C(8) Equation  2:                       8.07209494158467E-02
+C(9) Equation  2:                      -1.77893601093653E-02
+C(10) Equation  2:                      3.47660263311108E-02
+FIT RANGE:                              3
+Fit type for range 3:                   LIN
+Order of fit range 3:                   12
+Zlower for fit range 3:                 0.823503249
+Zupper for fit range 3:                 1.13582029
+Lower Voltage limit for fit range 3:    0.8901
+Upper Voltage limit for fit range 3:    1.1234
+C(0) Equation  3:                       9.53106536833955E+01
+C(1) Equation  3:                      -7.50464768596936E+01
+C(2) Equation  3:                      -1.53549897960814E+00
+C(3) Equation  3:                       2.11420981702478E+00
+C(4) Equation  3:                       1.46545217373643E+00
+C(5) Equation  3:                       1.00400150871427E+00
+C(6) Equation  3:                       9.03181450181044E-01
+C(7) Equation  3:                      -3.21353251986380E-01
+C(8) Equation  3:                       5.30352474273762E-01
+C(9) Equation  3:                      -6.12375717118423E-01
+C(10) Equation  3:                      2.39855397592958E-01
+C(11) Equation  3:                     -2.73163346777861E-01
+C(12) Equation  3:                      3.11030789996081E-02
+FIT RANGE:                              4
+Fit type for range 4:                   LIN
+Order of fit range 4:                   14
+Zlower for fit range 4:                 0.03518228645
+Zupper for fit range 4:                 0.9542317121
+Lower Voltage limit for fit range 4:    0.0419
+Upper Voltage limit for fit range 4:    0.8901
+C(0) Equation  4:                       3.07393363233933E+02
+C(1) Equation  4:                      -1.93458871109788E+02
+C(2) Equation  4:                      -1.92482901248104E+00
+C(3) Equation  4:                      -2.22201065146428E+00
+C(4) Equation  4:                       9.66601281658622E-01
+C(5) Equation  4:                      -1.02525173977956E+00
+C(6) Equation  4:                       6.01065417969099E-01
+C(7) Equation  4:                      -3.75029778542824E-01
+C(8) Equation  4:                       2.21385163993014E-01
+C(9) Equation  4:                      -1.48510002677933E-01
+C(10) Equation  4:                      8.66451607685236E-02
+C(11) Equation  4:                     -4.84224269864567E-02
+C(12) Equation  4:                      3.57510521423713E-02
+C(13) Equation  4:                     -1.96926035198476E-02
+C(14) Equation  4:                      1.30812322476841E-02
