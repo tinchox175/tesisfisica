@@ -21,16 +21,16 @@ dpg.create_viewport(title='Custom Title', width=800, height=500)
 
 config_ls = np.genfromtxt('configls.txt', delimiter=',')
 with dpg.value_registry():
-    try:
+    #try:
         dpg.add_string_value(default_value=config_ls[0], tag="P_m")
         dpg.add_string_value(default_value=config_ls[1], tag="I_m")
         dpg.add_string_value(default_value=config_ls[2], tag="D_m")
         dpg.add_string_value(default_value=config_ls[3], tag="HR")
-    except IndexError:
-        dpg.add_string_value(default_value="200", tag="P_m")
-        dpg.add_string_value(default_value="30", tag="I_m")
-        dpg.add_string_value(default_value="0", tag="D_m")
-        dpg.add_string_value(default_value="0", tag="HR")
+    #except IndexError:
+    #    dpg.add_string_value(default_value="200", tag="P_m")
+    #    dpg.add_string_value(default_value="30", tag="I_m")
+    #    dpg.add_string_value(default_value="0", tag="D_m")
+    #    dpg.add_string_value(default_value="0", tag="HR")
 
 def file_selected_callback(sender, app_data):
     selected_file = app_data['file_path_name']
@@ -262,14 +262,14 @@ def temperatura(row):
     """""
     return
 
-def medir():
+def medir(sender, app_data, user_data):
     """""
     Pseudocódigo:
     data = 4_terminales()
     plots(data)
     add_row(data, f'medicion_{lista_setpoints[i]}_{muestra}') ???
     """""
-
+    return
 def medicion_T_full(sender, app_data, user_data):
     """""
     Pseudocódigo:
@@ -302,13 +302,13 @@ with dpg.window(label="Medición", width=w+30, height=700, pos=(w,0)):
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
     dpg.add_button(label="Limpiar", callback=reset_table, pos=(20,560))
-    dpg.add_text("T actual (K)", tag="T_actual", pos=(34,580))
+    dpg.add_text("T actual (K)", tag="T_actual_live", pos=(34,580))
     t_actual_display = dpg.add_text("0.00 K", pos=(34,600))
-    dpg.add_text("T setpoint (K)", tag="T_setpoint", pos=(w/2+34,580))
+    dpg.add_text("T setpoint (K)", tag="T_setpoint_live", pos=(w/2+34,580))
     setp_actual_display = dpg.add_text("0.00 K", pos=(w/2+34,600))
-    dpg.add_text("Rate (K/min)", tag="rate", pos=(34,620))
+    dpg.add_text("Rate (K/min)", tag="rate_live", pos=(34,620))
     rate_actual_display = dpg.add_text("0.00", pos=(34,640))
-    dpg.add_text("Potencia", tag="Pwr", pos=(w/2+34,620))
+    dpg.add_text("Potencia", tag="Pwr_live", pos=(w/2+34,620))
     pot_actual_display = dpg.add_text("0.00 %", pos=(w/2+34,640))
     dpg.add_button(label="Comenzar", callback=print('lesgoo'), pos=(140,670))
 
