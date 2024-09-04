@@ -52,18 +52,20 @@ with dpg.window(label="Archivo", width=w, height=130, pos=(0,0)):
 
 def N_stat_msr(sender, app_data, user_data):
     i_bias = dpg.get_value("i_bias")
-    ilim = dpg.get_value("ilim")
     vlim = dpg.get_value("vlim")
     instrument_v = agi.Agilent34410A("GPIB0::7::INSTR")
-    instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR", ilim, vlim)
+    instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR")
+    instrument_c.voltage = float(vlim)
     sent_c = []
     enes = []
     meas_v = []
     for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
         send_c = instrument_c.current = float(i_bias)
-        time.sleep(0.0003)
+        instrument_c.operate = True
+        time.sleep(0.3)
         med_v = instrument_v.voltage_dc
-        time.sleep(0.0003)
+        time.sleep(0.3)
+        instrument_c.operate = False
         instrument_c.current = 0
         enes.append(i)
         meas_v.append(med_v)
@@ -74,11 +76,16 @@ def N_stat_msr(sender, app_data, user_data):
         dpg.set_value("c_plot", [enes, sent_c])
         dpg.fit_axis_data('NI_axis')
         dpg.fit_axis_data('I_axis')
+        dpg.set_value("r_plot", [np.array(sent_c), np.array(meas_v)/np.array(sent_c)])
+        dpg.fit_axis_data('IR_axis')
+        dpg.fit_axis_data('R_axis')
     for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
         send_c = instrument_c.current = -float(i_bias)
-        time.sleep(0.0003)
+        instrument_c.operate = True
+        time.sleep(0.3)
         med_v = instrument_v.voltage_dc
-        time.sleep(0.0003)
+        time.sleep(0.3)
+        instrument_c.operate = False
         instrument_c.current = 0
         enes.append(i+int(dpg.get_value("N_stat")))
         meas_v.append(med_v)
@@ -89,65 +96,18 @@ def N_stat_msr(sender, app_data, user_data):
         dpg.set_value("c_plot", [enes, sent_c])
         dpg.fit_axis_data('NI_axis')
         dpg.fit_axis_data('I_axis')
-
-def k224open(sender, app_data, user_data):
-    ilim = dpg.get_value("ilim")
-    vlim = dpg.get_value("vlim")
-    per = dpg.get_value("per")
-    instrument = k224.KEITHLEY_224("GPIB0::2::INSTR", ilim, vlim)
-    input_value = dpg.get_value(user_data)
-    i_max = float(input_value)
-    valores_rampa = np.linspace(0,i_max,5)
-    valoresx = []
-    valoresy = []
-    for i in ["pos", "neg"]:
-        for i in np.arange(0,len(valores_rampa)):
-            print(valores_rampa[i])
-            instrument.current = valores_rampa[i]
-            meas_c = instrument.get_measurement().current
-            valoresx.append(i)
-            valoresy.append(meas_c)
-            dpg.set_value("c_plot", [valoresx, valoresy])
-            dpg.fit_axis_data('NI_axis')
-            dpg.fit_axis_data('I_axis')
-            time.sleep(0.1)
-        for i in np.arange(0,len(valores_rampa)):
-            print(valores_rampa[-i-1])
-            instrument.current = valores_rampa[-i-1]
-            meas_c = instrument.get_measurement().current
-            valoresx.append(i+len(valores_rampa))
-            valoresy.append(meas_c)
-            dpg.set_value("c_plot", [valoresx, valoresy])
-            dpg.fit_axis_data('NI_axis')
-            dpg.fit_axis_data('I_axis')
-            time.sleep(0.1)
-
-def a34420m(sender, app_data, user_data):
-    instrument_v = agi.Agilent34410A("GPIB0::7::INSTR")
-    valoresvn = []
-    valoresv = []
-    for i in np.arange(0,5):
-            vmed = instrument_v.voltage_dc
-            valoresvn.append(i)
-            valoresv.append(vmed)
-            dpg.set_value("v_plot", [valoresvn, valoresv])
-            dpg.fit_axis_data('VN_axis')
-            dpg.fit_axis_data('V_axis')
-            time.sleep(0.1)
+        dpg.set_value("r_plot", [np.array(sent_c), np.array(meas_v)/np.array(sent_c)])
+        dpg.fit_axis_data('IR_axis')
+        dpg.fit_axis_data('R_axis')
             
-with dpg.window(label="Keithley 224", width=w, height=200, pos=(0,130)):
-    dpg.add_text("Rampa")
-    I_max = dpg.add_input_text(label="0-x", default_value="0.005")
-    dpg.add_button(label="k224", callback=k224open, user_data=I_max)
-    dpg.add_text("I-Limit")
-    I_Limit = dpg.add_input_text(label="I (A)", default_value=f"{0.000001}", tag="ilim")
-    dpg.add_text("V-Limit")
-    V_Limit = dpg.add_input_text(label="V (V)", default_value=f"{1}", tag="vlim")
-    dpg.add_text("N mediciones")
-    N_stat = dpg.add_input_text(default_value=f"{4}", tag="N_stat")
-    dpg.add_text("Corriente bias")
-    i_bias = dpg.add_input_text(default_value=f"{0.0005}", tag="i_bias")
-    dpg.add_button(label="Med. Stat.", callback=N_stat_msr)
+with dpg.window(label="Keithley 224", width=w, height=120, pos=(0,130)):
+    dpg.add_text("V-Limit", pos=(20,20))
+    V_Limit = dpg.add_input_text(label="V", default_value=f"{1}", tag="vlim", width=40, pos=(20,40))
+    dpg.add_text("N mediciones", pos=(20, 60))
+    N_stat = dpg.add_input_text(default_value=f"{4}", tag="N_stat", width=40, pos=(20,80))
+    dpg.add_text("Corriente bias", pos=(150, 20))
+    i_bias = dpg.add_input_text(label="A", default_value=f"{0.001}", tag="i_bias", width=60, pos=(150,40))
+    dpg.add_button(label="Test bias", callback=N_stat_msr, pos=(150, 80))
 
 def update_HR(sender, app_data, user_data):
     hr_new = f'{user_data}'
@@ -164,7 +124,7 @@ def update_PID(sender, app_data, user_data):
     controller.close()
     np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
 
-with dpg.window(label="LS 340", width=w, height=200, pos=(0,330)):
+with dpg.window(label="LakeShore 340", width=w, height=120, pos=(0,250)):
     P = dpg.add_input_text(default_value=f"{dpg.get_value("P_m")}", width=40, tag="P_in", pos=(20,40), callback=update_PID)
     dpg.add_text("P", pos=(20,20))
     I = dpg.add_input_text(default_value=f"{dpg.get_value("I_m")}", width=40, tag="I_in", pos=(140,40), callback=update_PID)
@@ -282,7 +242,7 @@ def medicion_T_full(sender, app_data, user_data):
     """""
     return
 
-with dpg.window(label="Medición", width=w+30, height=700, pos=(w,0)):
+with dpg.window(label="Medición", width=370, height=650, pos=(w,0)):
     T0m = dpg.add_input_text(default_value=f"{295}", width=40, tag="T0", pos=(20,40))
     dpg.add_text("T inicial (K)", pos=(20,20))
     Tm = dpg.add_input_text(default_value=f"{100}", width=40, tag="TF", pos=(150,40))
@@ -312,17 +272,23 @@ with dpg.window(label="Medición", width=w+30, height=700, pos=(w,0)):
     pot_actual_display = dpg.add_text("0.00 %", pos=(w/2+34,640))
     dpg.add_button(label="Comenzar", callback=print('lesgoo'), pos=(140,670))
 
-with dpg.window(label='I bias', pos=(600,400)):
+with dpg.window(label='I bias', pos=(w+370,0)):
     with dpg.plot(label="I vs N Plot", height=250, width=250):
             dpg.add_plot_axis(dpg.mvXAxis, label="N", tag="NI_axis")
             dpg.add_plot_axis(dpg.mvYAxis, label="I", tag="I_axis")
             dpg.add_line_series([], [], label="Series 1", parent="I_axis", tag="c_plot")
 
-with dpg.window(label='V bias', pos=(850,0)):
+with dpg.window(label='V bias', pos=(w+370+250+15,0)):
     with dpg.plot(label="V vs N", height=250, width=250):
             dpg.add_plot_axis(dpg.mvXAxis, label="N", tag="NV_axis")
             dpg.add_plot_axis(dpg.mvYAxis, label="V", tag="V_axis")
             dpg.add_line_series([], [], label="Series V", parent="V_axis", tag="v_plot")
+
+with dpg.window(label='R calc', pos=(w+370,280)):
+    with dpg.plot(label="R vs I", height=250, width=250):
+            dpg.add_plot_axis(dpg.mvXAxis, label="I", tag="IR_axis")
+            dpg.add_plot_axis(dpg.mvYAxis, label="R", tag="R_axis")
+            dpg.add_line_series([], [], label="Series R", parent="R_axis", tag="r_plot")
 
 
 dpg.setup_dearpygui()

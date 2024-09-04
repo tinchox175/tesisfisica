@@ -61,17 +61,13 @@ class KEITHLEY_224(object):
         MAN_20mA = 4
         MAN_1m01A = 5
 
-    def __init__(self, address, ilim, vlim):
+    def __init__(self, address):
         self._address = address
         self._rm = pyvisa.ResourceManager()
         self._inst = self._rm.open_resource(address)
         self._range = self.Ranges.AUTO
         self.time = 0.05
         self.operate = False
-        self.ilim = ilim
-        self.vlim = vlim
-        self._ilim = ilim
-        self._vlim = vlim
 
     def __del__(self):
         self.operate = False
@@ -99,13 +95,14 @@ class KEITHLEY_224(object):
 
     @voltage.setter
     def voltage(self, voltage):
-        if (abs(voltage) < 1) or (abs(voltage) > abs(float(self.vlim))):
-            self._voltage = float(self.vlim)
-            self._inst.write('V'+ _format_e(float(self.vlim))+'X')
-            print('Over V-Lim')
-        else:
+        if (voltage < 1):
             self._voltage = voltage
-            self._inst.write('V'+ _format_e(voltage)+'X')
+            self._inst.write('V'+ '1'+'X')
+        elif (voltage > 105):
+            self._voltage = voltage
+            self._inst.write('V'+ '105'+'X')
+        self._voltage = voltage
+        self._inst.write('V'+ _format_e(voltage)+'X')
 
     @property
     def current(self):
@@ -113,13 +110,14 @@ class KEITHLEY_224(object):
 
     @current.setter
     def current(self, current):
-        if (abs(current) > abs(float(self.ilim))):
-            self._current = current/abs(current)*float(self.ilim)
-            self._inst.write('I' + _format_e(current/abs(current)*float(self.ilim)) + 'X')
-            print('Over I-Lim')
-        else:
+        if (current < -0.101):
             self._current = current
-            self._inst.write('I' + _format_e(current) + 'X')
+            self._inst.write('I' + '-0.100' + 'X')
+        elif (current > 0.101):
+            self._current = current
+        self._inst.write('I' + '0.100' + 'X')
+        self._current = current
+        self._inst.write('I' + _format_e(current) + 'X')
 
     @property
     def time(self):
