@@ -29,8 +29,8 @@ with dpg.window(label="Tutorial"):
     def lector(sender, app_data, user_data):
         table_id = "tabla"  # The table id is passed as user_data
         rows = dpg.get_item_children(table_id, 1)  # Slot 1 for regular items (children)
-
         for row in rows:
+            print(rows[0])
             cells = dpg.get_item_children(row, 1)  # Each row's children are cells
             for cell in cells:
                 # Access the value of the cell, assuming they are text items

@@ -60,6 +60,9 @@ def N_stat_msr(sender, app_data, user_data):
     enes = []
     meas_v = []
     for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
+        i_bias = dpg.get_value("i_bias")
+        vlim = dpg.get_value("vlim")
+        instrument_c.voltage = float(vlim)
         send_c = instrument_c.current = float(i_bias)
         instrument_c.operate = True
         time.sleep(0.3)
@@ -80,6 +83,9 @@ def N_stat_msr(sender, app_data, user_data):
         dpg.fit_axis_data('IR_axis')
         dpg.fit_axis_data('R_axis')
     for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
+        i_bias = dpg.get_value("i_bias")
+        vlim = dpg.get_value("vlim")
+        instrument_c.voltage = float(vlim)
         send_c = instrument_c.current = -float(i_bias)
         instrument_c.operate = True
         time.sleep(0.3)
@@ -173,8 +179,8 @@ def temperatura(row):
     """""
     Pseudocódigo:
     T, rate, estable = row
-    controller.setpoint = T[i]
-    controller.rate = rate[i]
+    controller.setpoint = T
+    controller.rate = rate
     tiempo_total = 0
     if estable[i] == 1:
         tiempo_est = 0
@@ -230,25 +236,49 @@ def medir(sender, app_data, user_data):
     add_row(data, f'medicion_{lista_setpoints[i]}_{muestra}') ???
     """""
     return
-def medicion_T_full(sender, app_data, user_data):
-    """""
-    Pseudocódigo:
-    create_window('info')
-    create_file(f"control_temperatura_{muestra}")
-    for i in rows:
-        create_file(f"medicion_{lista_setpoints[i]}_{muestra}") ???
-        temperatura(i)
-        medir()
-    """""
-    return
 
+def medicion_T_full(sender, app_data, user_data):
+    try:
+        dpg.remove_alias("tl")
+        dpg.remove_alias("sl")
+        dpg.remove_alias("rl")
+        dpg.remove_alias("pl")
+    except SystemError:
+        pass
+    with dpg.window(label="Control en vivo", width=w, height=370, pos=(0,250)):
+        dpg.add_text("T actual (K)", pos=(20,20))
+        t_actual_display = dpg.add_text("0.00 K", tag="tl", pos=(20,40))
+        dpg.add_text("T setpoint (K)", pos=(20,60))
+        setp_actual_display = dpg.add_text("0.00 K", tag="sl", pos=(20,80))
+        dpg.add_text("Rate (K/min)", pos=(150,20))
+        rate_actual_display = dpg.add_text("0.00", tag="rl", pos=(150,40))
+        dpg.add_text("Potencia", pos=(150,60))
+        pot_actual_display = dpg.add_text("0.00 %", tag="pl", pos=(150,80))
+    table_id = "Tabla"  
+    rows = dpg.get_item_children(table_id, 1)
+    for row in rows:
+        cells = dpg.get_item_children(row, 1)
+        for i in [0,1,2,3,4,5]:
+            punto_med = []  
+            for cell in cells:
+                punto_med.append(dpg.get_value(cell))
+                print(punto_med)
+                if len(punto_med) == 3:
+                    dpg.set_value("sl", punto_med[0])
+                    print(punto_med)
+                    #temperatura(punto_med)
+            time.sleep(1)
+            if punto_med[2] == '0.0' or punto_med[2] == '0':
+                break
+            
+            
 with dpg.window(label="Medición", width=370, height=650, pos=(w,0)):
     T0m = dpg.add_input_text(default_value=f"{295}", width=40, tag="T0", pos=(20,40))
     dpg.add_text("T inicial (K)", pos=(20,20))
     Tm = dpg.add_input_text(default_value=f"{100}", width=40, tag="TF", pos=(150,40))
     dpg.add_text("T final (K)", pos=(150,20))
     sepm = dpg.add_input_text(default_value=f"{20}", width=40,tag="sep", pos=(270,40))
-    dpg.add_text("Ctd. puntos", pos=(270,20))
+    dpg.add_text("ΔT (K)", pos=(270,20))
     ratem = dpg.add_input_text(default_value=f"{2}", width=40,tag="rate", pos=(20,80))
     dpg.add_text("Rate (K/min)", pos=(20,60))
     estm = dpg.add_input_text(default_value=f"{1}", width=40,tag="est", pos=(150,80))
@@ -262,15 +292,7 @@ with dpg.window(label="Medición", width=370, height=650, pos=(w,0)):
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
     dpg.add_button(label="Limpiar", callback=reset_table, pos=(20,560))
-    dpg.add_text("T actual (K)", tag="T_actual_live", pos=(34,580))
-    t_actual_display = dpg.add_text("0.00 K", pos=(34,600))
-    dpg.add_text("T setpoint (K)", tag="T_setpoint_live", pos=(w/2+34,580))
-    setp_actual_display = dpg.add_text("0.00 K", pos=(w/2+34,600))
-    dpg.add_text("Rate (K/min)", tag="rate_live", pos=(34,620))
-    rate_actual_display = dpg.add_text("0.00", pos=(34,640))
-    dpg.add_text("Potencia", tag="Pwr_live", pos=(w/2+34,620))
-    pot_actual_display = dpg.add_text("0.00 %", pos=(w/2+34,640))
-    dpg.add_button(label="Comenzar", callback=print('lesgoo'), pos=(140,670))
+    dpg.add_button(label="Comenzar", callback=medicion_T_full, pos=(270,560))
 
 with dpg.window(label='I bias', pos=(w+370,0)):
     with dpg.plot(label="I vs N Plot", height=250, width=250):
