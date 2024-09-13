@@ -13,6 +13,7 @@ import pymeasure.instruments.agilent as agi # type: ignore
 import numpy as np # type: ignore
 import time
 from ls340 import *
+import csv
 w = 340
 
 
@@ -31,6 +32,18 @@ with dpg.value_registry():
     #    dpg.add_string_value(default_value="30", tag="I_m")
     #    dpg.add_string_value(default_value="0", tag="D_m")
     #    dpg.add_string_value(default_value="0", tag="HR")
+
+def add_row(values, ctrl=0):
+    directory = dpg.get_value("selected_file_text")
+    file_name = dpg.get_value("Muestra")
+    if ctrl == 0:
+        file_path = os.path.join(directory, file_name)
+    else:
+        file_name = 'Control temperatura' + file_name
+        file_path = os.path.join(directory, file_name)
+    with open(file_path, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(values)
 
 def file_selected_callback(sender, app_data):
     selected_file = app_data['file_path_name']
@@ -105,7 +118,10 @@ def N_stat_msr(sender, app_data, user_data):
         dpg.set_value("r_plot", [np.array(sent_c), np.array(meas_v)/np.array(sent_c)])
         dpg.fit_axis_data('IR_axis')
         dpg.fit_axis_data('R_axis')
-            
+    v_mean = np.mean(meas_v)
+    v_std = np.std(meas_v)
+    return [v_mean, v_std, i_bias]
+
 with dpg.window(label="Keithley 224", width=w, height=120, pos=(0,130)):
     dpg.add_text("V-Limit", pos=(20,20))
     V_Limit = dpg.add_input_text(label="V", default_value=f"{1}", tag="vlim", width=40, pos=(20,40))
@@ -122,7 +138,8 @@ def update_HR(sender, app_data, user_data):
     controller.write(f'RANGE 1, {hr_new}')
     controller.close()
     dpg.set_value(heater_display_text, f"{hr_new}")
-    np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
+    #np.savetxt('configls.txt
+    #           ', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
 
 def update_PID(sender, app_data, user_data):
     controller = LakeShore340(gpib_address=12)
@@ -175,66 +192,91 @@ def reset_table(sender, app_data, user_data):
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
 
-def temperatura(row):
-    """""
-    Pseudocódigo:
+def medir_tabla_T(row):
     T, rate, estable = row
-    controller.setpoint = T
-    controller.rate = rate
-    tiempo_total = 0
-    if estable[i] == 1:
-        tiempo_est = 0
-        while abs(T_real-setpoint) > setpoint*0.01:
-            time.sleep(1)
-            data_ls = controller.msr()
-            dpg.set_value("T_actual", data_ls[0])
-            dpg.set_value("T_setpoint", data_ls[1])
-            dpg.set_value("rate", data_ls[2])
-            dpg.set_value("Pwr", data_ls[3])
-            add_row(data_ls, f'control_temperatura_{muestra}')
-            tiempo_est +=1
-            tiempo_total +=1
-            dpg.set_value("Tiempo ciclo", tiempo_est)
-        tiempo_est = 0
-        while abs(T_real-setpoint) < setpoint*0.01:
-            time.sleep(1)
-            data_ls = controller.msr()
-            dpg.set_value("T_actual", data_ls[0])
-            dpg.set_value("T_setpoint", data_ls[1])
-            dpg.set_value("rate", data_ls[2])
-            dpg.set_value("Pwr", data_ls[3])
-            add_row(data_ls, f'control_temperatura_{muestra}')
-            tiempo_est +=1
-            tiempo_total +=1
-            if tiempo_est < int(dpg.get_value("T_est)):
-                pass
-            elif tiempo_est > int(dpg.get_value("T_est):
-                break
-        temperatura(row)
-    elif estable[i] == 0:
-        tiempo_est = 0
-        while abs(T_real-setpoint) > setpoint*0.01:
-            time.sleep(1)
-            data_ls = controller.msr()
-            dpg.set_value("T_actual", data_ls[0])
-            dpg.set_value("T_setpoint", data_ls[1])
-            dpg.set_value("rate", data_ls[2])
-            dpg.set_value("Pwr", data_ls[3])
-            add_row(data_ls, f'control_temperatura_{muestra}')
-            tiempo_est +=1
-            tiempo_total +=1
-            dpg.set_value("Tiempo ciclo", tiempo_est)
-    return
-    """""
-    return
-
-def medir(sender, app_data, user_data):
-    """""
-    Pseudocódigo:
-    data = 4_terminales()
-    plots(data)
-    add_row(data, f'medicion_{lista_setpoints[i]}_{muestra}') ???
-    """""
+    T = float(T)
+    rate = float(rate)
+    estable = float(estable)
+    controller = LakeShore340(gpib_address=12)
+    setpoint = controller.get_setpoint()
+    camino = np.arange(setpoint, T, rate/30)
+    tiempo_act = 0
+    for temp_c in camino:
+        if temp_c == camino[-1]:
+            controller.set_setpoint(float(temp_c))
+            time.sleep(2)
+            pass 
+        if estable == 1 or estable == 1.00:
+            tiempo_est = 0
+            T_real = controller.read_temperature(1)
+            while abs(T_real-setpoint) > setpoint*0.01:
+                dpg.set_value("tal", "Yendo al setpoint")
+                T_real = controller.read_temperature(1)
+                data_ls = [T_real, controller.get_setpoint(1), rate, controller.query('HTR?')]
+                dpg.set_value("T_actual", data_ls[0])
+                dpg.set_value("T_setpoint", data_ls[1])
+                dpg.set_value("rate", data_ls[2])
+                dpg.set_value("Pwr", data_ls[3])
+                N = dpg.get_value("N_stat")
+                dpg.set_value("N_stat", 2)
+                data_r = [N_stat_msr]
+                dpg.set_value("N_stat", N)
+                dpg.set_value("r1l", data_r[0]/data_r[1])
+                add_row([dpg.get_value("ttl"), data_ls[0], data_ls[1], data_ls[2], data_ls[3], data_r[0], data_r[1], data_r[0]/data_r[1]], 1)
+                tiempo_est +=1
+                tiempo_act +=1
+                dpg.set_value("ttl", tiempo_act)
+                dpg.set_value("ttal", tiempo_est)
+                if dpg.get_value(estable == '0' or estable == '0.00'):
+                    break
+                time.sleep(2)
+            tiempo_est = 0
+            while abs(T_real-setpoint) < setpoint*0.01 or dpg.get_value(estable == '0' or estable == '0.00'):
+                T_real = controller.read_temperature(1)
+                dpg.set_value("tal", "Estabilizando")
+                data_ls = [T_real, controller.get_setpoint(1), rate, controller.query('HTR?')]
+                dpg.set_value("T_actual", data_ls[0])
+                dpg.set_value("T_setpoint", data_ls[1])
+                dpg.set_value("rate", data_ls[2])
+                dpg.set_value("Pwr", data_ls[3])
+                N = dpg.get_value("N_stat")
+                dpg.set_value("N_stat", 2)
+                data_r = [N_stat_msr]
+                dpg.set_value("N_stat", N)
+                dpg.set_value("r1l", data_r[0]/data_r[1])
+                add_row([dpg.get_value("ttl"), data_ls[0], data_ls[1], data_ls[2], data_ls[3], data_r[0], data_r[1], data_r[0]/data_r[1]], 1)
+                tiempo_est +=1
+                tiempo_act +=1
+                dpg.set_value("ttl", tiempo_act)
+                dpg.set_value("ttal", tiempo_est)
+                if abs(T_real-setpoint) > setpoint*0.01:
+                    tiempo_est = 0
+                if tiempo_est < int(dpg.get_value("T_est")):
+                    pass
+                elif tiempo_est >= int(dpg.get_value("T_est")):
+                    break
+                time.sleep(2)
+        elif estable == 0:
+            tiempo_est = 0
+            T_real = controller.read_temperature(1)
+            while abs(T_real-setpoint) > setpoint*0.01:
+                T_real = controller.read_temperature(1)
+                dpg.set_value("tal", "Yendo al setpoint")
+                data_ls = [T_real, controller.get_setpoint(1), rate, controller.query('HTR?')]
+                dpg.set_value("T_actual", data_ls[0])
+                dpg.set_value("T_setpoint", data_ls[1])
+                dpg.set_value("rate", data_ls[2])
+                dpg.set_value("Pwr", data_ls[3])
+                N = dpg.get_value("N_stat")
+                dpg.set_value("N_stat", 2)
+                data_r = [N_stat_msr]
+                dpg.set_value("N_stat", N)
+                dpg.set_value("r1l", data_r[0]/data_r[1])
+                add_row([dpg.get_value("ttl"), data_ls[0], data_ls[1], data_ls[2], data_ls[3], data_r[0], data_r[1], data_r[0]/data_r[1]], 1)
+                tiempo_est +=1
+                tiempo_act +=1
+                dpg.set_value("ttl", tiempo_act)
+                dpg.set_value("ttal", tiempo_est)
     return
 
 def medicion_T_full(sender, app_data, user_data):
@@ -243,6 +285,8 @@ def medicion_T_full(sender, app_data, user_data):
         dpg.remove_alias("sl")
         dpg.remove_alias("rl")
         dpg.remove_alias("pl")
+        dpg.remove_alias("r1l")
+        dpg.remove_alias("r2l")
     except SystemError:
         pass
     with dpg.window(label="Control en vivo", width=w, height=370, pos=(0,250)):
@@ -254,6 +298,16 @@ def medicion_T_full(sender, app_data, user_data):
         rate_actual_display = dpg.add_text("0.00", tag="rl", pos=(150,40))
         dpg.add_text("Potencia", pos=(150,60))
         pot_actual_display = dpg.add_text("0.00 %", tag="pl", pos=(150,80))
+        dpg.add_text("R muestra 1", pos=(20,100))
+        pot_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r1l", pos=(20,120))
+        dpg.add_text("R muestra 2", pos=(150,100))
+        pot_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r2l", pos=(150,120))
+        dpg.add_text("Tiempo total (s)", pos=(20,140))
+        pot_actual_display = dpg.add_text("00:00:00", tag="ttl", pos=(20,160))
+        dpg.add_text("Tiempo tarea (s)", pos=(150,140))
+        pot_actual_display = dpg.add_text("00:00:00", tag="ttal", pos=(150,160))
+        dpg.add_text("Tarea actual", pos=(20,180))
+        pot_actual_display = dpg.add_text("AFK", tag="tal", pos=(20,200))
     table_id = "Tabla"  
     rows = dpg.get_item_children(table_id, 1)
     for row in rows:
@@ -265,8 +319,7 @@ def medicion_T_full(sender, app_data, user_data):
                 print(punto_med)
                 if len(punto_med) == 3:
                     dpg.set_value("sl", punto_med[0])
-                    print(punto_med)
-                    #temperatura(punto_med)
+                    medir(punto_med)
             time.sleep(1)
             if punto_med[2] == '0.0' or punto_med[2] == '0':
                 break
