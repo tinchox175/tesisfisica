@@ -138,8 +138,7 @@ def update_HR(sender, app_data, user_data):
     controller.write(f'RANGE 1, {hr_new}')
     controller.close()
     dpg.set_value(heater_display_text, f"{hr_new}")
-    #np.savetxt('configls.txt
-    #           ', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
+    np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
 
 def update_PID(sender, app_data, user_data):
     controller = LakeShore340(gpib_address=12)
