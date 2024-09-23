@@ -22,16 +22,16 @@ dpg.create_viewport(title='Custom Title', width=800, height=500)
 
 config_ls = np.genfromtxt('configls.txt', delimiter=',')
 with dpg.value_registry():
-    #try:
+    try:
         dpg.add_string_value(default_value=config_ls[0], tag="P_m")
         dpg.add_string_value(default_value=config_ls[1], tag="I_m")
         dpg.add_string_value(default_value=config_ls[2], tag="D_m")
         dpg.add_string_value(default_value=config_ls[3], tag="HR")
-    #except IndexError:
-    #    dpg.add_string_value(default_value="200", tag="P_m")
-    #    dpg.add_string_value(default_value="30", tag="I_m")
-    #    dpg.add_string_value(default_value="0", tag="D_m")
-    #    dpg.add_string_value(default_value="0", tag="HR")
+    except IndexError:
+        dpg.add_string_value(default_value="200", tag="P_m")
+        dpg.add_string_value(default_value="30", tag="I_m")
+        dpg.add_string_value(default_value="0", tag="D_m")
+        dpg.add_string_value(default_value="0", tag="HR")
 
 def add_row(values, ctrl=0):
     directory = dpg.get_value("selected_file_text")
@@ -146,7 +146,14 @@ def update_PID(sender, app_data, user_data):
     controller.close()
     np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
 
-with dpg.window(label="LakeShore 340", width=w, height=120, pos=(0,250)):
+def testanalog(sender, app_data, user_data):
+    percana = dpg.get_value("percana")
+    controller = LakeShore340(gpib_address=12)
+    controller.analog_out(percana)
+    print(controller.analog_read())
+    return
+
+with dpg.window(label="LakeShore 340", width=w, height=140, pos=(0,250)):
     P = dpg.add_input_text(default_value=f"{dpg.get_value("P_m")}", width=40, tag="P_in", pos=(20,40), callback=update_PID)
     dpg.add_text("P", pos=(20,20))
     I = dpg.add_input_text(default_value=f"{dpg.get_value("I_m")}", width=40, tag="I_in", pos=(140,40), callback=update_PID)
@@ -164,9 +171,11 @@ with dpg.window(label="LakeShore 340", width=w, height=120, pos=(0,250)):
             dpg.add_menu_item(label="4", callback=update_HR, user_data = "4")
             dpg.add_menu_item(label="MAX", callback=update_HR, user_data = "5")
     heater_display_text = dpg.add_text(dpg.get_value("HR"), pos=(240, 79))
+    perc_ana = dpg.add_input_text(label="% de 10V", default_value=f"{0}", tag="percana", width=60, pos=(20,110))
+    dpg.add_button(label="Test analog", callback=testanalog, pos=(150, 110))
 
 
-def crea_tablas(sender, app_data, user_data):
+def crea_tablas_T(sender, app_data, user_data):
     T0 = float(dpg.get_value("T0"))
     TF = float(dpg.get_value("TF"))
     sep = float(dpg.get_value("sep"))
@@ -182,7 +191,7 @@ def crea_tablas(sender, app_data, user_data):
                 for j in range(0, 3):
                     dpg.add_input_text(default_value=f"{data_row[j][i]}")
 
-def reset_table(sender, app_data, user_data):
+def reset_table_T(sender, app_data, user_data):
     dpg.delete_item("Tabla", children_only= False)
     with dpg.table(header_row=True, tag="Tabla", borders_innerH=True, borders_outerH=True,
                         borders_innerV=True, borders_outerV=True, height = 430, no_host_extendY = True,
@@ -191,94 +200,27 @@ def reset_table(sender, app_data, user_data):
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
 
-def medir_tabla_T(row):
-    T, rate, estable = row
-    T = float(T)
-    rate = float(rate)
-    estable = float(estable)
-    controller = LakeShore340(gpib_address=12)
-    setpoint = controller.get_setpoint()
-    camino = np.arange(setpoint, T, rate/30)
-    tiempo_act = 0
-    for temp_c in camino:
-        if temp_c == camino[-1]:
-            controller.set_setpoint(float(temp_c))
-            time.sleep(2)
-            pass 
-        if estable == 1 or estable == 1.00:
-            tiempo_est = 0
-            T_real = controller.read_temperature(1)
-            while abs(T_real-setpoint) > setpoint*0.01:
-                dpg.set_value("tal", "Yendo al setpoint")
-                T_real = controller.read_temperature(1)
-                data_ls = [T_real, controller.get_setpoint(1), rate, controller.query('HTR?')]
-                dpg.set_value("T_actual", data_ls[0])
-                dpg.set_value("T_setpoint", data_ls[1])
-                dpg.set_value("rate", data_ls[2])
-                dpg.set_value("Pwr", data_ls[3])
-                N = dpg.get_value("N_stat")
-                dpg.set_value("N_stat", 2)
-                data_r = [N_stat_msr]
-                dpg.set_value("N_stat", N)
-                dpg.set_value("r1l", data_r[0]/data_r[1])
-                add_row([dpg.get_value("ttl"), data_ls[0], data_ls[1], data_ls[2], data_ls[3], data_r[0], data_r[1], data_r[0]/data_r[1]], 1)
-                tiempo_est +=1
-                tiempo_act +=1
-                dpg.set_value("ttl", tiempo_act)
-                dpg.set_value("ttal", tiempo_est)
-                if dpg.get_value(estable == '0' or estable == '0.00'):
-                    break
-                time.sleep(2)
-            tiempo_est = 0
-            while abs(T_real-setpoint) < setpoint*0.01 or dpg.get_value(estable == '0' or estable == '0.00'):
-                T_real = controller.read_temperature(1)
-                dpg.set_value("tal", "Estabilizando")
-                data_ls = [T_real, controller.get_setpoint(1), rate, controller.query('HTR?')]
-                dpg.set_value("T_actual", data_ls[0])
-                dpg.set_value("T_setpoint", data_ls[1])
-                dpg.set_value("rate", data_ls[2])
-                dpg.set_value("Pwr", data_ls[3])
-                N = dpg.get_value("N_stat")
-                dpg.set_value("N_stat", 2)
-                data_r = [N_stat_msr]
-                dpg.set_value("N_stat", N)
-                dpg.set_value("r1l", data_r[0]/data_r[1])
-                add_row([dpg.get_value("ttl"), data_ls[0], data_ls[1], data_ls[2], data_ls[3], data_r[0], data_r[1], data_r[0]/data_r[1]], 1)
-                tiempo_est +=1
-                tiempo_act +=1
-                dpg.set_value("ttl", tiempo_act)
-                dpg.set_value("ttal", tiempo_est)
-                if abs(T_real-setpoint) > setpoint*0.01:
-                    tiempo_est = 0
-                if tiempo_est < int(dpg.get_value("T_est")):
-                    pass
-                elif tiempo_est >= int(dpg.get_value("T_est")):
-                    break
-                time.sleep(2)
-        elif estable == 0:
-            tiempo_est = 0
-            T_real = controller.read_temperature(1)
-            while abs(T_real-setpoint) > setpoint*0.01:
-                T_real = controller.read_temperature(1)
-                dpg.set_value("tal", "Yendo al setpoint")
-                data_ls = [T_real, controller.get_setpoint(1), rate, controller.query('HTR?')]
-                dpg.set_value("T_actual", data_ls[0])
-                dpg.set_value("T_setpoint", data_ls[1])
-                dpg.set_value("rate", data_ls[2])
-                dpg.set_value("Pwr", data_ls[3])
-                N = dpg.get_value("N_stat")
-                dpg.set_value("N_stat", 2)
-                data_r = [N_stat_msr]
-                dpg.set_value("N_stat", N)
-                dpg.set_value("r1l", data_r[0]/data_r[1])
-                add_row([dpg.get_value("ttl"), data_ls[0], data_ls[1], data_ls[2], data_ls[3], data_r[0], data_r[1], data_r[0]/data_r[1]], 1)
-                tiempo_est +=1
-                tiempo_act +=1
-                dpg.set_value("ttl", tiempo_act)
-                dpg.set_value("ttal", tiempo_est)
-    return
+def crea_tablas_H(sender, app_data, user_data):
+    H0 = float(dpg.get_value("H0"))
+    HF = float(dpg.get_value("HF"))
+    sepH = float(dpg.get_value("sepH"))
+    N = int(np.abs(H0-HF)/sepH) + 1
+    hes = np.round(np.linspace(H0, HF, N),1)
+    data_row = [hes, np.full_like(hes, 1)]
+    for i in range(0, N):
+            with dpg.table_row(parent="Tabla_H"):
+                for j in range(0, 2):
+                    dpg.add_input_text(default_value=f"{data_row[j][i]}")
 
-def medicion_T_full(sender, app_data, user_data):
+def reset_table_H(sender, app_data, user_data):
+    dpg.delete_item("Tabla_H", children_only= False)
+    with dpg.table(header_row=True, tag="Tabla_H", borders_innerH=True, borders_outerH=True,
+                        borders_innerV=True, borders_outerV=True, height = 100, no_host_extendY = True,
+                        scrollY = True, parent="g_col_H"):
+            dpg.add_table_column(label="Campo (H)")
+            dpg.add_table_column(label="Medir?")
+
+def medicion_H(sender, app_data, user_data):
     try:
         dpg.remove_alias("tl")
         dpg.remove_alias("sl")
@@ -288,43 +230,35 @@ def medicion_T_full(sender, app_data, user_data):
         dpg.remove_alias("r2l")
     except SystemError:
         pass
-    with dpg.window(label="Control en vivo", width=w, height=370, pos=(0,250)):
-        dpg.add_text("T actual (K)", pos=(20,20))
-        t_actual_display = dpg.add_text("0.00 K", tag="tl", pos=(20,40))
-        dpg.add_text("T setpoint (K)", pos=(20,60))
-        setp_actual_display = dpg.add_text("0.00 K", tag="sl", pos=(20,80))
-        dpg.add_text("Rate (K/min)", pos=(150,20))
-        rate_actual_display = dpg.add_text("0.00", tag="rl", pos=(150,40))
-        dpg.add_text("Potencia", pos=(150,60))
-        pot_actual_display = dpg.add_text("0.00 %", tag="pl", pos=(150,80))
-        dpg.add_text("R muestra 1", pos=(20,100))
-        pot_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r1l", pos=(20,120))
-        dpg.add_text("R muestra 2", pos=(150,100))
-        pot_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r2l", pos=(150,120))
-        dpg.add_text("Tiempo total (s)", pos=(20,140))
-        pot_actual_display = dpg.add_text("00:00:00", tag="ttl", pos=(20,160))
-        dpg.add_text("Tiempo tarea (s)", pos=(150,140))
-        pot_actual_display = dpg.add_text("00:00:00", tag="ttal", pos=(150,160))
-        dpg.add_text("Tarea actual", pos=(20,180))
-        pot_actual_display = dpg.add_text("AFK", tag="tal", pos=(20,200))
-    table_id = "Tabla"  
-    rows = dpg.get_item_children(table_id, 1)
-    for row in rows:
-        cells = dpg.get_item_children(row, 1)
-        for i in [0,1,2,3,4,5]:
-            punto_med = []  
-            for cell in cells:
-                punto_med.append(dpg.get_value(cell))
-                print(punto_med)
-                if len(punto_med) == 3:
-                    dpg.set_value("sl", punto_med[0])
-                    medir(punto_med)
-            time.sleep(1)
-            if punto_med[2] == '0.0' or punto_med[2] == '0':
-                break
-            
-            
-with dpg.window(label="Medición", width=370, height=650, pos=(w,0)):
+    with dpg.window(label="Control en vivo", width=w, height=260, pos=(0,390)):
+        dpg.add_text("T actual (K)", pos=(10,20))
+        t_actual_display = dpg.add_text("0.00 K", tag="tl", pos=(10,40))
+        dpg.add_text("T setpoint (K)", pos=(115,20))
+        setp_actual_display = dpg.add_text("0.00 K", tag="sl", pos=(115,40))
+        dpg.add_text("Potencia (%)", pos=(235,20))
+        pot_actual_display = dpg.add_text("0.00 %", tag="pl", pos=(235,40))
+        dpg.add_text("I bobina (A)", pos=(10,60))
+        ib_actual_display = dpg.add_text("0 A", tag="ib", pos=(10,80))
+        dpg.add_text("V bobina (V)", pos=(115,60))
+        vb_actual_display = dpg.add_text("0 V", tag="vb", pos=(115,80))
+        dpg.add_text("I fuente (A)", pos=(235,60))
+        if_actual_display = dpg.add_text("0 A", tag="if", pos=(235,80))
+        dpg.add_text("Switch norm?", pos=(10,100))
+        sw_actual_display = dpg.add_text("No", tag="swl", pos=(10,120))
+        dpg.add_text("Campo est. (T)", pos=(115,100))
+        hest_actual_display = dpg.add_text("0 T", tag="hel", pos=(115,120))
+        dpg.add_text("R muestra 1", pos=(10,140))
+        r1_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r1l", pos=(10,160))
+        dpg.add_text("R muestra 2", pos=(115,140))
+        r2_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r2l", pos=(115,160))
+        dpg.add_text("Tiempo total", pos=(10,180))
+        ttal_actual_display = dpg.add_text("00:00:00", tag="ttl", pos=(10,200))
+        dpg.add_text("Tiempo tarea", pos=(115,180))
+        tact_actual_display = dpg.add_text("00:00:00", tag="ttal", pos=(115,200))
+        dpg.add_text("Tarea actual", pos=(10,220))
+        tar_actual_display = dpg.add_text("AFK", tag="tal", pos=(10,240))
+                       
+with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
     T0m = dpg.add_input_text(default_value=f"{295}", width=40, tag="T0", pos=(20,40))
     dpg.add_text("T inicial (K)", pos=(20,20))
     Tm = dpg.add_input_text(default_value=f"{100}", width=40, tag="TF", pos=(150,40))
@@ -335,16 +269,29 @@ with dpg.window(label="Medición", width=370, height=650, pos=(w,0)):
     dpg.add_text("Rate (K/min)", pos=(20,60))
     estm = dpg.add_input_text(default_value=f"{1}", width=40,tag="est", pos=(150,80))
     dpg.add_text("Estable? (1/0)", pos=(150,60))
-    dpg.add_button(label="Agregar", callback=crea_tablas, pos=(270,80))
+    dpg.add_button(label="Agregar", callback=crea_tablas_T, pos=(270,80))
     with dpg.group(tag="g_col", pos=(10,120)):
         with dpg.table(header_row=True, tag="Tabla", borders_innerH=True, borders_outerH=True,
-                        borders_innerV=True, borders_outerV=True, height = 430, no_host_extendY = True,
+                        borders_innerV=True, borders_outerV=True, height = 200, no_host_extendY = True,
                         scrollY = True):
             dpg.add_table_column(label="T (K)")
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
-    dpg.add_button(label="Limpiar", callback=reset_table, pos=(20,560))
-    dpg.add_button(label="Comenzar", callback=medicion_T_full, pos=(270,560))
+    H0m = dpg.add_input_text(default_value=f"{0}", width=40, tag="H0", pos=(20,360))
+    dpg.add_text("H inicial (T)", pos=(20,340))
+    Hm = dpg.add_input_text(default_value=f"{0.1}", width=40, tag="HF", pos=(150,360))
+    dpg.add_text("H final (T)", pos=(150,340))
+    Hsepm = dpg.add_input_text(default_value=f"{0.1}", width=40,tag="sepH", pos=(270,360))
+    dpg.add_text("ΔH (T)", pos=(270,340))
+    dpg.add_button(label="Agregar", callback=crea_tablas_H, pos=(270,400))
+    with dpg.group(tag="g_col_H", pos=(10,440)):
+        with dpg.table(header_row=True, tag="Tabla_H", borders_innerH=True, borders_outerH=True,
+                        borders_innerV=True, borders_outerV=True, height = 140, no_host_extendY = True,
+                        scrollY = True):
+            dpg.add_table_column(label="H (T)")
+            dpg.add_table_column(label="Medir?")
+    dpg.add_button(label="Limpiar", callback=reset_table_H, pos=(20,620))
+    dpg.add_button(label="Comenzar", callback=medicion_H, pos=(270,620))
 
 with dpg.window(label='I bias', pos=(w+370,0)):
     with dpg.plot(label="I vs N Plot", height=250, width=250):

@@ -42,7 +42,15 @@ class LakeShore340:
         """Set PID parameters."""
         command = f'PID {p}, {i}, {d}'
         return self.query(command)
-
+    
+    def analog_out(self, v):
+        command = f'ANALOG 1, 0, 2,,,,, {v}'
+        return self.write(command)
+    
+    def analog_read(self):
+        command = f'AOUT? 1'
+        return self.query(command)
+    
     def close(self):
         """Close the connection to the instrument."""
         self.instrument.close()
