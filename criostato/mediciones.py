@@ -13,6 +13,7 @@ import pymeasure.instruments.agilent as agi # type: ignore
 import numpy as np # type: ignore
 import time
 from ls340 import *
+from ls625 import *
 import csv
 w = 340
 
@@ -27,6 +28,7 @@ with dpg.value_registry():
         dpg.add_string_value(default_value=config_ls[1], tag="I_m")
         dpg.add_string_value(default_value=config_ls[2], tag="D_m")
         dpg.add_string_value(default_value=config_ls[3], tag="HR")
+        dpg.add_string_value(default_value="0", tag="I_actual")
     except IndexError:
         dpg.add_string_value(default_value="200", tag="P_m")
         dpg.add_string_value(default_value="30", tag="I_m")
@@ -194,7 +196,7 @@ def crea_tablas_T(sender, app_data, user_data):
 def reset_table_T(sender, app_data, user_data):
     dpg.delete_item("Tabla", children_only= False)
     with dpg.table(header_row=True, tag="Tabla", borders_innerH=True, borders_outerH=True,
-                        borders_innerV=True, borders_outerV=True, height = 430, no_host_extendY = True,
+                        borders_innerV=True, borders_outerV=True, height = 200, no_host_extendY = True,
                         scrollY = True, parent="g_col"):
             dpg.add_table_column(label="T (K)")
             dpg.add_table_column(label="Rate (K/min)")
@@ -202,7 +204,7 @@ def reset_table_T(sender, app_data, user_data):
 
 def crea_tablas_H(sender, app_data, user_data):
     H0 = float(dpg.get_value("H0"))
-    HF = float(dpg.get_value("HF"))
+    HF = float(dpg.get_value("HF")) if (float(dpg.get_value("HF")) < 9) else 9
     sepH = float(dpg.get_value("sepH"))
     N = int(np.abs(H0-HF)/sepH) + 1
     hes = np.round(np.linspace(H0, HF, N),1)
@@ -215,7 +217,7 @@ def crea_tablas_H(sender, app_data, user_data):
 def reset_table_H(sender, app_data, user_data):
     dpg.delete_item("Tabla_H", children_only= False)
     with dpg.table(header_row=True, tag="Tabla_H", borders_innerH=True, borders_outerH=True,
-                        borders_innerV=True, borders_outerV=True, height = 100, no_host_extendY = True,
+                        borders_innerV=True, borders_outerV=True, height = 150, no_host_extendY = True,
                         scrollY = True, parent="g_col_H"):
             dpg.add_table_column(label="Campo (H)")
             dpg.add_table_column(label="Medir?")
@@ -237,27 +239,159 @@ def medicion_H(sender, app_data, user_data):
         setp_actual_display = dpg.add_text("0.00 K", tag="sl", pos=(115,40))
         dpg.add_text("Potencia (%)", pos=(235,20))
         pot_actual_display = dpg.add_text("0.00 %", tag="pl", pos=(235,40))
-        dpg.add_text("I bobina (A)", pos=(10,60))
-        ib_actual_display = dpg.add_text("0 A", tag="ib", pos=(10,80))
+        dpg.add_text("I fuente (A)", pos=(10,60))
+        ib_actual_display = dpg.add_text("0 A", tag="if", pos=(10,80))
         dpg.add_text("V bobina (V)", pos=(115,60))
-        vb_actual_display = dpg.add_text("0 V", tag="vb", pos=(115,80))
-        dpg.add_text("I fuente (A)", pos=(235,60))
         if_actual_display = dpg.add_text("0 A", tag="if", pos=(235,80))
-        dpg.add_text("Switch norm?", pos=(10,100))
-        sw_actual_display = dpg.add_text("No", tag="swl", pos=(10,120))
-        dpg.add_text("Campo est. (T)", pos=(115,100))
-        hest_actual_display = dpg.add_text("0 T", tag="hel", pos=(115,120))
-        dpg.add_text("R muestra 1", pos=(10,140))
-        r1_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r1l", pos=(10,160))
-        dpg.add_text("R muestra 2", pos=(115,140))
-        r2_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r2l", pos=(115,160))
-        dpg.add_text("Tiempo total", pos=(10,180))
-        ttal_actual_display = dpg.add_text("00:00:00", tag="ttl", pos=(10,200))
-        dpg.add_text("Tiempo tarea", pos=(115,180))
-        tact_actual_display = dpg.add_text("00:00:00", tag="ttal", pos=(115,200))
-        dpg.add_text("Tarea actual", pos=(10,220))
-        tar_actual_display = dpg.add_text("AFK", tag="tal", pos=(10,240))
-                       
+        dpg.add_text("Campo est. (T)", pos=(235,60))
+        hest_actual_display = dpg.add_text("0 T", tag="hel", pos=(235,80))
+        dpg.add_text("R muestra 1", pos=(10,100))
+        r1_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r1l", pos=(10,120))
+        dpg.add_text("R muestra 2", pos=(115,100))
+        r2_actual_display = dpg.add_text("0.00E+0 Ohm", tag="r2l", pos=(115,120))
+        dpg.add_text("Tiempo total", pos=(10,140))
+        ttal_actual_display = dpg.add_text("00:00:00", tag="ttl", pos=(10,160))
+        dpg.add_text("Tiempo tarea", pos=(115,140))
+        tact_actual_display = dpg.add_text("00:00:00", tag="ttal", pos=(115,160))
+        dpg.add_text("Tarea actual", pos=(10,200))
+        tar_actual_display = dpg.add_text("AFK", tag="tal", pos=(10,220))
+        medir_tabla_T_en_H()
+
+def update_vars(): #esta funcion lee los parametros puestos en la ventana y los actualiza en vivo con el multithread
+    controller = LakeShore340(gpib_address=12)
+    instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR")
+    instrument_c.voltage = float(dpg.get_value("vlim"))
+    controller.write(f'PID 1, {dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}')
+    controller.write(f'RANGE 1, {dpg.get_value("HR")}')
+    controller.close()
+    np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
+
+def lecturas(): #esta funcion lee los aparatos y guarda todo lo que lee en el registro final
+    controller = LakeShore340(gpib_address=12)
+    fuente = LakeShore625(11)
+    data_ls = [controller.read_temperature(1), controller.get_setpoint(1), controller.query('HTR?')]
+    dpg.set_value("tl", data_ls[0])
+    dpg.set_value("sl", data_ls[1])
+    dpg.set_value("pl", data_ls[2])
+    data_r = [N_stat_msr]
+    dpg.set_value("r1l", data_r[0]/data_r[1])
+    dpg.set_value("r2l", data_r[2]/data_r[3])
+    data_b = [fuente.get_current(), fuente.get_voltage_sense(), 1.1914*float(fuente.get_current())]
+    dpg.set_value("if", data_b[0])
+    dpg.set_value("vb", data_b[1])
+    dpg.set_value("hel", data_b[2])
+    add_row([time.strftime("%H %M %S", time.localtime()), data_ls[0], data_ls[1], data_ls[2], data_r[0], data_r[1], data_r[0]/data_r[1], data_r[2]/data_r[3], data_b[0], data_b[1], data_b[2], data_b[3]], 1)
+
+def ramp_T(T, rate):
+    t0 = time.time()
+    t_report = 0
+    controller = LakeShore340(gpib_address=12)
+    current_setpoint = controller.get_setpoint()
+    target_setpoint = T
+    rampa = np.arange(float(current_setpoint), float(target_setpoint), float(rate)/30)
+    rampa[-1] = target_setpoint
+    for i in rampa:
+        update_vars()
+        controller.set_setpoint(i)
+        lecturas()
+        time.sleep(2)
+        t_report = time.time()-t0
+        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t_report)))
+
+def ramp_H(I_actual, I):
+    t0 = time.time()
+    t = 0
+    dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
+    fuente = LakeShore625('GPIB0::11::INSTR')
+    fuente.limit(60, 3, 0.17) #algunos limites a nivel software
+    fuente.write('PSHS 1 55 10') #parametros del switch
+    controller = LakeShore340(gpib_address=12)
+    fuente.set_voltage(3) #por las dudas vuelvo a poner el limite de Cryo
+    fuente.set_ramp_rate(0.17) #le pongo la velocidad a la fuente
+    fuente.set_current(I_actual) #pongo la ultima corriente registrada en la bobina
+    while fuente.get_status_ramp() != 2.0 != 1: #espero a que haga su rampa
+        I_real = fuente.get_current()
+        update_vars()
+        lecturas()
+        if (I_real-I_actual) < 0.01:
+            break
+        time.sleep(1)
+        t = time.time()-t0
+        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
+    fuente.get_status_switch()
+    fuente.psh(1) #prendo el switch persistente
+    while fuente.get_status_switch() == 0.0:
+        t = time.time()-t0
+        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
+        time.sleep(1)
+    fuente.set_current(I)
+    while fuente.get_status_ramp() == 0.0:
+        update_vars()
+        lecturas()
+        time.sleep(1)
+        t = time.time()-t0
+        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
+    fuente.psh(0) #apago el switch una vez que llegue a la corriente necesaria
+    while fuente.get_status_switch() == 0.0:
+        t = time.time()-t0
+        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
+        time.sleep(1)
+    I_act = fuente.get_current_psh()
+    fuente.set_current(0)
+    while fuente.get_status_ramp() == 0.0:
+        t = time.time()-t0
+        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
+        time.sleep(1)
+    dpg.set_value("I_actual", I_act) #guardo la ultima corriente enviada para cuando vuelva a encender el switch
+
+def medir_tabla_T_en_H(algo_T, algo_H):
+    tiempo_start = time.time() #pongo tiempos iniciales y levanto las listas que se van a medir
+    tiempo_est = 0
+    tiempo_tot = 0
+    lista_T, rate, estable = algo_T
+    lista_H, estable = algo_H
+    controller = LakeShore340(gpib_address=12)
+    for setpoint in lista_T: #en cada temperatura corro el protocolo estabilizar y barrer campos
+        update_vars() #estos updates sirven por si se actualizan parametros del PID, heater o medición
+        ramp_T(setpoint, rate) #esto lleva la temperatura en rampa (ver ramp_T)
+        T_real = controller.read_temperature(1)
+        tiempo_est = time.time()
+        while abs(T_real-setpoint) > setpoint*0.01: #mientras la diferencia es mayor a un porcentaje del setpoint no hace nada
+            update_vars()
+            dpg.set_value("tal", "Yendo al setpoint")
+            lecturas() #esta funcion va a leer el Lakeshore, el nanovoltimetro y la fuente de alta corriente y va a guardar los datos
+            tiempo_est = time.time()-tiempo_start
+            tiempo_tot = time.time()-tiempo_start
+            dpg.set_value("ttl", tiempo_tot) #esto actualiza un tiempo para diagnostico, no representa lo guardado (tiempo real)
+            dpg.set_value("ttal", tiempo_est)
+            if dpg.get_value(estable == '0' or estable == '0.00'): #esto es por si se quiere saltear este punto
+                break
+            time.sleep(2)
+        while True: #una vez que se va abajo del threshold intenta estabilizar por x segundos
+            update_vars()
+            dpg.set_value("tal", "Estabilizando...")
+            lecturas()
+            tiempo_est = time.time()-tiempo_start
+            tiempo_tot = time.time()-tiempo_start
+            dpg.set_value("ttl", tiempo_tot)
+            dpg.set_value("ttal", tiempo_est)
+            T_real = controller.read_temperature(1) #acá abajo dice que si la diferencia es mayor a un porcentaje, empiece a contar otra vez
+            if abs(T_real-setpoint) > setpoint*0.01:#si es menor al porcentaje sigue contando, y si es menor y ya conto suficiente pare la
+                tiempo_est = 0                      #estabilización
+            if tiempo_est < float(dpg.get_value("T_est")):
+                pass
+            elif tiempo_est >= float(dpg.get_value("T_est")):
+                break
+            elif (estable == 0 or estable == 0.00): #idem arriba por si se quiere saltar
+                break
+        for setpoint in lista_H: #acá va a barrer campos para cada temperatura dada
+            update_vars()
+            tiempo_est = ramp_H(float.get_value('I_actual'), setpoint/1191.4)
+            for i in np.arange(1,int(dpg.get_value("ctd_msr"))): #hago muchas lecturas en cada campo, no se si es necesario
+                lecturas()
+    ramp_H(lista_H[-1], 0) #vuelvo el campo a 0 con el mismo protocolo
+    ramp_T(lista_T[-1], 295, 2) #vuelvo la temperatura a ambiente con el mismo protocolo
+
 with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
     T0m = dpg.add_input_text(default_value=f"{295}", width=40, tag="T0", pos=(20,40))
     dpg.add_text("T inicial (K)", pos=(20,20))
@@ -277,16 +411,19 @@ with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
             dpg.add_table_column(label="T (K)")
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
-    H0m = dpg.add_input_text(default_value=f"{0}", width=40, tag="H0", pos=(20,360))
-    dpg.add_text("H inicial (T)", pos=(20,340))
-    Hm = dpg.add_input_text(default_value=f"{0.1}", width=40, tag="HF", pos=(150,360))
-    dpg.add_text("H final (T)", pos=(150,340))
-    Hsepm = dpg.add_input_text(default_value=f"{0.1}", width=40,tag="sepH", pos=(270,360))
-    dpg.add_text("ΔH (T)", pos=(270,340))
-    dpg.add_button(label="Agregar", callback=crea_tablas_H, pos=(270,400))
+    dpg.add_button(label="Limpiar", callback=reset_table_T, pos=(20,330))
+    H0m = dpg.add_input_text(default_value=f"{0}", width=40, tag="H0", pos=(20,380))
+    dpg.add_text("H inicial (T)", pos=(20,360))
+    Hm = dpg.add_input_text(default_value=f"{0.1}", width=40, tag="HF", pos=(150,380))
+    dpg.add_text("H final (T)", pos=(150,360))
+    Hsepm = dpg.add_input_text(default_value=f"{0.1}", width=40,tag="sepH", pos=(270,380))
+    dpg.add_text("ΔH (T)", pos=(270,360))
+    N_mediciones = dpg.add_input_text(default_value=f'{5}', width = 40, tag="ctd_msr", pos=(20,430))
+    dpg.add_text("# mediciones(/2)", pos=(20,410))
+    dpg.add_button(label="Agregar", callback=crea_tablas_H, pos=(270,410))
     with dpg.group(tag="g_col_H", pos=(10,440)):
         with dpg.table(header_row=True, tag="Tabla_H", borders_innerH=True, borders_outerH=True,
-                        borders_innerV=True, borders_outerV=True, height = 140, no_host_extendY = True,
+                        borders_innerV=True, borders_outerV=True, height = 150, no_host_extendY = True,
                         scrollY = True):
             dpg.add_table_column(label="H (T)")
             dpg.add_table_column(label="Medir?")

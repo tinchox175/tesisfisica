@@ -329,7 +329,7 @@ class MyWindow(QMainWindow):
         if type(self.fileName) == str:
             print(self.fileName+'str')
         elif type(self.fileName) == list:
-            print(self.fileName+'list')
+            print(self.fileName, 'list')
     def graficar_g(self):
         print(self.fileName)
         if str(type(self.fileName)) == '<class \'str\'>':
@@ -412,7 +412,7 @@ class MyWindow(QMainWindow):
             mng_g.window.showMaximized()
             plt.scatter(vin1[l:u], np.abs(iin1[l:u]), label='Data')
             plt.plot(vin1[l:u], np.abs(sclc_p(vin1[l:u], *popt)), label=f'Ajuste SCLC', c='orange')
-            plt.title(f'Fit SCLC paralelo T={temp}')
+            plt.title(f'Fit SCLC paralelo T={temperatura}')
             plt.xlabel('V')
             plt.ylabel('|I| (mA)')
             plt.ylim(np.min(iin1[l:u]-np.abs(np.min(iin1[l:u]))/10),np.max(iin1+np.abs(np.max(iin1[l:u]))/10))
