@@ -71,58 +71,29 @@ def N_stat_msr(sender, app_data, user_data):
     instrument_v = agi.Agilent34410A("GPIB0::7::INSTR")
     instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR")
     instrument_c.voltage = float(vlim)
-    sent_c = []
-    enes = []
     meas_v = []
     for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
-        i_bias = dpg.get_value("i_bias")
-        vlim = dpg.get_value("vlim")
         instrument_c.voltage = float(vlim)
-        send_c = instrument_c.current = float(i_bias)
+        instrument_c.current = float(i_bias)
         instrument_c.operate = True
-        time.sleep(0.3)
+        time.sleep(0.1)
         med_v = instrument_v.voltage_dc
-        time.sleep(0.3)
+        time.sleep(0.1)
         instrument_c.operate = False
-        instrument_c.current = 0
-        enes.append(i)
         meas_v.append(med_v)
-        sent_c.append(send_c)
-        dpg.set_value("v_plot", [enes, meas_v])
-        dpg.fit_axis_data('NV_axis')
-        dpg.fit_axis_data('V_axis')
-        dpg.set_value("c_plot", [enes, sent_c])
-        dpg.fit_axis_data('NI_axis')
-        dpg.fit_axis_data('I_axis')
-        dpg.set_value("r_plot", [np.array(sent_c), np.array(meas_v)/np.array(sent_c)])
-        dpg.fit_axis_data('IR_axis')
-        dpg.fit_axis_data('R_axis')
     for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
-        i_bias = dpg.get_value("i_bias")
-        vlim = dpg.get_value("vlim")
         instrument_c.voltage = float(vlim)
-        send_c = instrument_c.current = -float(i_bias)
+        instrument_c.current = -float(i_bias)
         instrument_c.operate = True
-        time.sleep(0.3)
+        time.sleep(0.1)
         med_v = instrument_v.voltage_dc
-        time.sleep(0.3)
+        time.sleep(0.1)
         instrument_c.operate = False
-        instrument_c.current = 0
-        enes.append(i+int(dpg.get_value("N_stat")))
         meas_v.append(med_v)
-        sent_c.append(send_c)
-        dpg.set_value("v_plot", [enes, meas_v])
-        dpg.fit_axis_data('NV_axis')
-        dpg.fit_axis_data('V_axis')
-        dpg.set_value("c_plot", [enes, sent_c])
-        dpg.fit_axis_data('NI_axis')
-        dpg.fit_axis_data('I_axis')
-        dpg.set_value("r_plot", [np.array(sent_c), np.array(meas_v)/np.array(sent_c)])
-        dpg.fit_axis_data('IR_axis')
-        dpg.fit_axis_data('R_axis')
     v_mean = np.mean(meas_v)
     v_std = np.std(meas_v)
-    return [v_mean, v_std, i_bias]
+    return [v_mean, i_bias]
+    #return [v_mean, v_std, i_bias]
 
 with dpg.window(label="Keithley 224", width=w, height=120, pos=(0,130)):
     dpg.add_text("V-Limit", pos=(20,20))
@@ -242,7 +213,7 @@ def medicion_H(sender, app_data, user_data):
         dpg.add_text("I fuente (A)", pos=(10,60))
         ib_actual_display = dpg.add_text("0 A", tag="if", pos=(10,80))
         dpg.add_text("V bobina (V)", pos=(115,60))
-        if_actual_display = dpg.add_text("0 A", tag="if", pos=(235,80))
+        if_actual_display = dpg.add_text("0 V", tag="vb", pos=(115,80))
         dpg.add_text("Campo est. (T)", pos=(235,60))
         hest_actual_display = dpg.add_text("0 T", tag="hel", pos=(235,80))
         dpg.add_text("R muestra 1", pos=(10,100))
@@ -266,23 +237,51 @@ def update_vars(): #esta funcion lee los parametros puestos en la ventana y los 
     controller.close()
     np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
 
+t_plot = []
+T_plot = []
+Ts_plot = []
+Pot_plot = []
+r1_plot = []
+r2_plot = []
+Ib_plot = []
+
 def lecturas(): #esta funcion lee los aparatos y guarda todo lo que lee en el registro final
+    data_t = time.strftime("%H %M %S", time.localtime())
     controller = LakeShore340(gpib_address=12)
     fuente = LakeShore625(11)
     data_ls = [controller.read_temperature(1), controller.get_setpoint(1), controller.query('HTR?')]
     dpg.set_value("tl", data_ls[0])
     dpg.set_value("sl", data_ls[1])
     dpg.set_value("pl", data_ls[2])
-    data_r = [N_stat_msr]
+    data_r = N_stat_msr
     dpg.set_value("r1l", data_r[0]/data_r[1])
-    dpg.set_value("r2l", data_r[2]/data_r[3])
+    #dpg.set_value("r2l", data_r[2]/data_r[3])
     data_b = [fuente.get_current(), fuente.get_voltage_sense(), 1.1914*float(fuente.get_current())]
     dpg.set_value("if", data_b[0])
     dpg.set_value("vb", data_b[1])
     dpg.set_value("hel", data_b[2])
-    add_row([time.strftime("%H %M %S", time.localtime()), data_ls[0], data_ls[1], data_ls[2], data_r[0], data_r[1], data_r[0]/data_r[1], data_r[2]/data_r[3], data_b[0], data_b[1], data_b[2], data_b[3]], 1)
+    t_plot.append(data_t)
+    T_plot.append(data_ls[0])
+    Ts_plot.append(data_ls[1])
+    Pot_plot.append(data_ls[2])
+    r1_plot.append(data_ls[0])
+    Ib_plot.append(data_b[0])
+    dpg.set_value("T_act_p", [t_plot, T_plot])
+    dpg.set_value("T_setp_p", [t_plot, Ts_plot])
+    dpg.set_value("Pot_p", [t_plot, Pot_plot])
+    dpg.fit_axis_data('t_temp_ax')
+    dpg.fit_axis_data('T_setp_y')
+    dpg.set_value("r_1_p", [t_plot, r1_plot])
+    #dpg.set_value("r_2_p", [t_plot, r2_plot])
+    dpg.fit_axis_data('t_temp_ax_m')
+    dpg.fit_axis_data('Res_y')
+    dpg.set_value("H_p", [t_plot, Ib_plot])
+    dpg.fit_axis_data('t_temp_ax_c')
+    dpg.fit_axis_data('Curr_y')
+    add_row([data_t, data_ls[0], data_ls[1], data_ls[2], data_r[0], data_r[1], data_r[0]/data_r[1], data_r[2]/data_r[3], data_b[0], data_b[1], data_b[2], data_b[3]], 1)
 
 def ramp_T(T, rate):
+    dpg.set_value('tal', "Rampa de temperatura")
     t0 = time.time()
     t_report = 0
     controller = LakeShore340(gpib_address=12)
@@ -309,6 +308,7 @@ def ramp_H(I_actual, I):
     fuente.set_voltage(3) #por las dudas vuelvo a poner el limite de Cryo
     fuente.set_ramp_rate(0.17) #le pongo la velocidad a la fuente
     fuente.set_current(I_actual) #pongo la ultima corriente registrada en la bobina
+    dpg.set_value('tal', "Subiendo corriente sin switch")
     while fuente.get_status_ramp() != 2.0 != 1: #espero a que haga su rampa
         I_real = fuente.get_current()
         update_vars()
@@ -320,12 +320,14 @@ def ramp_H(I_actual, I):
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
     fuente.get_status_switch()
     fuente.psh(1) #prendo el switch persistente
+    dpg.set_value('tal', "Esperando conexión del switch")
     while fuente.get_status_switch() == 0.0:
         t = time.time()-t0
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         time.sleep(1)
     fuente.set_current(I)
     while fuente.get_status_ramp() == 0.0:
+        dpg.set_value('tal', "Subiendo corriente de la bobina")
         update_vars()
         lecturas()
         time.sleep(1)
@@ -333,12 +335,14 @@ def ramp_H(I_actual, I):
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
     fuente.psh(0) #apago el switch una vez que llegue a la corriente necesaria
     while fuente.get_status_switch() == 0.0:
+        dpg.set_value('tal', "Esperando desconexión del switch")
         t = time.time()-t0
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         time.sleep(1)
     I_act = fuente.get_current_psh()
     fuente.set_current(0)
     while fuente.get_status_ramp() == 0.0:
+        dpg.set_value('tal', "Apagando corriente sin switch")
         t = time.time()-t0
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         time.sleep(1)
@@ -358,7 +362,7 @@ def medir_tabla_T_en_H(algo_T, algo_H):
         tiempo_est = time.time()
         while abs(T_real-setpoint) > setpoint*0.01: #mientras la diferencia es mayor a un porcentaje del setpoint no hace nada
             update_vars()
-            dpg.set_value("tal", "Yendo al setpoint")
+            dpg.set_value("tal", "Esperando llegada al setpoint")
             lecturas() #esta funcion va a leer el Lakeshore, el nanovoltimetro y la fuente de alta corriente y va a guardar los datos
             tiempo_est = time.time()-tiempo_start
             tiempo_tot = time.time()-tiempo_start
@@ -386,7 +390,7 @@ def medir_tabla_T_en_H(algo_T, algo_H):
                 break
         for setpoint in lista_H: #acá va a barrer campos para cada temperatura dada
             update_vars()
-            tiempo_est = ramp_H(float.get_value('I_actual'), setpoint/1191.4)
+            ramp_H(float.get_value('I_actual'), setpoint/1191.4)
             for i in np.arange(1,int(dpg.get_value("ctd_msr"))): #hago muchas lecturas en cada campo, no se si es necesario
                 lecturas()
     ramp_H(lista_H[-1], 0) #vuelvo el campo a 0 con el mismo protocolo
@@ -421,7 +425,7 @@ with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
     N_mediciones = dpg.add_input_text(default_value=f'{5}', width = 40, tag="ctd_msr", pos=(20,430))
     dpg.add_text("# mediciones(/2)", pos=(20,410))
     dpg.add_button(label="Agregar", callback=crea_tablas_H, pos=(270,410))
-    with dpg.group(tag="g_col_H", pos=(10,440)):
+    with dpg.group(tag="g_col_H", pos=(10,460)):
         with dpg.table(header_row=True, tag="Tabla_H", borders_innerH=True, borders_outerH=True,
                         borders_innerV=True, borders_outerV=True, height = 150, no_host_extendY = True,
                         scrollY = True):
@@ -430,23 +434,50 @@ with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
     dpg.add_button(label="Limpiar", callback=reset_table_H, pos=(20,620))
     dpg.add_button(label="Comenzar", callback=medicion_H, pos=(270,620))
 
-with dpg.window(label='I bias', pos=(w+370,0)):
-    with dpg.plot(label="I vs N Plot", height=250, width=250):
-            dpg.add_plot_axis(dpg.mvXAxis, label="N", tag="NI_axis")
-            dpg.add_plot_axis(dpg.mvYAxis, label="I", tag="I_axis")
-            dpg.add_line_series([], [], label="Series 1", parent="I_axis", tag="c_plot")
+with dpg.window(label='Temperatura', pos=(w+370,0)):
+    with dpg.plot(height=250, width=300):
+            dpg.add_plot_axis(dpg.mvXAxis, label="Tiempo (s)", tag="t_temp_ax")
+            dpg.add_plot_axis(dpg.mvYAxis, label="Temperatura (K)", tag="T_setp_y")
+            dpg.add_line_series([], [], label="T Setpoint", parent="t_temp_ax", tag="T_setp_p")
+            dpg.add_line_series([], [], label="T Actual", parent="t_temp_ax", tag="T_act_p")
+            dpg.add_plot_axis(dpg.mvYAxis, label="Potencia (%)", tag="Pot_y")
+            dpg.add_line_series([], [], label="Potencia", parent="t_temp_ax", tag="Pot_p")
 
-with dpg.window(label='V bias', pos=(w+370+250+15,0)):
-    with dpg.plot(label="V vs N", height=250, width=250):
-            dpg.add_plot_axis(dpg.mvXAxis, label="N", tag="NV_axis")
-            dpg.add_plot_axis(dpg.mvYAxis, label="V", tag="V_axis")
-            dpg.add_line_series([], [], label="Series V", parent="V_axis", tag="v_plot")
+with dpg.window(label='Muestra', pos=(w+370,285)):
+    with dpg.plot(height=250, width=300):
+            dpg.add_plot_axis(dpg.mvXAxis, label="Tiempo (s)", tag="t_temp_ax_m")
+            dpg.add_plot_axis(dpg.mvYAxis, label="Resistencia (Ohm)", tag="Res_y")
+            dpg.add_line_series([], [], label="Muestra 1", parent="t_temp_ax_m", tag="r_1_p")
+            dpg.add_line_series([], [], label="Muestra 2", parent="t_temp_ax_m", tag="r_2_p")
+            #dpg.add_plot_axis(dpg.mvYAxis, label="Resistencia (Ohm)", tag="Res_y")
+            #dpg.add_line_series([], [], label="Potencia", parent="t_temp_ax", tag="Pot_p")
 
-with dpg.window(label='R calc', pos=(w+370,280)):
-    with dpg.plot(label="R vs I", height=250, width=250):
-            dpg.add_plot_axis(dpg.mvXAxis, label="I", tag="IR_axis")
-            dpg.add_plot_axis(dpg.mvYAxis, label="R", tag="R_axis")
-            dpg.add_line_series([], [], label="Series R", parent="R_axis", tag="r_plot")
+with dpg.window(label='Campo', pos=(w+370+315,0)):
+    with dpg.plot(height=250, width=300):
+            dpg.add_plot_axis(dpg.mvXAxis, label="Tiempo (s)", tag="t_temp_ax_c")
+            dpg.add_plot_axis(dpg.mvYAxis, label="Corriente (A)", tag="Curr_y")
+            dpg.add_line_series([], [], label="Corriente", parent="t_temp_ax_c", tag="H_p")
+            dpg.add_plot_axis(dpg.mvYAxis, label="Campo (G)", tag="H_y")
+            #dpg.add_line_series([], [], label="Potencia", parent="t_temp_ax_c", tag="Pot_p")
+
+
+#with dpg.window(label='I bias', pos=(w+370,0)):
+#    with dpg.plot(label="I vs N Plot", height=250, width=250):
+#            dpg.add_plot_axis(dpg.mvXAxis, label="N", tag="NI_axis")
+#            dpg.add_plot_axis(dpg.mvYAxis, label="I", tag="I_axis")
+#            dpg.add_line_series([], [], label="Series 1", parent="I_axis", tag="c_plot")
+
+#with dpg.window(label='V bias', pos=(w+370+250+15,0)):
+#    with dpg.plot(label="V vs N", height=250, width=250):
+#            dpg.add_plot_axis(dpg.mvXAxis, label="N", tag="NV_axis")
+#            dpg.add_plot_axis(dpg.mvYAxis, label="V", tag="V_axis")
+#            dpg.add_line_series([], [], label="Series V", parent="V_axis", tag="v_plot")
+
+#with dpg.window(label='R calc', pos=(w+370,280)):
+#    with dpg.plot(label="R vs I", height=250, width=250):
+#            dpg.add_plot_axis(dpg.mvXAxis, label="I", tag="IR_axis")
+#            dpg.add_plot_axis(dpg.mvYAxis, label="R", tag="R_axis")
+#            dpg.add_line_series([], [], label="Series R", parent="R_axis", tag="r_plot")
 
 
 dpg.setup_dearpygui()
