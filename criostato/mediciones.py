@@ -36,13 +36,17 @@ with dpg.value_registry():
         dpg.add_string_value(default_value="0", tag="D_m")
         dpg.add_string_value(default_value="0", tag="HR")
 
+directory = "C:/tesis git/tesisfisica/criostato"
+
+file_name = "test" + str(np.random.random())
+
 def add_row(values, ctrl=0):
     directory = dpg.get_value("selected_file_text")
     file_name = dpg.get_value("Muestra")
     if ctrl == 0:
-        file_path = os.path.join(directory, file_name)
+        file_path = os.path.join(directory, file_name, '.csv')
     else:
-        file_name = 'Control temperatura' + file_name
+        file_name = 'Control temperatura' + file_name + '.csv'
         file_path = os.path.join(directory, file_name)
     with open(file_path, mode='a', newline='') as file:
         writer = csv.writer(file)
@@ -58,15 +62,74 @@ def open_file_dialog():
     dpg.show_item("file_dialog")
     return
 
+t0_lectura = time.time()
+
+def lecturas(): #esta funcion lee los aparatos y guarda todo lo que lee en el registro final
+    data_t = time.strftime("%H %M %S", time.localtime())
+    tiempo_pasar = time.time()-t0_lectura
+    controller = LakeShore340(gpib_address=12)
+    fuente = LakeShore625(11)
+    switch = hp34970()
+    data_ls = [float(controller.read_temperature(1)), float(controller.get_setpoint(1)), float(controller.query('HTR?'))]
+    dpg.set_value("tl", data_ls[0])
+    dpg.set_value("sl", data_ls[1])
+    dpg.set_value("pl", data_ls[2])
+    switch.open_channels([211,212,221,222])
+    switch.close_channels([211,221])
+    data_rs = []
+    data_r = N_stat_msr()
+    dpg.set_value("r1l", data_r[0]/data_r[1])
+    r1_plot.append(data_r[0]/data_r[1])
+    data_rs.append(data_r[0])
+    data_rs.append(data_r[1])
+    data_rs.append(data_r[0]/data_r[1])
+    switch = hp34970()
+    controller = LakeShore340(gpib_address=12)
+    fuente = LakeShore625(11)
+    switch.open_channels([211,212,221,222])
+    switch.close_channels([212,222])
+    data_r = N_stat_msr()
+    switch = hp34970()
+    controller = LakeShore340(gpib_address=12)
+    fuente = LakeShore625(11)
+    dpg.set_value("r2l", data_r[0]/data_r[1])
+    r2_plot.append(data_r[0]/data_r[1])
+    data_rs.append(data_r[0])
+    data_rs.append(data_r[1])
+    data_rs.append(data_r[0]/data_r[1])
+    data_b = [float(fuente.get_current()), float(fuente.get_voltage()), 1.1914*float(fuente.get_current())]
+    dpg.set_value("if", data_b[0])
+    dpg.set_value("vb", data_b[1])
+    dpg.set_value("hel", data_b[2])
+    t_plot.append(float(tiempo_pasar))
+    T_plot.append(data_ls[0])
+    Ts_plot.append(data_ls[1])
+    Pot_plot.append(data_ls[2])
+    Ib_plot.append(data_b[0])
+    dpg.set_value("T_act_p", [t_plot, T_plot])
+    dpg.set_value("T_setp_p", [t_plot, Ts_plot])
+    dpg.set_value("Pot_p", [t_plot, Pot_plot])
+    dpg.fit_axis_data('t_temp_ax')
+    dpg.fit_axis_data('T_setp_y')
+    dpg.set_value("r_1_p", [t_plot, r1_plot])
+    dpg.set_value("r_2_p", [t_plot, r2_plot])
+    dpg.fit_axis_data('t_temp_ax_m')
+    dpg.fit_axis_data('Res_y')
+    dpg.set_value("H_p", [t_plot, Ib_plot])
+    dpg.fit_axis_data('t_temp_ax_c')
+    dpg.fit_axis_data('Curr_y')
+    add_row([data_t, data_ls[0], data_ls[1], data_ls[2], data_rs[0], data_rs[1], data_rs[2], data_rs[3], data_rs[4], data_rs[5], data_b[0], data_b[1], data_b[2]], 1)
+
+
 dpg.add_file_dialog(directory_selector=True, show=False, callback=file_selected_callback, tag="file_dialog", width=700 ,height=400)
 
 with dpg.window(label="Archivo", width=w, height=130, pos=(0,0)):
     dpg.add_text("Click the button to open the file explorer.")
     dpg.add_button(label="Open File Explorer", callback=lambda: dpg.show_item("file_dialog"))
     dpg.add_text("", tag="selected_file_text")
-    dpg.add_input_text(label="Muestra", default_value="")
+    dpg.add_input_text(label="Muestra", tag="Muestra", default_value="Test")
 
-def N_stat_msr(sender, app_data, user_data):
+def N_stat_msr():
     i_bias = dpg.get_value("i_bias")
     vlim = dpg.get_value("vlim")
     instrument_v = agi.Agilent34410A("GPIB0::7::INSTR")
@@ -93,6 +156,7 @@ def N_stat_msr(sender, app_data, user_data):
         meas_v.append(med_v)
     v_mean = np.mean(meas_v)
     v_std = np.std(meas_v)
+    i_bias = float(i_bias)
     return [v_mean, i_bias]
     #return [v_mean, v_std, i_bias]
 
@@ -119,6 +183,9 @@ def update_PID(sender, app_data, user_data):
     controller.close()
     np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
 
+def test_lec(sender, app_data, user_data):
+    lecturas()
+
 with dpg.window(label="LakeShore 340", width=w, height=140, pos=(0,250)):
     P = dpg.add_input_text(default_value=f"{dpg.get_value("P_m")}", width=40, tag="P_in", pos=(20,40), callback=update_PID)
     dpg.add_text("P", pos=(20,20))
@@ -137,6 +204,7 @@ with dpg.window(label="LakeShore 340", width=w, height=140, pos=(0,250)):
             dpg.add_menu_item(label="4", callback=update_HR, user_data = "4")
             dpg.add_menu_item(label="MAX", callback=update_HR, user_data = "5")
     heater_display_text = dpg.add_text(dpg.get_value("HR"), pos=(240, 79))
+    dpg.add_button(label='Test lectura', callback=test_lec, pos=(20, 100))
 
 def crea_tablas_T(sender, app_data, user_data):
     T0 = float(dpg.get_value("T0"))
@@ -191,6 +259,14 @@ def medicion_H(sender, app_data, user_data):
         dpg.remove_alias("pl")
         dpg.remove_alias("r1l")
         dpg.remove_alias("r2l")
+        dpg.remove_alias("sl")
+        dpg.remove_alias("pl")
+        dpg.remove_alias("if")
+        dpg.remove_alias("vb")
+        dpg.remove_alias("hel")
+        dpg.remove_alias("ttl")
+        dpg.remove_alias("ttal")
+        dpg.remove_alias("tal")
     except SystemError:
         pass
     with dpg.window(label="Control en vivo", width=w, height=260, pos=(0,390)):
@@ -222,7 +298,7 @@ def update_vars(): #esta funcion lee los parametros puestos en la ventana y los 
     controller = LakeShore340(gpib_address=12)
     instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR")
     instrument_c.voltage = float(dpg.get_value("vlim"))
-    controller.write(f'PID 1, {dpg.getl_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}')
+    controller.write(f'PID 1, {dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}')
     controller.write(f'RANGE 1, {dpg.get_value("HR")}')
     controller.close()
     np.savetxt('configls.txt', [f'{dpg.get_value("P_in")}, {dpg.get_value("I_in")}, {dpg.get_value("D_in")}, {dpg.get_value("HR")}'], fmt='%s')
@@ -235,48 +311,6 @@ r1_plot = []
 r2_plot = []
 Ib_plot = []
 
-def lecturas(): #esta funcion lee los aparatos y guarda todo lo que lee en el registro final
-    data_t = time.strftime("%H %M %S", time.localtime())
-    controller = LakeShore340(gpib_address=12)
-    fuente = Lakeshore625(11)
-    switch = hp34970()
-    data_ls = [controller.read_temperature(1), controller.get_setpoint(1), controller.query('HTR?')]
-    dpg.set_value("tl", data_ls[0])
-    dpg.set_value("sl", data_ls[1])
-    dpg.set_value("pl", data_ls[2])
-    switch.close_channels([211,212,221,222])
-    switch.open_channels([211,221])
-    data_r = N_stat_msr
-    dpg.set_value("r1l", data_r[0]/data_r[1])
-    r1_plot.append(data_r[0]/data_r[1])
-    switch.close_channels([211,212,221,222])
-    switch.open_channels([212,222])
-    data_r = N_stat_msr
-    dpg.set_value("r2l", data_r[0]/data_r[1])
-    r2_plot.append(data_r[0]/data_r[1])
-    data_b = [fuente.get_current(), fuente.get_voltage_sense(), 1.1914*float(fuente.get_current())]
-    dpg.set_value("if", data_b[0])
-    dpg.set_value("vb", data_b[1])
-    dpg.set_value("hel", data_b[2])
-    t_plot.append(data_t)
-    T_plot.append(data_ls[0])
-    Ts_plot.append(data_ls[1])
-    Pot_plot.append(data_ls[2])
-    Ib_plot.append(data_b[0])
-    dpg.set_value("T_act_p", [t_plot, T_plot])
-    dpg.set_value("T_setp_p", [t_plot, Ts_plot])
-    dpg.set_value("Pot_p", [t_plot, Pot_plot])
-    dpg.fit_axis_data('t_temp_ax')
-    dpg.fit_axis_data('T_setp_y')
-    dpg.set_value("r_1_p", [t_plot, r1_plot])
-    dpg.set_value("r_2_p", [t_plot, r2_plot])
-    dpg.fit_axis_data('t_temp_ax_m')
-    dpg.fit_axis_data('Res_y')
-    dpg.set_value("H_p", [t_plot, Ib_plot])
-    dpg.fit_axis_data('t_temp_ax_c')
-    dpg.fit_axis_data('Curr_y')
-    add_row([data_t, data_ls[0], data_ls[1], data_ls[2], data_r[0], data_r[1], data_r[0]/data_r[1], data_r[2]/data_r[3], data_b[0], data_b[1], data_b[2], data_b[3]], 1)
-
 def ramp_T(T, rate):
     dpg.set_value('tal', "Rampa de temperatura")
     t0 = time.time()
@@ -284,7 +318,10 @@ def ramp_T(T, rate):
     controller = LakeShore340(gpib_address=12)
     current_setpoint = controller.get_setpoint()
     target_setpoint = T
+    if target_setpoint > current_setpoint:
+        rate = -float(rate)
     rampa = np.arange(float(current_setpoint), float(target_setpoint), float(rate)/30)
+    print(current_setpoint, target_setpoint, rate, rampa)
     rampa[-1] = target_setpoint
     for i in rampa:
         update_vars()
@@ -300,15 +337,15 @@ def ramp_H(I_actual, I):
     t0 = time.time()
     t = 0
     dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
-    fuente = Lakeshore625('GPIB0::11::INSTR')
+    fuente = LakeShore625('GPIB0::11::INSTR')
     fuente.limit(60, 3, 0.17) #algunos limites a nivel software
     fuente.write('PSHS 1 55 10') #parametros del switch
     controller = LakeShore340(gpib_address=12)
-    fuente.set_voltage(3) #por las dudas vuelvo a poner el limite de Cryo
-    fuente.set_ramp_rate(0.17) #le pongo la velocidad a la fuente
+    fuente.set_voltage(2.5) #por las dudas vuelvo a poner el limite de Cryo
+    fuente.set_ramp_rate(0.15) #le pongo la velocidad a la fuente
     fuente.set_current(I_actual) #pongo la ultima corriente registrada en la bobina
     dpg.set_value('tal', "Subiendo corriente sin switch")
-    while fuente.get_status_ramp() != 2.0 != 1: #espero a que haga su rampa
+    while fuente.get_status_ramp() == 0: #espero a que haga su rampa
         I_real = fuente.get_current()
         update_vars()
         lecturas()
@@ -319,16 +356,18 @@ def ramp_H(I_actual, I):
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         t_tot = time.time()-tiempo_total
         dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
-    fuente.get_status_switch()
     fuente.psh(1) #prendo el switch persistente
     dpg.set_value('tal', "Esperando conexión del switch")
-    while fuente.get_status_switch() == 0.0:
+    while fuente.get_status_switch() != 1.0:
         t = time.time()-t0
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         t_tot = time.time()-tiempo_total
         dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
+        update_vars()
+        lecturas()
         time.sleep(1)
     fuente.set_current(I)
+    fuente.get_status_ramp()
     while fuente.get_status_ramp() == 0.0:
         dpg.set_value('tal', "Subiendo corriente de la bobina")
         update_vars()
@@ -339,21 +378,26 @@ def ramp_H(I_actual, I):
         t_tot = time.time()-tiempo_total
         dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
     fuente.psh(0) #apago el switch una vez que llegue a la corriente necesaria
-    while fuente.get_status_switch() == 0.0:
+    while fuente.get_status_switch() != 0.0:
         dpg.set_value('tal', "Esperando desconexión del switch")
         t = time.time()-t0
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         t_tot = time.time()-tiempo_total
         dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
+        update_vars()
+        lecturas()
         time.sleep(1)
     I_act = fuente.get_current_psh()
     fuente.set_current(0)
+    fuente.get_status_ramp()
     while fuente.get_status_ramp() == 0.0:
         dpg.set_value('tal', "Apagando corriente sin switch")
         t = time.time()-t0
         dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t)))
         t_tot = time.time()-tiempo_total
         dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
+        lecturas()
+        update_vars()
         time.sleep(1)
     dpg.set_value("I_actual", I_act) #guardo la ultima corriente enviada para cuando vuelva a encender el switch
 
