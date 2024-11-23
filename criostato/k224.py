@@ -29,7 +29,6 @@ RANGE_LIST = (
 def get_available_devices():
     rm = pyvisa.ResourceManager()
     devices = rm.list_resources()
-    rm.close()
     return devices
 
 def _decode_values(rawdata):
@@ -61,7 +60,7 @@ class KEITHLEY_224(object):
         MAN_20mA = 4
         MAN_1m01A = 5
 
-    def __init__(self, address):
+    def __init__(self, address="GPIB0::2::INSTR"):
         self._address = address
         self._rm = pyvisa.ResourceManager()
         self._inst = self._rm.open_resource(address)
@@ -71,7 +70,6 @@ class KEITHLEY_224(object):
 
     def __del__(self):
         self.operate = False
-        self._rm.close()
 
     def get_measurement(self):
         self._inst.timeout = 1000
@@ -110,14 +108,15 @@ class KEITHLEY_224(object):
 
     @current.setter
     def current(self, current):
-        if (current < -0.101):
+        if (current < -0.011):
             self._current = current
-            self._inst.write('I' + '-0.100' + 'X')
-        elif (current > 0.101):
+            self._inst.write('I' + '-0.010' + 'X')
+        elif (current > 0.011):
             self._current = current
-        self._inst.write('I' + '0.100' + 'X')
-        self._current = current
-        self._inst.write('I' + _format_e(current) + 'X')
+            self._inst.write('I' + '0.010' + 'X')
+        else:
+            self._current = current
+            self._inst.write('I' + _format_e(current) + 'X')
 
     @property
     def time(self):

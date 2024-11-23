@@ -13,22 +13,14 @@ import k224
 import pymeasure.instruments.agilent as agi # type: ignore
 import numpy as np 
 import time
-target_setpoint=293
-rate=-2
-t0 = time.time()
-t = 0
-controller = LakeShore340(gpib_address=12)
-current_setpoint = controller.get_setpoint()
-rampa = np.arange(float(295), float(target_setpoint), float(rate)/30)
-rampa[-1] = target_setpoint
-print(rampa)
-for i in rampa:
-        controller.set_setpoint(np.round(i,4))
-        time.sleep(2)
-        t = time.time()-t0
-        print(t)
 
+t, r = np.loadtxt('C:/tesis git/tesisfisica/Termometros/Patrones/GC11-C19522/C19522.dat', skiprows=3, unpack=True)
 
-#%%
+# %%
+ls = LakeShore340(12)
+ls.write('CRVHDR 59, C19522, 403501, 3, 334.0, 1')
+for i in np.arange(0,len(t)):
+    ls.write(f'CRVPT 59, {i}, {np.round(r[i],3)}, {np.round(t[i],3)}')
+    ls.write('CRVSAV')
 
-print(np.arange(295, 280, -2))
+# %%

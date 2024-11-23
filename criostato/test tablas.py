@@ -14,7 +14,7 @@ with dpg.window(label="Tutorial"):
         # add_table_next_column will jump to the next row
         # once it reaches the end of the columns
         # table next column use slot 1
-        for i in range(0, 4):
+        for i in range(0, 1):
             with dpg.table_row():
                 for j in range(0, 2):
                     dpg.add_text(f"Row{i} Column{j}")

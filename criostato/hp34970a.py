@@ -4,7 +4,6 @@ class hp34970:
     def __init__(self):
         self.rm = pyvisa.ResourceManager()
         self.instrument = self.rm.open_resource('GPIB0::9::INSTR')
-        self.instrument.timeout = 5000
         self.instrument.write_termination = '\n'
         self.instrument.read_termination = '\n'
 
@@ -32,7 +31,7 @@ class hp34970:
         self.instrument.write(command)
         print(f"Closed channels: {channel_str}")
 
-    def is_channel_open(instrument, channel):
+    def is_channel_open(self, instrument, channel):
         """
         Returns True if the channel is open, False if closed.
         """

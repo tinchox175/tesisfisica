@@ -149,6 +149,7 @@ class MyWindow(QMainWindow):
         self.var_res = 'no'
         self.modo = 'no_t'
         self.posneg = 'todo'
+        self.channel = '1'
         self.texto_archivos = self.memoria[0].split('¡')
         self.p0fit = []
         self.p_manual = []
@@ -206,7 +207,20 @@ class MyWindow(QMainWindow):
         closer.clicked.connect(partial(self.closer))
         self.layout.addWidget(closer, 4, 5)
         closer.setFixedSize(130, 50)
-    
+
+        self.chnl = PushButton('Canal 1', self)
+        self.layout.addWidget(self.chnl, 4, 2)
+        self.chnl.setFixedSize(130, 50)
+        self.menu = QMenu(self)
+
+        caction1 = QAction('1', self)
+        caction2 = QAction('2', self)
+        caction1.triggered.connect(partial(self.selcan, '1'))
+        caction2.triggered.connect(partial(self.selcan, '2'))
+        self.menu.addAction(caction1)
+        self.menu.addAction(caction2)
+        self.chnl.setMenu(self.menu)
+
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)  # Ensures that the widget inside the scroll area can resize
         self.main_layout.addWidget(scroll_area)
@@ -229,7 +243,7 @@ class MyWindow(QMainWindow):
                 pass
         try:
             np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
-        except TypeError:
+        except:
             try:
                 print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
             except (IndexError, TypeError) as e:
@@ -400,8 +414,11 @@ class MyWindow(QMainWindow):
                 initial_guess = self.p0fit
             except AttributeError:
                 initial_guess = [0, 0]
-            popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
-            
+            try:
+                popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
+            except:
+                print('error ajuste')
+                return
             a_fit, b_fit = popt
             a_cov, b_cov = pcov
             print(pcov)
@@ -437,7 +454,7 @@ class MyWindow(QMainWindow):
                 return A*V**2+V/R
             try:
                 A, R, offset = self.p_manual
-            except TypeError:
+            except:
                 A, R, offset = [0,0,0]
             plt.figure(figsize=(20,10))
             mng_g2 = plt.get_current_fig_manager()
@@ -449,8 +466,11 @@ class MyWindow(QMainWindow):
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
             plt.ylabel('I (mA)')
-            plt.ylim(np.min(iin1[self.manmin:self.manmax])-np.abs(np.min(iin1)/10),np.max(iin1[self.manmin:self.manmax])+np.max(iin1)/10)
-            plt.xlim(np.min(vin1[self.manmin:self.manmax])-np.abs(np.min(vin1)/10),np.max(vin1[self.manmin:self.manmax])+np.max(vin1)/10)
+            try:
+                plt.ylim(np.min(iin1[self.manmin:self.manmax])-np.abs(np.min(iin1)/10),np.max(iin1[self.manmin:self.manmax])+np.max(iin1)/10)
+                plt.xlim(np.min(vin1[self.manmin:self.manmax])-np.abs(np.min(vin1)/10),np.max(vin1[self.manmin:self.manmax])+np.max(vin1)/10)
+            except:
+                pass
             plt.grid(True)
             plt.legend()
             plt.show()
@@ -528,6 +548,14 @@ class MyWindow(QMainWindow):
                 indices.append(i)
         return indices
 
+    def selcan(self, ch):
+        if ch == '1':
+            self.channel = '1'
+            self.chnl.setText('Canal 1')
+        elif ch == '2':
+            self.channel = '2'
+            self.chnl.setText('Canal 2')
+
     def graficar(self):
         print(self.fileName)
         for archivos in self.fileName:
@@ -540,39 +568,74 @@ class MyWindow(QMainWindow):
                 self.modo = 'no_t'
             else:
                 print('ups')
-            if self.modo == 'no_t':
-                self.indoff = self.newoff(data[1])
-                time = data[0][~np.isnan(data[0])] #tiempo
-                ipul = data[1][~np.isnan(data[1])] #I pulso
-                try:
-                    vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
-                except IndexError:
-                    vin1 = np.array(data[2][~np.isnan(data[2])])
-                iin1 = data[3][~np.isnan(data[3])] #I instant
-                rin1 = data[4][~np.isnan(data[4])] #R instant
-                rre1 = data[5][~np.isnan(data[5])] #R remanente
-                ibi1 = data[6][~np.isnan(data[6])] #I bias
-                vbi1 = data[7][~np.isnan(data[7])] #V bias
-                wpul = data[14][~np.isnan(data[14])] #ancho pulso
-                peri = data[15][~np.isnan(data[15])] #periodo
-                temperatura = 'T_amb'
-            elif self.modo == 'si_t':
-                self.indoff = self.newoff(data[2])
-                time = data[0][~np.isnan(data[0])] #tiempo
-                temp = data[1][~np.isnan(data[1])] #temp(k)
-                ipul = data[2][~np.isnan(data[0])] #I pulso
-                try:
-                    vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
-                except IndexError:
-                    vin1 = np.array(data[3][~np.isnan(data[3])])
-                iin1 = data[4][~np.isnan(data[4])] #I instant
-                rin1 = data[5][~np.isnan(data[5])] #R instant
-                rre1 = data[6][~np.isnan(data[6])] #R remanente
-                ibi1 = data[7][~np.isnan(data[7])] #I bias
-                vbi1 = data[8][~np.isnan(data[8])] #V bias
-                wpul = data[15][~np.isnan(data[15])] #ancho pulso
-                peri = data[16][~np.isnan(data[16])] #periodo
-                temperatura = temp[0]
+            if self.channel == '1':
+                if self.modo == 'no_t':
+                    self.indoff = self.newoff(data[1])
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    ipul = data[1][~np.isnan(data[1])] #I pulso
+                    try:
+                        vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
+                    except IndexError:
+                        vin1 = np.array(data[2][~np.isnan(data[2])])
+                    iin1 = data[3][~np.isnan(data[3])] #I instant
+                    rin1 = data[4][~np.isnan(data[4])] #R instant
+                    rre1 = data[5][~np.isnan(data[5])] #R remanente
+                    ibi1 = data[6][~np.isnan(data[6])] #I bias
+                    vbi1 = data[7][~np.isnan(data[7])] #V bias
+                    wpul = data[14][~np.isnan(data[14])] #ancho pulso
+                    peri = data[15][~np.isnan(data[15])] #periodo
+                    temperatura = 'T_amb'
+                elif self.modo == 'si_t':
+                    self.indoff = self.newoff(data[2])
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    temp = data[1][~np.isnan(data[1])] #temp(k)
+                    ipul = data[2][~np.isnan(data[0])] #I pulso
+                    try:
+                        vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
+                    except IndexError:
+                        vin1 = np.array(data[3][~np.isnan(data[3])])
+                    iin1 = data[4][~np.isnan(data[4])] #I instant
+                    rin1 = data[5][~np.isnan(data[5])] #R instant
+                    rre1 = data[6][~np.isnan(data[6])] #R remanente
+                    ibi1 = data[7][~np.isnan(data[7])] #I bias
+                    vbi1 = data[8][~np.isnan(data[8])] #V bias
+                    wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                    peri = data[16][~np.isnan(data[16])] #periodo
+                    temperatura = temp[0]
+            elif self.channel=='2':
+                if self.modo == 'no_t':
+                    self.indoff = self.newoff(data[1])
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    ipul = data[1][~np.isnan(data[1])] #I pulso
+                    try:
+                        vin1 = np.array(data[8][~np.isnan(data[9])])-(data[8][~np.isnan(data[8])][self.indoff[0]-1]+data[8][~np.isnan(data[8])][self.indoff[0]+1])/2 #V instant
+                    except IndexError:
+                        vin1 = np.array(data[8][~np.isnan(data[9])])
+                    iin1 = data[9][~np.isnan(data[9])] #I instant
+                    rin1 = data[10][~np.isnan(data[10])] #R instant
+                    rre1 = data[11][~np.isnan(data[11])] #R remanente
+                    ibi1 = data[12][~np.isnan(data[12])] #I bias
+                    vbi1 = data[13][~np.isnan(data[13])] #V bias
+                    wpul = data[14][~np.isnan(data[14])] #ancho pulso
+                    peri = data[15][~np.isnan(data[15])] #periodo
+                    temperatura = 'T_amb'
+                elif self.modo == 'si_t':
+                    self.indoff = self.newoff(data[2])
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    temp = data[1][~np.isnan(data[1])] #temp(k)
+                    ipul = data[2][~np.isnan(data[0])] #I pulso
+                    try:
+                        vin1 = np.array(data[9][~np.isnan(data[9])])-(data[9][~np.isnan(data[9])][self.indoff[0]-1]+data[9][~np.isnan(data[9])][self.indoff[0]+1])/2 #V instant
+                    except IndexError:
+                        vin1 = np.array(data[9][~np.isnan(data[9])])
+                    iin1 = data[10][~np.isnan(data[10])] #I instant
+                    rin1 = data[11][~np.isnan(data[11])] #R instant
+                    rre1 = data[12][~np.isnan(data[12])] #R remanente
+                    ibi1 = data[13][~np.isnan(data[13])] #I bias
+                    vbi1 = data[14][~np.isnan(data[14])] #V bias
+                    wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                    peri = data[16][~np.isnan(data[16])] #periodo
+                    temperatura = temp[0]
             vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
             iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
             didv = diff(iin1)/diff(vin1)

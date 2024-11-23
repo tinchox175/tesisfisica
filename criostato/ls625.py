@@ -1,6 +1,6 @@
 import pyvisa
 
-class Lakeshore625:
+class LakeShore625:
     def __init__(self, n = 11):
         """Initialize communication with the Lake Shore 625 power supply.
 
@@ -67,15 +67,7 @@ class Lakeshore625:
 
     def psh(self, mode):
         """Turn on/off persitent heating switch"""
-        self.write('PSH {mode}')
-
-    def output_on(self):
-        """Turn the output on."""
-        self.write('OPON')
-
-    def output_off(self):
-        """Turn the output off."""
-        self.write('OPOF')
+        self.write(f'PSH {mode}')
 
     def set_ramp_rate(self, rate):
         """Set the ramp rate in Amperes per second.
@@ -96,17 +88,4 @@ class Lakeshore625:
     
     def get_status_switch(self):
         """Get the current status of the power supply switching."""
-        self.write('OPSTE 001')
-        return float(self.query('OPSTR?'))
-#%%
-# Example usage:
-#if __name__ == '__main__':
-#    # Replace 'GPIB0::25::INSTR' with your actual resource name
-#    psu = Lakeshore625('GPIB0::11::INSTR')
-#    try:
-#        psu.set_current(0.0001)           # Set current to 5 A
-#        current = psu.get_current()
-#        print(f"Current output: {current} A")
-#        psu.output_on()                # Turn on the output
-#    finally:
-#        psu.close()                    # Ensure the connection is closed
+        return float(self.query('PSH?'))

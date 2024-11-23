@@ -1,1 +1,1 @@
-C:/tesis git/tesisfisica/IVs/710/X4_Zdew_10-07-24b/_Temperatura_220.53_K_1420/Offset_0.00_mV.txt
+C:/tesis git/tesisfisica/IVs/703/Zdew_1410-32-X3_03-07-24/_Temperatura_290.80_K_1931/Offset_0.00_mV.txt

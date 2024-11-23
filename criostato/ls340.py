@@ -2,7 +2,7 @@
 import pyvisa
 
 class LakeShore340:
-    def __init__(self, gpib_address):
+    def __init__(self, gpib_address=12):
         self.rm = pyvisa.ResourceManager()
         self.instrument = self.rm.open_resource(f'GPIB::{gpib_address}::INSTR')
         self.instrument.timeout = 5000  # Set timeout in milliseconds
@@ -23,17 +23,17 @@ class LakeShore340:
         except Exception as e:
             print(f"Error writing to the instrument: {e}")
 
-    def read_temperature(self, channel=1):
+    def read_temperature(self, channel='A'):
         """Read the temperature from the specified channel (1 or 2)."""
         command = f'KRDG? {channel}'
         return self.query(command)
 
-    def set_setpoint(self, setpoint, channel=1):
+    def set_setpoint(self, setpoint, channel='A'):
         """Set the temperature setpoint for the specified channel (1 or 2)."""
         command = f'SETP {channel},{setpoint}'
         self.write(command)
 
-    def get_setpoint(self, channel=1):
+    def get_setpoint(self, channel='A'):
         """Get the temperature setpoint for the specified channel (1 or 2)."""
         command = f'SETP? {channel}'
         return self.query(command)
@@ -54,3 +54,5 @@ class LakeShore340:
     def close(self):
         """Close the connection to the instrument."""
         self.instrument.close()
+
+# %%
