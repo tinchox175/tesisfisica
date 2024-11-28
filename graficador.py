@@ -542,10 +542,7 @@ class MyWindow(QMainWindow):
 
 #%% Logica graficador de IVS
     def newoff(self,y):
-        indices = []
-        for i in range(1, len(y)):
-            if (y[i] >= 0 and y[i - 1] < 0) or (y[i] < 0 and y[i - 1] >= 0):
-                indices.append(i)
+        indices = np.argmin(np.abs(y))
         return indices
 
     def selcan(self, ch):
@@ -570,11 +567,11 @@ class MyWindow(QMainWindow):
                 print('ups')
             if self.channel == '1':
                 if self.modo == 'no_t':
-                    self.indoff = self.newoff(data[1])
+                    self.indoff = self.newoff(data[1][~np.isnan(data[1])])
                     time = data[0][~np.isnan(data[0])] #tiempo
                     ipul = data[1][~np.isnan(data[1])] #I pulso
                     try:
-                        vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
+                        vin1 = np.array(data[2][~np.isnan(data[2])])-np.array(data[2][~np.isnan(data[2])][self.indoff]) #V instant
                     except IndexError:
                         vin1 = np.array(data[2][~np.isnan(data[2])])
                     iin1 = data[3][~np.isnan(data[3])] #I instant
@@ -586,12 +583,12 @@ class MyWindow(QMainWindow):
                     peri = data[15][~np.isnan(data[15])] #periodo
                     temperatura = 'T_amb'
                 elif self.modo == 'si_t':
-                    self.indoff = self.newoff(data[2])
+                    self.indoff = self.newoff(data[2][~np.isnan(data[2])])
                     time = data[0][~np.isnan(data[0])] #tiempo
                     temp = data[1][~np.isnan(data[1])] #temp(k)
-                    ipul = data[2][~np.isnan(data[0])] #I pulso
+                    ipul = data[2][~np.isnan(data[2])] #I pulso
                     try:
-                        vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
+                        vin1 = np.array(data[3][~np.isnan(data[3])])-np.array(data[3][~np.isnan(data[3])][self.indoff]) #V instant
                     except IndexError:
                         vin1 = np.array(data[3][~np.isnan(data[3])])
                     iin1 = data[4][~np.isnan(data[4])] #I instant
@@ -604,14 +601,14 @@ class MyWindow(QMainWindow):
                     temperatura = temp[0]
             elif self.channel=='2':
                 if self.modo == 'no_t':
-                    self.indoff = self.newoff(data[1])
+                    iin1 = data[9][~np.isnan(data[9])] #I instant
+                    self.indoff = self.newoff(iin1)
                     time = data[0][~np.isnan(data[0])] #tiempo
                     ipul = data[1][~np.isnan(data[1])] #I pulso
                     try:
-                        vin1 = np.array(data[8][~np.isnan(data[9])])-(data[8][~np.isnan(data[8])][self.indoff[0]-1]+data[8][~np.isnan(data[8])][self.indoff[0]+1])/2 #V instant
+                        vin1 = np.array(data[8][~np.isnan(data[9])])-np.array(data[9][~np.isnan(data[9])][self.indoff]) #V instant
                     except IndexError:
                         vin1 = np.array(data[8][~np.isnan(data[9])])
-                    iin1 = data[9][~np.isnan(data[9])] #I instant
                     rin1 = data[10][~np.isnan(data[10])] #R instant
                     rre1 = data[11][~np.isnan(data[11])] #R remanente
                     ibi1 = data[12][~np.isnan(data[12])] #I bias
@@ -620,12 +617,12 @@ class MyWindow(QMainWindow):
                     peri = data[15][~np.isnan(data[15])] #periodo
                     temperatura = 'T_amb'
                 elif self.modo == 'si_t':
-                    self.indoff = self.newoff(data[2])
+                    self.indoff = self.newoff(data[2][~np.isnan(data[2])])
                     time = data[0][~np.isnan(data[0])] #tiempo
                     temp = data[1][~np.isnan(data[1])] #temp(k)
-                    ipul = data[2][~np.isnan(data[0])] #I pulso
+                    ipul = data[2][~np.isnan(data[2])] #I pulso
                     try:
-                        vin1 = np.array(data[9][~np.isnan(data[9])])-(data[9][~np.isnan(data[9])][self.indoff[0]-1]+data[9][~np.isnan(data[9])][self.indoff[0]+1])/2 #V instant
+                        vin1 = np.array(data[9][~np.isnan(data[9])])-np.array(data[9][~np.isnan(data[9])][self.indoff]) #V instant
                     except IndexError:
                         vin1 = np.array(data[9][~np.isnan(data[9])])
                     iin1 = data[10][~np.isnan(data[10])] #I instant
@@ -636,14 +633,18 @@ class MyWindow(QMainWindow):
                     wpul = data[15][~np.isnan(data[15])] #ancho pulso
                     peri = data[16][~np.isnan(data[16])] #periodo
                     temperatura = temp[0]
-            vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
-            iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
-            didv = diff(iin1)/diff(vin1)
-            didvgol = diff(iin1gol)/diff(vin1gol)
-            ibi1gol = scipy.signal.savgol_filter(ibi1, window_size, 3)        # Ibias1 savgol
-            vbi1gol = scipy.signal.savgol_filter(vbi1, window_size, 3)        # Vbias1 savgol
-            rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol, window_size, 3) # Rrem1 savgol
-            rin1calc = vin1/iin1
+            #vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
+            #iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
+            iin1gol = iin1
+            vin1gol = vin1
+            #didv = diff(iin1)/diff(vin1)
+            #didvgol = diff(iin1gol)/diff(vin1gol)
+            #ibi1gol = scipy.signal.savgol_filter(ibi1, window_size, 3)        # Ibias1 savgol
+            #vbi1gol = scipy.signal.savgol_filter(vbi1, window_size, 3)        # Vbias1 savgol
+            ibi1gol = ibi1
+            vbi1gol = vbi1
+            #rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol, window_size, 3) # Rrem1 savgol
+            rre1calcgol = vbi1gol/ibi1gol
             rin1calcgol = vin1gol/iin1gol
             gamma1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
             gamma1gol = diff(np.log(np.abs(iin1gol)))/diff(np.log(np.abs(vin1gol))) #gamma savgol
