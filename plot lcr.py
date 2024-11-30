@@ -47,7 +47,7 @@ def list_folders_in_folder(folder_path):
     return [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
 
 # Example usage
-dirs = "C:/tesis git/tesisfisica/IVs/2211/ZdeW_1213_20-11-24/"
+dirs = "C:/tesis git/tesisfisica/IVs/2711/ZdeW_1234_28-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     folder_path = dirs+j
@@ -56,7 +56,7 @@ for j in fil:
     files = get_files_with_path(folder_path)
 
     fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
-    fig.suptitle(f'{folder_path.split('_')[5]} K')
+    fig.suptitle(f'{folder_path.split('_')[4]} K')
     n = True
     marker = marker_l()
     for i in files:
@@ -66,9 +66,9 @@ for j in fil:
         ax1.plot(data[0], data[1],markerfacecolor=None, marker= mk, label=f'{(i.split('_')[-2]).split('.')[0]} mV')
         ax2.plot(data[0], data[3],markerfacecolor=None, marker= mk, label=f'{(i.split('_')[-2]).split('.')[0]} mV')
         if n == True:
-            ax1.set_ylim(-0.1,np.mean(data[1][1:])*1.5)
+            ax1.set_ylim(-0.1,np.max(data[1][1:]))
             n = False
-        name = f'{folder_path.split('_')[5]} K'
+        name = f'{folder_path.split('_')[4]} K'
     ax1.set_ylabel('R ($\Omega$)')
     ax2.set_xlabel('Frecuencia (Hz)')
     ax2.set_xscale('log')

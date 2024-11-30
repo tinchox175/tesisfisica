@@ -286,6 +286,40 @@ def medicion_T(sender, app_data, user_data):
         add_row(['Tiempo', 'T(K)', 'Setpoint(K)', 'Heater','V muestra 1 (V)', 'I muestra 1 (A)', 'R muestra 1 (Ohm)', 'V muestra 2 (V)', 'I muestra 2 (A)', 'R muestra 2 (Ohm)'])
         medir_tabla_T()
 
+def medicion_ivs(sender, app_data, user_data):
+    try:
+        dpg.remove_alias("tl")
+        dpg.remove_alias("sl")
+        dpg.remove_alias("rl")
+        dpg.remove_alias("pl")
+        dpg.remove_alias("r1l")
+        dpg.remove_alias("r2l")
+        dpg.remove_alias("pl")
+        dpg.remove_alias("ttl")
+        dpg.remove_alias("ttal")
+        dpg.remove_alias("tal")
+    except SystemError:
+        pass
+    with dpg.window(label="Control en vivo", width=w, height=240, pos=(0,450)):
+        dpg.add_text("T actual (K)", pos=(10,20))
+        t_actual_display = dpg.add_text("0.00 K", tag="tl", pos=(10,40))
+        dpg.add_text("T setpoint (K)", pos=(180,20))
+        setp_actual_display = dpg.add_text("0.00 K", tag="sl", pos=(180,40))
+        dpg.add_text("Potencia (%)", pos=(10,60))
+        pot_actual_display = dpg.add_text("0.00 %", tag="pl", pos=(10,80))
+        dpg.add_text("Volt. motor (V)", pos=(180,60))
+        pot_actual_display = dpg.add_text("2.6 V", tag="vl", pos=(180,80))
+        dpg.add_text("R muestra 1", pos=(10,100))
+        r1_actual_display = dpg.add_text("0.00e+0 Ohm", tag="r1l", pos=(10,120))
+        dpg.add_text("Tiempo total", pos=(10,140))
+        ttal_actual_display = dpg.add_text("00:00:00", tag="ttl", pos=(10,160))
+        dpg.add_text("Tiempo tarea", pos=(180,140))
+        tact_actual_display = dpg.add_text("00:00:00", tag="ttal", pos=(180,160))
+        dpg.add_text("Tarea actual", pos=(10,180))
+        tar_actual_display = dpg.add_text("AFK", tag="tal", pos=(10,200))
+        add_row(['Tiempo', 'T(K)', 'Setpoint(K)', 'Heater','V muestra 1 (V)', 'I muestra 1 (A)', 'R muestra 1 (Ohm)', 'V muestra 2 (V)', 'I muestra 2 (A)', 'R muestra 2 (Ohm)'])
+        medir_ivs()
+
 def update_vars(): #esta funcion lee los parametros puestos en la ventana y los actualiza en vivo con el multithread
     controller = LakeShore340(gpib_address=12)
     instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR")
@@ -432,6 +466,93 @@ def medir_tabla_T():#a temperaturas fijas barre campos
         n_max = len(algo_T)-1
     controller.write('CSET 1, A, 1, 0')
 
+def medir_ivs():#a temperaturas fijas barre campos
+    update_vars()
+    tiempo_start = time.time() #pongo tiempos iniciales y levanto las listas que se van a medir
+    tiempo_est = 0
+    controller = LakeShore340(gpib_address=12)
+    controller.write('CSET 1, A, 1, 1')
+    algo_T = dpg.get_item_children("Tabla", 1)
+    n = 0
+    for fila in algo_T: #en cada temperatura corro el protocolo estabilizar
+        parametros_T = dpg.get_item_children(fila, 1)
+        update_vars() #estos updates sirven por si se actualizan parametros del PID, heater o medición
+        setpoint = dpg.get_value(parametros_T[0])
+        rate = dpg.get_value(parametros_T[1])
+        ramp_T(setpoint, rate) #esto lleva la temperatura en rampa (ver ramp_T)
+        controller = LakeShore340(gpib_address=12)
+        T_real = controller.read_temperature()
+        tiempo_est = time.time()
+        v = 26
+        while abs(float(T_real)-float(setpoint)) > float(setpoint)*0.01: #mientras la diferencia es mayor a un porcentaje del setpoint no hace nada
+            update_vars()
+            algo_T = dpg.get_item_children("Tabla", 1)
+            parametros_T = dpg.get_item_children(algo_T[n], 1)
+            estable = dpg.get_value(parametros_T[2])
+            estable = float(estable)
+            controller = LakeShore340()
+            T_real = controller.read_temperature()
+            controller.analog_out(v)
+            if float(T_real)>float(setpoint)+1 and v > 12:
+                v -= 1
+            elif float(T_real)<float(setpoint)-1 and v < 40:
+                v += 1
+            elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
+                v = 26
+            dpg.set_value("tal", "Esperando llegada al setpoint")
+            lecturas() #esta funcion va a leer el Lakeshore, el nanovoltimetro y la fuente de alta corriente y va a guardar los datos
+            tiempo_est = time.time()-tiempo_est
+            t_tot = time.time()-tiempo_total
+            dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot))) #esto actualiza un tiempo para diagnostico, no representa lo guardado (tiempo real)
+            dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(tiempo_est)))
+            if (estable == '0' or estable == '0.00'): #esto es por si se quiere saltear este punto
+                break
+            time.sleep(1)
+        tiempo_est = time.time()
+        while True: #una vez que se va abajo del threshold intenta estabilizar por x segundos
+            controller = LakeShore340(12)
+            controller.analog_out(26)
+            algo_T = dpg.get_item_children("Tabla", 1)
+            parametros_T = dpg.get_item_children(algo_T[n], 1)
+            estable = dpg.get_value(parametros_T[2])
+            estable = float(estable)
+            T_real = controller.read_temperature() #acá abajo dice que si la diferencia es mayor a un porcentaje, empiece a contar otra vez
+            T_real = float(T_real)
+            if float(T_real)>float(setpoint)+1 and v < 12:
+                v += 1
+            elif float(T_real)<float(setpoint)-1 and v > 40:
+                v -= 1
+            elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
+                v = 26
+            update_vars()
+            dpg.set_value("tal", "Estabilizando temperatura")
+            lecturas()
+            tiempo_est = time.time()-tiempo_est
+            t_tot = time.time()-tiempo_total
+            dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot))) #esto actualiza un tiempo para diagnostico, no representa lo guardado (tiempo real)
+            dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(tiempo_est)))
+            controller = LakeShore340(gpib_address=12)
+            setpoint = float(setpoint)
+            if abs(T_real-setpoint) > setpoint*0.01:#si es menor al porcentaje sigue contando, y si es menor y ya conto suficiente pare la
+                tiempo_est = 0                      #estabilización
+            if tiempo_est < float(dpg.get_value("T_est")):
+                pass
+            elif tiempo_est >= float(dpg.get_value("T_est")):
+                break
+            elif estable == 0 or estable == 0.00: #idem arriba por si se quiere saltar
+                break
+        for i in np.arange(1,int(dpg.get_value("ctd_msr"))): #hago muchas lecturas en cada campo, no se si es necesario
+            if estable == 0 or estable == 0.0:
+                break
+            controller = LakeShore340()
+            controller.analog_out(26)
+            update_vars()
+            lecturas(mode = 'bip')
+        n += 1
+        algo_T = dpg.get_item_children("Tabla", 1)
+        n_max = len(algo_T)-1
+    controller.write('CSET 1, A, 1, 0')
+
 with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
     T0m = dpg.add_input_text(default_value=f"{295}", width=40, tag="T0", pos=(20,40))
     dpg.add_text("T inicial (K)", pos=(20,20))
@@ -446,16 +567,25 @@ with dpg.window(label="Medición T", width=370, height=650, pos=(w,0)):
     dpg.add_button(label="Agregar", callback=crea_tablas_T, pos=(270,80))
     with dpg.group(tag="g_col", pos=(10,120)):
         with dpg.table(header_row=True, tag="Tabla", borders_innerH=True, borders_outerH=True,
-                        borders_innerV=True, borders_outerV=True, height = 450, no_host_extendY = True,
+                        borders_innerV=True, borders_outerV=True, height = 220, no_host_extendY = True,
                         scrollY = True):
             dpg.add_table_column(label="T (K)")
             dpg.add_table_column(label="Rate (K/min)")
             dpg.add_table_column(label="Estable?")
+    dpg.add_text("V min", pos=(20,20))
+    V_Limit = dpg.add_input_text(label="V", default_value=f"{-0.4}", tag="vlim", width=40, pos=(20,40))
+    dpg.add_text("V max", pos=(20, 60))
+    N_stat = dpg.add_input_text(label="V", default_value=f"{0.4}", tag="N_stat", width=40, pos=(20,80))
+    dpg.add_text("V step", pos=(120, 60))
+    N_stat = dpg.add_input_text(label="V", default_value=f"{3}", tag="ctd_msr", width=40, pos=(120,80))
+    dpg.add_text("V bias", pos=(120, 20))
+    i_bias = dpg.add_input_text(label="V", default_value=f"{0.001}", tag="i_bias", width=60, pos=(120,40))
     dpg.add_button(label="Limpiar", callback=reset_table_T, pos=(20,620))
+    dpg.add_button(label="Comenzar IVs", callback=medicion_ivs, pos=(10,620))
     dpg.add_button(label="Comenzar", callback=medicion_T, pos=(240,620))
 
 with dpg.window(label='Temperatura', pos=(w+370,0)):
-    with dpg.plot(height=250, width=520):
+    with dpg.plot(height=250, width=540):
             dpg.add_plot_axis(dpg.mvXAxis, label="Tiempo (s)", tag="t_temp_ax")
             dpg.add_plot_axis(dpg.mvYAxis, label="Temperatura (K)", tag="T_setp_y")
             dpg.add_scatter_series([], [], label="T Setpoint", parent="T_setp_y", tag="T_setp_p")
