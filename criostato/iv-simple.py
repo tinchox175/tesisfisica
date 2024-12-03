@@ -10,7 +10,7 @@ matplotlib.use('TkAgg')  # Use the TkAgg backend
 #%%
 icurr = KEITHLEY_224()
 ivolt = Agilent34420A()
-ivolt.set_range(0.1)
+ivolt.set_range(1)
 
 def msr(cu,bias=False):
     icurr.voltage = float(10)
@@ -57,11 +57,11 @@ def add_row(values, file_name, ctrl=0):
 #%%
 datas = []
 min = 1e-3
-max = 50e-3
-ctd = 200
+max = 80e-3
+ctd = 140
 curva = np.linspace(min,max, ctd)
 curva_r = np.linspace(max, min, ctd)
-name = 'iv-x5-e-150K'
+name = 'iv-x5-j-84K-sinapagado'
 plt.ion()  # Turn on interactive mode
 fig, ax = plt.subplots()
 line, = ax.plot([], [], 'b-o', linewidth=0.5, markersize=4, marker='x')
@@ -137,31 +137,32 @@ for k in curva_r:
     fig.canvas.flush_events()
     plt.pause(0.1)
 #%%
-nm='d'
-V, I, Vb, Ib = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}.csv', delimiter=',', unpack=True)
-Vn, In, Vbn, Ibn = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}-n.csv', delimiter=',', unpack=True)
-
-from scipy.optimize import curve_fit
-def r(V,R):
-    return V/R
-
-popt, pcov = curve_fit(r, V, I, p0=2)
-poptn, pcovn = curve_fit(r,Vn, In, p0=2)
-x = np.linspace(0.002,0.15,100)
-xn = np.linspace(-0.0025,-0.15,100)
-plt.figure()
-plt.scatter(V, I)
-#plt.scatter(V[:int(len(V)/2)+23],I[:int(len(V)/2)+23])
-#plt.scatter(V[int(len(V)/2)+23:-1],I[int(len(V)/2)+23:-1])
-plt.scatter(Vn, In)
-#plt.scatter(Vn, np.abs(In), color='blue')
-plt.xlim(-0.5,0.5)
-plt.grid()
-plt.plot(x, r(x, popt),color = 'orange')
-#plt.yscale('log')
-#plt.plot(xn, (r(xn, poptn)),color = 'red')
-#plt.title(f'+r = {popt} $\Omega$ -r = {poptn} $\Omega$')
-plt.show
-# %%
-plt.grid()
+for i in ['a-240K', 'c-207K', 'd-180K', 'f-150K', 'h-100K-sinapagado', 'i-100K-sinapagado', 'j-84K-sinapagado']:
+    nm=i
+    V, I, Vb, Ib = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}.csv', delimiter=',', unpack=True)
+    #Vn, In, Vbn, Ibn = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}-n.csv', delimiter=',', unpack=True)
+    from scipy.optimize import curve_fit
+    def r(V,R):
+        return V/R
+    popt, pcov = curve_fit(r, V, I, p0=2)
+    #poptn, pcovn = curve_fit(r,Vn, In, p0=2)
+    x = np.linspace(0.002,np.max(V),len(V)-1)
+    #xn = np.linspace(-0.0025,-0.15,100)
+    fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
+    #plt.plot(V, I, 'b-o', linewidth=0.5, markersize=2, marker='x')
+    ax1.plot(V[:int(len(V)/2)],I[:int(len(V)/2)], 'b-o', linewidth=0.5, markersize=2, marker='x', label='Ida')
+    ax1.plot(V[int(len(V)/2):-1],I[int(len(V)/2):-1], 'r-o', linewidth=0.5, markersize=2, marker='x', label='Vuelta')
+    #plt.plot(Vn, In)
+    #plt.scatter(Vn, np.abs(In), color='blue')
+    #plt.xlim(-0.5,0.5)
+    ax1.grid(True)
+    ax1.plot(V, r(V, popt),color = 'orange', label='Ajuste')
+    ax2.plot(V[:int(len(V)/2)], r(V, popt)[:int(len(V)/2)]-I[:int(len(V)/2)], color='black', label='Residuo Ajuste')
+    ax2.grid(True)
+    ax2.set_xlabel('Voltaje (V)')
+    ax1.set_ylabel('Corriente (A)')
+    ax2.set_ylabel('Corriente (A)')
+    plt.suptitle(f'{nm.split('-')[1]} R={popt} $\Omega$')
+    plt.savefig(f'{nm.split('-')[1]}.png')
+plt.show()
 # %%

@@ -14,7 +14,7 @@ def list_folders_in_folder(folder_path):
 X = []
 Y = []
 Z = []
-dirs = "C:/tesis git/tesisfisica/IVs/2211/ZdeW_1213_20-11-24/"
+dirs = "C:/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     folder_path = dirs+j

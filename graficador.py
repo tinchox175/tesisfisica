@@ -393,8 +393,8 @@ class MyWindow(QMainWindow):
             temperatura = temp[0]
         if self.var_fit == 'si':
             print(self.p0fit)
-            def sclc_p(V, A, R):
-                return A*np.abs(V)**2+V/R
+            def sclc_p(V, A, R, n):
+                return A*np.abs(V)**n+V/R
             try:
                 l = int(self.lower)
             except AttributeError:
@@ -413,14 +413,12 @@ class MyWindow(QMainWindow):
             try:
                 initial_guess = self.p0fit
             except AttributeError:
-                initial_guess = [0, 0]
+                initial_guess = [0, 0, 0]
             try:
                 popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
             except:
                 print('error ajuste')
                 return
-            a_fit, b_fit = popt
-            a_cov, b_cov = pcov
             print(pcov)
             self.popt = popt
             self.pcov = pcov
@@ -450,19 +448,19 @@ class MyWindow(QMainWindow):
                 plt.show()
             print(self.secondary_windows)
         if self.var_man == 'si':
-            def sclc_p(V, A, R, c):
-                return A*V**2+V/R
+            def sclc_p(V, A, R, n):
+                return A*V**n+V/R
             try:
-                A, R, offset = self.p_manual
+                A, R, n = self.p_manual
             except:
-                A, R, offset = [0,0,0]
+                A, R, n = [0,0,0]
             plt.figure(figsize=(20,10))
             mng_g2 = plt.get_current_fig_manager()
             mng_g2.window.showMaximized()
             self.manmin = int(self.manmin)
             self.manmax = int(self.manmax)
             plt.scatter(vin1[self.manmin:self.manmax], iin1[self.manmin:self.manmax], label='Data',color='black')
-            plt.plot(vin1[self.manmin:self.manmax], sclc_p(vin1[self.manmin:self.manmax], A, R, offset), label=f'Ajuste manual', color='orange')
+            plt.plot(vin1[self.manmin:self.manmax], sclc_p(vin1[self.manmin:self.manmax], A, R, n), label=f'Ajuste manual', color='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
             plt.ylabel('I (mA)')
@@ -855,6 +853,7 @@ class VentanaAjustes(QWidget):
         layout = QVBoxLayout(self)
         h_layout1 = QHBoxLayout()
         h_layout2 = QHBoxLayout()
+        h_layout3 = QHBoxLayout()
         
         self.copy_button1 = QPushButton('♻', self)
         self.copy_button1.setFixedSize(30, 30)  # Set the button to be square
@@ -863,9 +862,13 @@ class VentanaAjustes(QWidget):
         self.copy_button2 = QPushButton('♻', self)
         self.copy_button2.setFixedSize(30, 30)  # Set the button to be square
         self.copy_button2.clicked.connect(partial(self.copy_to_clipboard2, popt, errores))
+
+        self.copy_button3 = QPushButton('♻', self)
+        self.copy_button3.setFixedSize(30, 30)  # Set the button to be square
+        self.copy_button3.clicked.connect(partial(self.copy_to_clipboard3, popt, errores))
         
         # Create non-editable text displays
-        self.text_display0 = QLineEdit(r'A*V**2+V/R')
+        self.text_display0 = QLineEdit(r'A*V**n+V/R')
         self.text_display0.setReadOnly(True)
         layout.addWidget(self.text_display0)
         
@@ -875,15 +878,22 @@ class VentanaAjustes(QWidget):
         
         self.text_display2 = QLineEdit('R = '+str(np.round(popt[1],3))+' ± '+str(np.round(errores[1],3))+' kOhm')
         self.text_display2.setReadOnly(True)
+
+        self.text_display3 = QLineEdit('n = '+str(np.round(popt[2],3))+' ± '+str(np.round(errores[2],3)))
+        self.text_display2.setReadOnly(True)
         
         h_layout1.addWidget(self.text_display1)
         h_layout1.addWidget(self.copy_button1)
         
         h_layout2.addWidget(self.text_display2)
         h_layout2.addWidget(self.copy_button2)
+
+        h_layout3.addWidget(self.text_display3)
+        h_layout3.addWidget(self.copy_button3)
         
         layout.addLayout(h_layout1)
         layout.addLayout(h_layout2)
+        layout.addLayout(h_layout3)
         
         self.setLayout(layout)
         
@@ -898,6 +908,14 @@ class VentanaAjustes(QWidget):
     def copy_to_clipboard2(self,popt, errores):
         text1 = str(np.round(popt[1],3))
         text2 = str(np.round(errores[1],3))
+        text = text1 + '±' + text2
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
+        return
+    
+    def copy_to_clipboard3(self,popt, errores):
+        text1 = str(np.round(popt[2],3))
+        text2 = str(np.round(errores[2],3))
         text = text1 + '±' + text2
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
