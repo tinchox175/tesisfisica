@@ -14,6 +14,7 @@ from a34420a import *
 import numpy as np # type: ignore
 import time
 from ls340 import *
+from lsdrc91ca import *
 from hp34970a import *
 import csv
 from decimal import Decimal
@@ -86,9 +87,6 @@ r2_plot = []
 def lecturas(mode = 'bip'): #esta funcion lee los aparatos y guarda todo lo que lee en el registro final
     data_t = time.strftime("%H %M %S", time.localtime())
     tiempo_pasar = time.time()-t0_lectura
-    #switch = hp34970()
-    #switch.open_channels([211,212,221,222])
-    #switch.close_channels([211,221])
     data_rs = []
     data_r = N_stat_msr()
     controller = LakeShore340(gpib_address=12)
@@ -102,12 +100,7 @@ def lecturas(mode = 'bip'): #esta funcion lee los aparatos y guarda todo lo que 
     data_rs.append(data_r[0])
     data_rs.append(data_r[1])
     data_rs.append(data_r[0]/data_r[1])
-    #switch = hp34970()
     controller = LakeShore340(gpib_address=12)
-    #switch.open_channels([211,212,221,222])
-    #switch.close_channels([212,222])
-    #data_r = one_msr()
-    #switch = hp34970()
     controller = LakeShore340(gpib_address=12)
     dpg.set_value("r2l", f'{format(data_r[0]/data_r[1],'.3e')} Ohm')
     r2_plot.append(data_r[0]/data_r[1])

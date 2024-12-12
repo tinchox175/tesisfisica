@@ -74,7 +74,6 @@ for j in fil:
     ax2.set_xlabel('Frecuencia (Hz)')
     ax2.set_xscale('log')
     ax2.set_ylabel('X')
-    ax1.set_xscale('log')
 
     ax1.grid()
     ax2.grid()
@@ -90,7 +89,7 @@ plt.show()
 from scipy.integrate import simpson, trapezoid
 import scipy as sp
 for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, -1]:
-    fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(20,12), sharex=True)
+    fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(5,8), sharex=True)
     marker = marker_l()
     for a in [
     'ZdeW_1234_Temperatura_85.12_K_1236',
@@ -125,9 +124,10 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
                 R = data[1][fi]
                 X = data[3][fi]
                 Z = np.sqrt(R**2 + X**2)
+                theta = np.arctan(X/R)
                 Vdc = (i.split('_')[-2]).split('.')[0]
                 xplot.append(float(Vdc))
-                yplot.append(float(Z))
+                yplot.append(float(R))
         fig.suptitle(f'K freq = {f}')
         xplot = np.array(xplot)
         yplot = np.array(yplot)
@@ -136,18 +136,64 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
         xplot = xplot[idx_order]
         yplot = yplot[idx_order]
         ax1.plot(xplot, yplot, label=f'{folder_path.split('_')[5]} K', marker=mk, markersize=8, alpha=0.7, linewidth=0.5, linestyle='--')
-        ax1.set_ylabel('Z [Ohm]')
+        ax1.set_ylabel('Re(Z) [Ohm]')
         ax1.grid(True)
         ax2.plot(xplot, 1/yplot, marker=mk, markersize=8, alpha=0.7, linewidth=0.5, linestyle='--')
-        ax2.set_ylabel('1/Z')
+        ax2.set_ylabel('1/Re(Z)')
         ax2.grid(True)
         yint = sp.integrate.cumulative_trapezoid(yplot, xplot, initial=0)
         ax3.plot(xplot, yint, marker=mk, markersize=8, alpha=0.7, linewidth=0.5, linestyle='--')
-        ax3.set_ylabel('$\int{1/Z(V_{dc}) dV_{dc}}$')
+        ax3.set_ylabel('$\int{1/Re(Z)(V_{dc}) dV_{dc}}$')
         ax3.set_xlabel('Offset (V)')
         ax3.grid(True)
         ax1.legend()
         plt.tight_layout()
     plt.savefig(f'{a} {f}.png')
+plt.show()
+# %%
+#%%
+# Example usage
+%matplotlib qt
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 7))
+dirs = "C:/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+fil = list_folders_in_folder(dirs)
+marker = marker_l()
+for j in fil:
+    folder_path = dirs+j
+    if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
+        pass
+    files = get_files_with_path(folder_path)
+    fig.suptitle('X5 $V_{dc}=0$')
+    
+    for i in files:
+        if float((i.split('_')[-2]).split('.')[0])>0.00:
+            break
+        data = np.genfromtxt(i, unpack=True, delimiter=',')
+        f = data[0][1:]
+        R = data[1][1:]
+        X = data[3][1:]
+        Z = np.sqrt(R**2 + X**2)
+        theta = np.arctan(X/R)
+        time = data[0]
+        mk = next(marker)
+        ax1.plot(f, Z, markerfacecolor=None, marker= mk, label=f'{folder_path.split('_')[5]} K')
+        ax2.plot(f, theta, markerfacecolor=None, marker= mk, label=f'{folder_path.split('_')[5]} K')
+        #if n == True:
+        #    ax1.set_ylim(np.min(data[1]),np.max(data[1][1:]))
+        #    n = False
+        #name = f'{folder_path.split('_')[4]} K'
+    ax1.set_ylabel('Z ($\Omega$)')
+    ax2.set_xlabel('f (Hz)')
+    ax2.set_xscale('log')
+    ax1.set_xscale('log')
+    #ax1.set_yscale('log')
+    ax2.set_ylabel('$\\theta$')
+    ax1.grid(True)
+    ax2.grid(True)
+    #ax2.legend()
+    # Adjust layout to make room for the legend
+    plt.tight_layout()
+    
+plt.savefig(f'X5.png')
 plt.show()
 # %%

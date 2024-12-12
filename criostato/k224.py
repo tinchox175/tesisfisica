@@ -108,12 +108,12 @@ class KEITHLEY_224(object):
 
     @current.setter
     def current(self, current):
-        if (current < -0.101):
+        if (current < -0.11):
             self._current = current
-            self._inst.write('I' + '-0.100' + 'X')
-        elif (current > 0.101):
+            self._inst.write('I' + '-0.10' + 'X')
+        elif (current > 0.11):
             self._current = current
-            self._inst.write('I' + '0.100' + 'X')
+            self._inst.write('I' + '0.10' + 'X')
         else:
             self._current = current
             self._inst.write('I' + _format_e(current) + 'X')
