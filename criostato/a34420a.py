@@ -1,11 +1,12 @@
 import pyvisa
 
 class Agilent34420A:
-    def __init__(self, resource_string="GPIB0::7::INSTR"):
+    def __init__(self, resource_string="GPIB0::7::INSTR", range=0.1):
         self.resource_string = resource_string
         self.rm = pyvisa.ResourceManager()
         self.instrument = self.rm.open_resource(self.resource_string)
         self.configure_device()
+        self.set_range(range)
         
     def configure_device(self, voltage_range=0.1, resolution=1e-7):
         """

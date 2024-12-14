@@ -1,0 +1,50 @@
+import numpy as np
+
+# Temperatures (K)
+T = np.arange(0, 401, 25)
+
+rho_0p1mA = np.array([3000, 2000, 1000, 500, 300, 150, 100, 60, 30, 18, 10, 5, 3, 1.8, 1, 0.6, 0.3])
+rho_10mA  = np.array([10, 8.5, 7, 5.5, 4, 3, 2, 1.5, 1, 0.85, 0.7, 0.55, 0.4, 0.3, 0.2, 0.175, 0.15])
+rho_20mA  = np.array([3, 2.5, 2, 1.5, 1, 0.9, 0.8, 0.6, 0.4, 0.33, 0.25, 0.2, 0.15, 0.13, 0.12, 0.11, 0.1])
+
+# Print the dataset
+print("T (K) | rho_0.1mA (Ω·cm) | rho_10mA (Ω·cm) | rho_20mA (Ω·cm)")
+for i in range(len(T)):
+    print(f"{T[i]:<4} | {rho_0p1mA[i]:<16} | {rho_10mA[i]:<15} | {rho_20mA[i]}")
+
+import numpy as np
+
+# δ = 0 data
+T_d0 = np.array([50, 100, 150, 200, 250, 300, 350, 400])
+rho_c_d0 = np.array([5.0e5, 2.0e5, 1.0e5, 5.0e4, 3.0e4, 1.5e4, 8.0e3, 4.0e3])
+rho_a_d0 = np.array([2.0e4, 5.0e3, 2.0e3, 1.0e3, 6.0e2, 3.0e2, 2.0e2, 1.0e2])
+
+# δ ≈ 0.04 data
+T_d004 = np.array([5, 25, 50, 75, 100, 125, 150, 200, 300, 400])
+rho_c_d004 = np.array([0.25, 10, 1.0e3, 1.0e7, 1.0e9, 1.0e6, 1.0e4, 1.0e2, 5, 0.5])
+rho_a_d004 = np.array([0.03, 0.1, 1.0, 10, 30, 10, 3, 1, 0.3, 0.1])
+
+print("δ=0 dataset:")
+print("T (K) | ρ_c (Ω·cm) | ρ_a (Ω·cm)")
+for i in range(len(T_d0)):
+    print(f"{T_d0[i]:<4} | {rho_c_d0[i]:<10} | {rho_a_d0[i]}")
+
+print("\nδ≈0.04 dataset:")
+print("T (K) | ρ_c (Ω·cm)   | ρ_a (Ω·cm)")
+for i in range(len(T_d004)):
+    print(f"{T_d004[i]:<4} | {rho_c_d004[i]:<12} | {rho_a_d004[i]}")
+
+
+import numpy as np
+
+T = np.array([10, 20, 30, 40, 50, 60, 80, 100, 120, 150, 200])
+
+rho_0p05mA = np.array([0.020, 0.020, 0.020, 0.020, 0.020, 0.020, 0.020, 0.020, 0.020, 0.020, 0.020])
+rho_1mA    = np.array([0.025, 0.035, 0.060, 0.10, 0.15, 0.30, 2.0, 6.0, 5.0, 1.0, 0.20])
+rho_5mA    = np.array([0.040, 0.060, 0.20, 0.50, 2.0, 1.5, 0.80, 0.40, 0.20, 0.10, 0.05])
+rho_14mA   = np.array([0.10, 0.20, 1.0, 0.80, 0.60, 0.50, 0.30, 0.20, 0.15, 0.10, 0.07])
+
+print("T(K)  | ρ_c(0.05mA) | ρ_c(1mA) | ρ_c(5mA) | ρ_c(14mA)")
+for i in range(len(T)):
+    print(f"{T[i]:<5} | {rho_0p05mA[i]:<11} | {rho_1mA[i]:<9} | {rho_5mA[i]:<9} | {rho_14mA[i]}")
+

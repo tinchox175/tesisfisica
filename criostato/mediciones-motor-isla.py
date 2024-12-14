@@ -127,6 +127,7 @@ def N_stat_msr():
     i_bias = dpg.get_value("i_bias")
     vlim = dpg.get_value("vlim")
     instrument_v = Agilent34420A("GPIB0::7::INSTR")
+    instrument_v.set_range(dpg.get_value('v_range'))
     instrument_c = k224.KEITHLEY_224("GPIB0::2::INSTR")
     instrument_c.voltage = float(vlim)
     meas_v = []
@@ -198,7 +199,9 @@ with dpg.window(label="LSDRC91CA", width=w, height=60, pos=(0,290)):
     dpg.add_text("Estabilidad (s)", pos=(20,20))
     motor = dpg.add_input_text(default_value=f"{dpg.get_value("M_m")}", width=40, tag="M_in", pos=(150, 40))
     dpg.add_text("Voltaje motor", pos=(150, 20))
-    dpg.add_button(label='Motor', callback=lambda:update_vars(), pos=(20,120))
+    rvolt = dpg.add_input_text(default_value=f"{0.01}", width=40, tag="v_range", pos=(20, 80))
+    dpg.add_text("Rango volt.", pos=(20, 60))
+    dpg.add_button(label='Motor', callback=lambda:update_vars(), pos=(150,60))
 
 
 def crea_tablas_T(sender, app_data, user_data):
@@ -295,11 +298,11 @@ def ramp_T(T, rate):
         T_real = controller.read_temperature()
         setpoint = i
         v = float(v)
-        if float(T_real)>float(setpoint)+1 and v > 1.2 and float(controller.get_HTR())<10.0:
+        if float(T_real)>float(setpoint)+1.5 and v > 1.5 and float(controller.get_HTR())<10.0:
             v -= 0.1
-        elif float(T_real)<float(setpoint)-1 and v < 4.8 and float(controller.get_HTR())>70.0:
+        elif float(T_real)<float(setpoint)-1.5 and v < 4.0 and float(controller.get_HTR())>70.0:
             v += 0.1
-        elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
+        elif float(T_real)<float(setpoint)+1.5 and float(T_real)>float(setpoint)-1.5:
             v = 2.6
         lecturas()
         time.sleep(1)
@@ -334,7 +337,7 @@ def medir_tabla_T():#a temperaturas fijas barre campos
         T_real = controller.read_temperature()
         tiempo_est = time.time()
         v = 2.6
-        while abs(float(T_real)-float(setpoint)) > float(setpoint)*0.01: #mientras la diferencia es mayor a un porcentaje del setpoint no hace nada
+        while abs(float(T_real)-float(setpoint)) > 0.5: #mientras la diferencia es mayor a un porcentaje del setpoint no hace nada
             update_vars()
             algo_T = dpg.get_item_children("Tabla", 1)
             parametros_T = dpg.get_item_children(algo_T[n], 1)
@@ -345,7 +348,7 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             supply = AgilentE3643A()
             supply.apply(v)
             v = float(v)
-            if float(T_real)>float(setpoint)+1 and v > 1.2 and float(controller.get_HTR())<10.0 :
+            if float(T_real)>float(setpoint)+1 and v > 1.5 and float(controller.get_HTR())<10.0 :
                 v -= 0.05
             elif float(T_real)<float(setpoint)-1 and v < 4.0 and float(controller.get_HTR())>70.0:
                 v += 0.05
@@ -371,10 +374,10 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             estable = float(estable)
             T_real = controller.read_temperature() #acá abajo dice que si la diferencia es mayor a un porcentaje, empiece a contar otra vez
             v = float(v)
-            if float(T_real)>float(setpoint)+1 and v < 1.2 and float(controller.get_HTR())<10.0:
-                v += 0.05
-            elif float(T_real)<float(setpoint)-1 and v > 4.8 and float(controller.get_HTR())>70.0:
-                v -= 0.05
+            if float(T_real)>float(setpoint)+1 and v < 1.5 and float(controller.get_HTR())<10.0:
+                v += 0.1
+            elif float(T_real)<float(setpoint)-1 and v > 4.0 and float(controller.get_HTR())>70.0:
+                v -= 0.1
             elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
                 v = 2.6
             update_vars()

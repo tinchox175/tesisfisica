@@ -13,7 +13,7 @@ ivolt = Agilent34420A()
 ivolt.set_range(1)
 icurr.voltage = float(20)
 
-def msr(cu,bias=False):
+def msr(cu,bias=True):
     tem = time.time()
     if bias == True:
         true_v = []
@@ -25,17 +25,25 @@ def msr(cu,bias=False):
             print('opc?1')
         v_bias.append(np.abs(med_v))
         sent_i.append(np.abs(float(cu)))
+        print(str(time.time()-tem)+'Pulso +')
+        icurr.operate = False
+        time.sleep(1-(time.time()-tem))
+        print(str(time.time()-tem)+'Sleep')
         icurr.current = -float(cu)
+        icurr.operate = True
         med_v = ivolt.measure_voltage()
         while float(ivolt.custom_command('*OPC?')) != 1:
             print('opc?2')
         v_bias.append(np.abs(med_v))
         sent_i.append(np.abs(float(-cu)))
-        #icurr.operate = False
+        print(str(time.time()-tem)+'Pulso -')
+        icurr.operate = False
         v_bias = np.mean(v_bias)
         v_iv = v_bias
         #print(med_v, v_bias)
         i_mean = np.mean(sent_i)
+        time.sleep(1-(time.time()-tem))
+        print(str(time.time()-tem)+'Sleep')
         print(time.time()-tem)
     else:
         icurr.current = float(cu)
@@ -45,10 +53,11 @@ def msr(cu,bias=False):
         #icurr.operate = False
         print(time.time()-tem)
         v_bias = 0
-    return [v_iv, cu,v_bias, cu]
+    tr = time.time()-tt
+    return [tr, v_iv, cu,v_bias, cu]
 #%%
 def add_row(values, file_name, ctrl=0):
-    directory = 'C:/tesis git/tesisfisica/criostato/Archivos/iv/1012'
+    directory = 'C:/tesis git/tesisfisica/criostato/Archivos/iv/1312'
     file_path = directory +'/'+ file_name + '.csv'
     with open(file_path, mode='a+', newline='') as file:
         writer = csv.writer(file)
@@ -56,11 +65,12 @@ def add_row(values, file_name, ctrl=0):
 #%%
 datas = []
 min = 1e-3
-max = 50e-3
-ctd = 100
+max = 20e-3
+ctd = 50
+tt = time.time()
 curva = np.linspace(min,max, ctd)
 curva_r = np.linspace(max, min, ctd)
-name = 'iv(ac20hz2vpp)-x5-i-95K'
+name = 'iv-x5-a-10K'
 #name = 'iv(+-)-x5-test6'
 plt.ion()  # Turn on interactive mode
 fig, ax = plt.subplots()
