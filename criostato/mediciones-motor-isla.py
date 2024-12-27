@@ -137,7 +137,6 @@ def N_stat_msr():
         instrument_c.voltage = float(vlim)
         instrument_c.current = float(i_bias)
         instrument_c.operate = True
-        time.sleep(1)
         med_v = instrument_v.measure_voltage()
         while float(instrument_v.custom_command('*OPC?')) != 1:
             print('opc?1')
@@ -202,6 +201,10 @@ with dpg.window(label="LSDRC91CA", width=w, height=60, pos=(0,290)):
     rvolt = dpg.add_input_text(default_value=f"{0.01}", width=40, tag="v_range", pos=(20, 80))
     dpg.add_text("Rango volt.", pos=(20, 60))
     dpg.add_button(label='Motor', callback=lambda:update_vars(), pos=(150,60))
+    motorh = dpg.add_input_text(default_value=f"{4.8}", width=40, tag="mhi", pos=(270, 40))
+    dpg.add_text("Motor Hi", pos=(270, 20))
+    motorl = dpg.add_input_text(default_value=f"{1.2}", width=40, tag="mlo", pos=(150, 80))
+    dpg.add_text("Motor Lo", pos=(270, 60))
 
 
 def crea_tablas_T(sender, app_data, user_data):
@@ -280,47 +283,48 @@ def ramp_T(T, rate):
     controller = LakeShoreDRC91CA()
     current_setpoint = controller.read_temperature()
     target_setpoint = float(T)
-    if target_setpoint > current_setpoint:
+    print(current_setpoint, target_setpoint, rate)
+    if target_setpoint > current_setpoint and float(rate) < 0:
         rate = -float(rate)
     rampa = np.arange(float(current_setpoint), float(target_setpoint), float(rate)/12)
     try:
-        rampa[-1] = target_setpoint
+        rampa = np.append(rampa, target_setpoint)
     except IndexError:
         rampa = np.arange(float(current_setpoint), float(target_setpoint), float(-rate)/12)
-        rampa[-1] = target_setpoint
+        rampa = np.append(rampa, target_setpoint)
     v = 2.6
     for i in rampa:
-        update_vars()
-        controller = LakeShoreDRC91CA()
-        controller.set_setpoint(f'{np.round(i,2)}')
-        supply = AgilentE3643A()
-        supply.apply(v)
-        T_real = controller.read_temperature()
-        setpoint = i
-        v = float(v)
-        if float(T_real)>float(setpoint)+1.5 and v > 1.5 and float(controller.get_HTR())<10.0:
-            v -= 0.1
-        elif float(T_real)<float(setpoint)-1.5 and v < 4.0 and float(controller.get_HTR())>70.0:
-            v += 0.1
-        elif float(T_real)<float(setpoint)+1.5 and float(T_real)>float(setpoint)-1.5:
-            v = 2.6
-        lecturas()
-        time.sleep(1)
-        t_report = time.time()-t0
-        dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t_report)))
-        t_tot = time.time()-tiempo_total
-        dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
-        #if skip_ramp == 1:
-        #    break
-    #skip_ramp = 0
+        tK = time.time()
+        while (time.time()-tK) < 60/12:
+            update_vars()
+            controller = LakeShoreDRC91CA()
+            controller.set_setpoint(f'{np.round(i,2)}')
+            supply = AgilentE3643A()
+            supply.apply(v)
+            T_real = controller.read_temperature()
+            setpoint = i
+            v = float(v)
+            if float(T_real)>float(setpoint)+1.5 and v > 2.0 and float(controller.get_HTR())<10.0:
+                v -= 0.1
+            elif float(T_real)<float(setpoint)-1.5 and v < 3.0 and float(controller.get_HTR())>70.0:
+                v += 0.1
+            elif float(T_real)<float(setpoint)+1.5 and float(T_real)>float(setpoint)-1.5:
+                v = 2.6
+            lecturas()
+            time.sleep(1)
+            t_report = time.time()-t0
+            dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t_report)))
+            t_tot = time.time()-tiempo_total
+            dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot)))
     supply = AgilentE3643A()
     supply.apply(2.6)
 
-tiempo_total = time.time()
+tiempo_total = 0
 
 #skip_ramp = 0
 
 def medir_tabla_T():#a temperaturas fijas barre campos
+    tiempo_total = time.time()
     update_vars()
     tiempo_start = time.time() #pongo tiempos iniciales y levanto las listas que se van a medir
     tiempo_est = 0
@@ -348,9 +352,9 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             supply = AgilentE3643A()
             supply.apply(v)
             v = float(v)
-            if float(T_real)>float(setpoint)+1 and v > 1.5 and float(controller.get_HTR())<10.0 :
+            if float(T_real)>float(setpoint)+1 and v > 2.0 and float(controller.get_HTR())<10.0 :
                 v -= 0.05
-            elif float(T_real)<float(setpoint)-1 and v < 4.0 and float(controller.get_HTR())>70.0:
+            elif float(T_real)<float(setpoint)-1 and v < 3.0 and float(controller.get_HTR())>70.0:
                 v += 0.05
             elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
                 v = 2.6
@@ -374,9 +378,9 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             estable = float(estable)
             T_real = controller.read_temperature() #acá abajo dice que si la diferencia es mayor a un porcentaje, empiece a contar otra vez
             v = float(v)
-            if float(T_real)>float(setpoint)+1 and v < 1.5 and float(controller.get_HTR())<10.0:
+            if float(T_real)>float(setpoint)+1 and v < 2.0 and float(controller.get_HTR())<10.0:
                 v += 0.1
-            elif float(T_real)<float(setpoint)-1 and v > 4.0 and float(controller.get_HTR())>70.0:
+            elif float(T_real)<float(setpoint)-1 and v > 3.0 and float(controller.get_HTR())>70.0:
                 v -= 0.1
             elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
                 v = 2.6
