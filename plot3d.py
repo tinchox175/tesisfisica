@@ -52,6 +52,7 @@ for j in fil:
 plt.show()
 #%%
 from matplotlib.colors import LinearSegmentedColormap
+from scipy.interpolate import griddata
 colors = [
     (0.0, "#000000"),   # Black at -5
     (0.1, "#2c105c"),   # Deep purple
@@ -73,6 +74,9 @@ colors = [
 X = []
 Y = []
 Z = []
+X0 = []
+Y0 = []
+Z0 = []
 dirs = "C:/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
@@ -94,9 +98,12 @@ for j in fil:
         X = data[0][2:]
         Z = data[1][2:]
         Y = np.full_like(X, (i.split('_')[-2]).split('.')[0])
+        X0 = np.append(X0,X)
+        Y0 = np.append(Y0,Y)
+        Z0 = np.append(Z0,Z)
         norm = Normalize(vmin=-5, vmax=10)
         positions, color_names = zip(*colors)
-        sc = ax.scatter(X, Y, edgecolors= "black", c=Z, cmap = LinearSegmentedColormap.from_list("custom_cmap", list(colors)), norm=norm, s=500)
+        # sc = ax.scatter(X, Y, edgecolors= "black", c=Z, cmap = LinearSegmentedColormap.from_list("custom_cmap", list(colors)), norm=norm, s=500)
         ax.xaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
         ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
         ax.axvline(180,0,200, c='gray', ls='--')
@@ -105,9 +112,15 @@ for j in fil:
         ax.set_ylabel('Offset [mV]')
         ax.set_xscale('log')
         ax.grid(True) 
-    cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
+    #cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
+    xi = np.linspace(np.min(X0), np.max(X0), 1000)  # 200 is an example resolution
+    yi = np.linspace(np.min(Y0), np.max(Y0), 1000)
+    Xi, Yi = np.meshgrid(xi, yi)
+    Zi = griddata((X0, Y0), Z0, (Xi, Yi), method='nearest')
+    mesh = ax.pcolormesh(Xi, Yi, Zi, cmap='viridis', shading='auto')
+    plt.colorbar(mesh, label='Resistance [Ohm]')
     plt.tight_layout()
-    plt.savefig(f'c:/tesis git/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
-    #break
+    # plt.savefig(f'c:/tesis git/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
+    break
 plt.show()
 # %%
