@@ -9,7 +9,9 @@ Created on Wed Jul  3 20:57:00 2024
 import sys
 from functools import partial
 from PyQt5.Qt import *
+from PyQt5.Qt import QHBoxLayout, QApplication, QFont, QSize, QScrollArea, QMenu, QAction, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QLineEdit, QFileDialog
 from PyQt5 import QtGui
+from PyQt5.Qt import Qt
 import scipy.signal
 import numpy as np
 from numpy import diff
@@ -111,7 +113,6 @@ class MyWindow(QMainWindow):
         self.layout.addWidget(self.sign, 3, 5)
         self.sign.setFixedSize(130, 50)
         self.menu = QMenu(self)
-        
         action1 = QAction('Todos', self)
         action2 = QAction('Positivos', self)
         action3 = QAction('Negativos', self)
@@ -123,6 +124,11 @@ class MyWindow(QMainWindow):
         self.menu.addAction(action3)
         self.sign.setMenu(self.menu)
         
+        ponbus = PushButton('Buscador', self)
+        ponbus.clicked.connect(partial(self.ponbuscador))
+        self.layout.addWidget(ponbus, 3, 4)
+        ponbus.setFixedSize(130, 50)
+        ponbus.setCheckable(True)
         
         lim_man = QLineEdit(self)
         lim_man.setPlaceholderText(self.memoria[3])
@@ -150,6 +156,9 @@ class MyWindow(QMainWindow):
         self.modo = 'no_t'
         self.posneg = 'todo'
         self.channel = '1'
+        self.filt = 'no'
+        self.ponbus = 'no'
+
         self.texto_archivos = self.memoria[0].split('¡')
         self.p0fit = []
         self.p_manual = []
@@ -162,6 +171,7 @@ class MyWindow(QMainWindow):
         for i in self.memoria[4].split(','):
             self.p_manual.append(float(i))
         self.fileName = []
+        print(self.texto_archivos)
         try:
             if type(self.texto_archivos)!=list:
                 index = self.texto_archivos.find(r'/IVs')
@@ -173,6 +183,21 @@ class MyWindow(QMainWindow):
                     index = i.find(r'/IVs')
                     i = i[index:]
                     self.fileName.append(i)
+        except TypeError:
+            self.fileName = [str(self.texto_archivos)]
+        try:
+            if 'criostato' in self.texto_archivos[0]:
+                self.fileName = []
+                if type(self.texto_archivos)!=list:
+                    index = self.texto_archivos.find(r'/criostato')
+                    self.texto_archivos = self.texto_archivos[index:]
+                    self.fileName = self.texto_archivos
+                    print(self.fileName)
+                else:
+                    for i in self.texto_archivos:
+                        index = i.find(r'/criostato')
+                        i = i[index:]
+                        self.fileName.append(i)
         except TypeError:
             self.fileName = [str(self.texto_archivos)]
         
@@ -191,6 +216,12 @@ class MyWindow(QMainWindow):
         button.clicked.connect(partial(self.onClicked, 'Panorama'))
         button.setCheckable(True)
         self.layout.addWidget(button, 0, 1)
+        button.setFixedSize(130, 50)  
+
+        button = PushButton(f'Filtrado', self)
+        button.clicked.connect(partial(self.filter))
+        button.setCheckable(True)
+        self.layout.addWidget(button, 3, 2)
         button.setFixedSize(130, 50)  
         
         graph = PushButton('Graficar', self)
@@ -215,10 +246,13 @@ class MyWindow(QMainWindow):
 
         caction1 = QAction('1', self)
         caction2 = QAction('2', self)
+        caction3 = QAction('Criostato', self)
         caction1.triggered.connect(partial(self.selcan, '1'))
         caction2.triggered.connect(partial(self.selcan, '2'))
+        caction3.triggered.connect(partial(self.selcan, 'Criostato'))
         self.menu.addAction(caction1)
         self.menu.addAction(caction2)
+        self.menu.addAction(caction3)
         self.chnl.setMenu(self.menu)
 
         scroll_area = QScrollArea(self)
@@ -242,10 +276,10 @@ class MyWindow(QMainWindow):
             except ValueError:
                 pass
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
         except:
             try:
-                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
             except (IndexError, TypeError) as e:
                 pass
             pass
@@ -260,7 +294,7 @@ class MyWindow(QMainWindow):
             except ValueError:
                 pass
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+','+str(self.p0fit[2])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
         except (IndexError, TypeError) as e:
             pass    
     def update_lim_man(self, text):
@@ -274,12 +308,12 @@ class MyWindow(QMainWindow):
         print(self.manmin, self.manmax)
         print(self.texto_archivos)
         print(type(self.texto_archivos))
-        np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
         except TypeError:
             try:
-                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+                print([self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
             except (IndexError, TypeError) as e:
                 pass
             pass
@@ -293,7 +327,7 @@ class MyWindow(QMainWindow):
             except ValueError:
                 pass
         try:
-            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+            np.savetxt('tempfile.txt', [self.texto_archivos[-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
         except (IndexError, TypeError) as e:
             pass
         
@@ -307,7 +341,13 @@ class MyWindow(QMainWindow):
        elif sg == 'neg':
            self.posneg = 'neg'
            self.sign.setText('Signo (-)')
-        
+    
+    def ponbuscador(self):
+        if self.ponbus=='si':
+            self.ponbus = 'no'
+        elif self.ponbus == 'no':
+            self.ponbus = 'si'
+
     def manual(self):
         if self.var_man=='si':
             self.var_man = 'no'
@@ -325,7 +365,7 @@ class MyWindow(QMainWindow):
             self.var_sclc_p = 'no'
         elif self.var_sclc_p == 'no':
             self.var_sclc_p = 'si'
-            
+    
     def residuos(self):
         if self.var_res=='si':
             self.var_res = 'no'
@@ -344,57 +384,121 @@ class MyWindow(QMainWindow):
             print(self.fileName+'str')
         elif type(self.fileName) == list:
             print(self.fileName, 'list')
+    
+    def filter(self):
+        if self.filt=='no':
+            self.filt='si'
+        elif self.filt=='si':
+            self.filt='no'
+
     def graficar_g(self):
-        print(self.fileName)
         if str(type(self.fileName)) == '<class \'str\'>':
             archivo_actual = self.fileName
         elif str(type(self.fileName)) == '<class \'list\'>':
             archivo_actual = self.fileName[0]
-        data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-        data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
+        try:
+            data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+            data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
+        except:
+            print('No se pudo abrir el archivo')
+            return
+        if 'criostato' in archivo_actual:
+                self.channel = 'crio'
         if '(K)' in data_t[1][0]:
             self.modo = 'si_t'
         elif '(K)' not in data_t[1][0]:
             self.modo = 'no_t'
         else:
             print('ups')
-        if self.modo == 'no_t':
-            self.indoff = self.newoff(data[1])
-            time = data[0][~np.isnan(data[0])] #tiempo
-            ipul = data[1][~np.isnan(data[1])] #I pulso
-            try:
-                vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
-            except IndexError:
-                vin1 = np.array(data[2][~np.isnan(data[2])])
-            iin1 = data[3][~np.isnan(data[3])] #I instant
-            rin1 = data[4][~np.isnan(data[4])] #R instant
-            rre1 = data[5][~np.isnan(data[5])] #R remanente
-            ibi1 = data[6][~np.isnan(data[6])] #I bias
-            vbi1 = data[7][~np.isnan(data[7])] #V bias
-            wpul = data[14][~np.isnan(data[14])] #ancho pulso
-            peri = data[15][~np.isnan(data[15])] #periodo
-            temperatura = 'T_amb'
-        elif self.modo == 'si_t':
-            self.indoff = self.newoff(data[2])
-            time = data[0][~np.isnan(data[0])] #tiempo
-            temp = data[1][~np.isnan(data[1])] #temp(k)
-            ipul = data[2][~np.isnan(data[0])] #I pulso
-            try:
-                vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
-            except IndexError:
-                vin1 = np.array(data[3][~np.isnan(data[3])])
-            iin1 = data[4][~np.isnan(data[4])] #I instant
-            rin1 = data[5][~np.isnan(data[5])] #R instant
-            rre1 = data[6][~np.isnan(data[6])] #R remanente
-            ibi1 = data[7][~np.isnan(data[7])] #I bias
-            vbi1 = data[8][~np.isnan(data[8])] #V bias
-            wpul = data[15][~np.isnan(data[15])] #ancho pulso
-            peri = data[16][~np.isnan(data[16])] #periodo
-            temperatura = temp[0]
+        if self.channel == '1':
+            if self.modo == 'no_t':
+                self.indoff = self.newoff(data[1])
+                time = data[0][~np.isnan(data[0])] #tiempo
+                ipul = data[1][~np.isnan(data[1])] #I pulso
+                try:
+                    vin1 = np.array(data[2][~np.isnan(data[2])])-(data[2][~np.isnan(data[2])][self.indoff[0]-1]+data[2][~np.isnan(data[2])][self.indoff[0]+1])/2 #V instant
+                except IndexError:
+                    vin1 = np.array(data[2][~np.isnan(data[2])])
+                iin1 = data[3][~np.isnan(data[3])] #I instant
+                rin1 = data[4][~np.isnan(data[4])] #R instant
+                rre1 = data[5][~np.isnan(data[5])] #R remanente
+                ibi1 = data[6][~np.isnan(data[6])] #I bias
+                vbi1 = data[7][~np.isnan(data[7])] #V bias
+                wpul = data[14][~np.isnan(data[14])] #ancho pulso
+                peri = data[15][~np.isnan(data[15])] #periodo
+                temperatura = 'T_amb'
+            elif self.modo == 'si_t':
+                self.indoff = self.newoff(data[2])
+                time = data[0][~np.isnan(data[0])] #tiempo
+                temp = data[1][~np.isnan(data[1])] #temp(k)
+                ipul = data[2][~np.isnan(data[0])] #I pulso
+                try:
+                    vin1 = np.array(data[3][~np.isnan(data[3])])-(data[3][~np.isnan(data[3])][self.indoff[0]-1]+data[3][~np.isnan(data[3])][self.indoff[0]+1])/2 #V instant
+                except IndexError:
+                    vin1 = np.array(data[3][~np.isnan(data[3])])
+                iin1 = data[4][~np.isnan(data[4])] #I instant
+                rin1 = data[5][~np.isnan(data[5])] #R instant
+                rre1 = data[6][~np.isnan(data[6])] #R remanente
+                ibi1 = data[7][~np.isnan(data[7])] #I bias
+                vbi1 = data[8][~np.isnan(data[8])] #V bias
+                wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                peri = data[16][~np.isnan(data[16])] #periodo
+                temperatura = temp[0]
+        elif self.channel=='2':
+                if self.modo == 'no_t':
+                    iin1 = data[9][~np.isnan(data[9])] #I instant
+                    self.indoff = self.newoff(iin1)
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    ipul = data[1][~np.isnan(data[1])] #I pulso
+                    try:
+                        vin1 = np.array(data[8][~np.isnan(data[9])])-np.array(data[9][~np.isnan(data[9])][self.indoff]) #V instant
+                    except IndexError:
+                        vin1 = np.array(data[8][~np.isnan(data[9])])
+                    rin1 = data[10][~np.isnan(data[10])] #R instant
+                    rre1 = data[11][~np.isnan(data[11])] #R remanente
+                    ibi1 = data[12][~np.isnan(data[12])] #I bias
+                    vbi1 = data[13][~np.isnan(data[13])] #V bias
+                    wpul = data[14][~np.isnan(data[14])] #ancho pulso
+                    peri = data[15][~np.isnan(data[15])] #periodo
+                    temperatura = 'T_amb'
+                elif self.modo == 'si_t':
+                    self.indoff = self.newoff(data[2][~np.isnan(data[2])])
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    temp = data[1][~np.isnan(data[1])] #temp(k)
+                    ipul = data[2][~np.isnan(data[2])] #I pulso
+                    try:
+                        vin1 = np.array(data[9][~np.isnan(data[9])])-np.array(data[9][~np.isnan(data[9])][self.indoff]) #V instant
+                    except IndexError:
+                        vin1 = np.array(data[9][~np.isnan(data[9])])
+                    iin1 = data[10][~np.isnan(data[10])] #I instant
+                    rin1 = data[11][~np.isnan(data[11])] #R instant
+                    rre1 = data[12][~np.isnan(data[12])] #R remanente
+                    ibi1 = data[13][~np.isnan(data[13])] #I bias
+                    vbi1 = data[14][~np.isnan(data[14])] #V bias
+                    wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                    peri = data[16][~np.isnan(data[16])] #periodo
+                    temperatura = temp[0]
+        elif self.channel == 'crio':
+                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
+                self.indoff = 0
+                vin1 = np.array(data[0][~np.isnan(data[0])])
+                iin1 = data[1][~np.isnan(data[1])]*1000 #I instant
+                ibi1 = data[3][~np.isnan(data[3])]*1000 #I bias
+                vbi1 = data[2][~np.isnan(data[0])] #V bias
+                time = np.linspace(0,1,len(iin1)) #tiempo
+                temperatura = archivo_actual.split('-')[-1]
+                if 'nplc' in archivo_actual:
+                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
+                    self.indoff = 0
+                    time = data[0][~np.isnan(data[0])]
+                    vin1 = np.array(data[1][~np.isnan(data[1])])
+                    iin1 = data[2][~np.isnan(data[2])]*1000 #I instant
+                    vbi1 = data[3][~np.isnan(data[3])] #V bias
+                    ibi1 = data[4][~np.isnan(data[4])]*1000 #I bias
+                    temperatura = archivo_actual.split('-')[-2]
         if self.var_fit == 'si':
-            print(self.p0fit)
-            def sclc_p(V, A, R, n):
-                return A*np.abs(V)**n+V/R
+            def sclc_p(V, A, R):
+                return A*np.abs(V)**2+V/R
             try:
                 l = int(self.lower)
             except AttributeError:
@@ -405,33 +509,36 @@ class MyWindow(QMainWindow):
             except AttributeError:
                 u = int(-1)
             if self.posneg == 'pos':
-                l = 0
-                u = self.busca_pos(vin1)
+                ix = self.busca_pos(vin1)
+                print(ix)
+                vin1, iin1 = [vin1[i] for i in ix], [iin1[i] for i in ix]
             elif self.posneg == 'neg':
-                l = self.busca_neg(vin1)[0]
-                u = self.busca_neg(vin1)[1]
+                ix = self.busca_neg(vin1)
+                print(ix)
+                vin1, iin1 = [vin1[i] for i in ix], [iin1[i] for i in ix]
+            elif self.posneg == 'todo':
+                vin1, iin1 = vin1[l:u], iin1[l:u]
             try:
                 initial_guess = self.p0fit
             except AttributeError:
-                initial_guess = [0, 0, 0]
+                initial_guess = [0, 0]
             try:
-                popt, pcov = curve_fit(sclc_p, vin1[l:u], iin1[l:u], p0=initial_guess)
-            except:
-                print('error ajuste')
+                popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), absolute_sigma = True, p0=initial_guess, bounds=[[0,0],[1e3,100e3]])
+            except (RuntimeError, ValueError) as err:
+                print(err)
                 return
-            print(pcov)
             self.popt = popt
             self.pcov = pcov
             plt.figure(figsize=(20,10))
             mng_g = plt.get_current_fig_manager()
             mng_g.window.showMaximized()
-            plt.scatter(vin1[l:u], np.abs(iin1[l:u]), label='Data')
-            plt.plot(vin1[l:u], np.abs(sclc_p(vin1[l:u], *popt)), label=f'Ajuste SCLC', c='orange')
+            plt.scatter(vin1, np.abs(iin1), label='Data')
+            plt.plot(vin1, np.abs(sclc_p(vin1, *popt)), label=f'Ajuste SCLC', c='orange')
             plt.title(f'Fit SCLC paralelo T={temperatura}')
             plt.xlabel('V')
             plt.ylabel('|I| (mA)')
-            plt.ylim(np.min(iin1[l:u]-np.abs(np.min(iin1[l:u]))/10),np.max(iin1+np.abs(np.max(iin1[l:u]))/10))
-            plt.xlim(np.min(vin1[l:u]-np.abs(np.min(vin1[l:u]))/10),np.max(vin1+np.abs(np.max(vin1[l:u]))/10))
+            plt.ylim(np.min(iin1-np.abs(np.min(iin1))/10),np.max(iin1+np.abs(np.max(iin1))/10))
+            plt.xlim(np.min(vin1-np.abs(np.min(vin1))/10),np.max(vin1+np.abs(np.max(vin1))/10))
             plt.grid(True)
             plt.legend()
             plt.show()
@@ -440,33 +547,65 @@ class MyWindow(QMainWindow):
             self.secondary_windows.append(self.w2)
             if self.var_res == 'si':
                 plt.figure()
-                plt.scatter(vin1[l:u], (iin1[l:u]-sclc_p(vin1[l:u], *popt)), marker='o', label='Residuos', c='orange', zorder=10)
-                plt.plot(vin1[l:u], (iin1[l:u]-sclc_p(vin1[l:u], *popt)), zorder=1)
+                plt.scatter(vin1, np.abs(iin1)-np.abs(sclc_p(vin1, *popt)), marker='o', label='Residuos', c='orange', zorder=10)
+                plt.plot(vin1, (np.abs(iin1)-np.abs(sclc_p(vin1, *popt))), zorder=1)
                 plt.grid(zorder=0)
                 plt.xlabel('Voltaje [V]')
                 plt.ylabel('|I| [mA]')
                 plt.show()
             print(self.secondary_windows)
-        if self.var_man == 'si':
-            def sclc_p(V, A, R, n):
-                return A*V**n+V/R
+        if self.ponbus == 'si':
             try:
-                A, R, n = self.p_manual
+                plt.figure()
+                indices = np.arange(len(vin1))
+                sc = plt.scatter(vin1, iin1, s=1, c=time, cmap='viridis')
+                cbar = plt.colorbar(sc, label='Tiempo [s]')
+                for i in indices:
+                    if iin1[i] > 0:
+                        rgba_color = sc.cmap(sc.norm(time[i]))
+                        plt.text(vin1[i], iin1[i], str(i), color=rgba_color)
+                plt.xlabel("Voltaje [V]")
+                plt.ylabel("Current [mA]")
+                plt.xscale('log')
+                plt.yscale('log')
+                plt.grid(True)
+                plt.tight_layout()
+                plt.show()
             except:
-                A, R, n = [0,0,0]
+                print('Negativos')
+        if self.var_man == 'si':
+            def sclc_p(V, A, R):
+                V = [float(V[i]) for i in range(len(V))]
+                V = np.array(V)
+                return A*V**2+V/R
+            try:
+                A, R= self.p_manual
+                R = R/1000
+            except:
+                A, R= [0,0]
             plt.figure(figsize=(20,10))
             mng_g2 = plt.get_current_fig_manager()
             mng_g2.window.showMaximized()
             self.manmin = int(self.manmin)
             self.manmax = int(self.manmax)
-            plt.scatter(vin1[self.manmin:self.manmax], iin1[self.manmin:self.manmax], label='Data',color='black')
-            plt.plot(vin1[self.manmin:self.manmax], sclc_p(vin1[self.manmin:self.manmax], A, R, n), label=f'Ajuste manual', color='orange')
+            if self.posneg == 'pos':
+                ix = self.busca_pos(vin1)
+                print(ix)
+                vin1, iin1 = [vin1[i] for i in ix], [iin1[i] for i in ix]
+            elif self.posneg == 'neg':
+                ix = self.busca_neg(vin1)
+                print(ix)
+                vin1, iin1 = [vin1[i] for i in ix], [iin1[i] for i in ix]
+            elif self.posneg == 'todo':
+                vin1, iin1 = vin1[self.manmin:self.manmax], iin1[self.manmin:self.manmax]
+            plt.scatter(vin1, iin1, label='Data',color='black')
+            plt.plot(vin1, sclc_p(vin1, A, R), label=f'Ajuste manual', color='orange')
             plt.title('Fit SCLC paralelo')
             plt.xlabel('V')
             plt.ylabel('I (mA)')
             try:
-                plt.ylim(np.min(iin1[self.manmin:self.manmax])-np.abs(np.min(iin1)/10),np.max(iin1[self.manmin:self.manmax])+np.max(iin1)/10)
-                plt.xlim(np.min(vin1[self.manmin:self.manmax])-np.abs(np.min(vin1)/10),np.max(vin1[self.manmin:self.manmax])+np.max(vin1)/10)
+                plt.ylim(np.min(iin1)-np.abs(np.min(iin1)/10),np.max(iin1)+np.max(iin1)/10)
+                plt.xlim(np.min(vin1)-np.abs(np.min(vin1)/10),np.max(vin1)+np.max(vin1)/10)
             except:
                 pass
             plt.grid(True)
@@ -475,33 +614,11 @@ class MyWindow(QMainWindow):
         return
     
     def busca_pos(self, vin1):
-        for i in np.arange(0,len(vin1)):
-            if vin1[i]>0:
-                pass
-            else:
-                upp = i
-                break
-        return upp
+        return [index for index, value in enumerate(vin1) if value > 0]
                 
     def busca_neg(self, vin1):
-        for i in np.arange(0,len(vin1)):
-            if vin1[i]>0:
-                pass
-            elif vin1[i]<0:
-                low = i
-                for j in np.arange(i, len(vin1)):
-                    if vin1[j] < 0:
-                        pass
-                        if j == len(vin1)-1:
-                            upp = -1
-                break
-            else:
-                low = 0
-                upp = -1
-                break
-        return [low,upp]
-                
-
+        return [index for index, value in enumerate(vin1) if value < 0]
+    
     def onClicked(self, i):
         if self.seleccion=='rdy':
             self.seleccion=[]
@@ -520,10 +637,14 @@ class MyWindow(QMainWindow):
             index = self.fileName[i].find(r'/IVs')
             archtemp = self.fileName[i][index:]
             print(self.fileName[i][index:])
+            if self.fileName[i][index:]=='v':
+                index = self.fileName[i].find(r'/criostato')
+                archtemp = self.fileName[i][index:]
+                self.channel = 'crio'
             self.texto_archivos = self.texto_archivos + archtemp + '¡'
             self.fileName[i] = self.fileName[i][index:]
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
-        np.savetxt('tempfile.txt', [self.texto_archivos[:-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])+','+str(self.p_manual[2])], delimiter=',', fmt='%s')
+        np.savetxt('tempfile.txt', [self.texto_archivos[:-1]+r'@'+str(self.lower)+r','+str(self.upper)+r'@'+str(self.p0fit[0])+','+str(self.p0fit[1])+'@'+str(self.manmin)+','+str(self.manmax)+'@'+str(self.p_manual[0])+','+str(self.p_manual[1])], delimiter=',', fmt='%s')
     
     def closer(self):
         plt.close('all')
@@ -550,11 +671,16 @@ class MyWindow(QMainWindow):
         elif ch == '2':
             self.channel = '2'
             self.chnl.setText('Canal 2')
+        elif ch == 'Criostato':
+            self.channel = 'crio'
+            self.chnl.setText('Criostato')
 
     def graficar(self):
         print(self.fileName)
         for archivos in self.fileName:
             archivo_actual = archivos
+            if 'criostato' in archivo_actual:
+                self.channel = 'crio'
             data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
             data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
             if '(K)' in data_t[1][0]:
@@ -564,39 +690,42 @@ class MyWindow(QMainWindow):
             else:
                 print('ups')
             if self.channel == '1':
-                if self.modo == 'no_t':
-                    self.indoff = self.newoff(data[1][~np.isnan(data[1])])
-                    time = data[0][~np.isnan(data[0])] #tiempo
-                    ipul = data[1][~np.isnan(data[1])] #I pulso
-                    try:
-                        vin1 = np.array(data[2][~np.isnan(data[2])])-np.array(data[2][~np.isnan(data[2])][self.indoff]) #V instant
-                    except IndexError:
-                        vin1 = np.array(data[2][~np.isnan(data[2])])
-                    iin1 = data[3][~np.isnan(data[3])] #I instant
-                    rin1 = data[4][~np.isnan(data[4])] #R instant
-                    rre1 = data[5][~np.isnan(data[5])] #R remanente
-                    ibi1 = data[6][~np.isnan(data[6])] #I bias
-                    vbi1 = data[7][~np.isnan(data[7])] #V bias
-                    wpul = data[14][~np.isnan(data[14])] #ancho pulso
-                    peri = data[15][~np.isnan(data[15])] #periodo
-                    temperatura = 'T_amb'
-                elif self.modo == 'si_t':
-                    self.indoff = self.newoff(data[2][~np.isnan(data[2])])
-                    time = data[0][~np.isnan(data[0])] #tiempo
-                    temp = data[1][~np.isnan(data[1])] #temp(k)
-                    ipul = data[2][~np.isnan(data[2])] #I pulso
-                    try:
-                        vin1 = np.array(data[3][~np.isnan(data[3])])-np.array(data[3][~np.isnan(data[3])][self.indoff]) #V instant
-                    except IndexError:
-                        vin1 = np.array(data[3][~np.isnan(data[3])])
-                    iin1 = data[4][~np.isnan(data[4])] #I instant
-                    rin1 = data[5][~np.isnan(data[5])] #R instant
-                    rre1 = data[6][~np.isnan(data[6])] #R remanente
-                    ibi1 = data[7][~np.isnan(data[7])] #I bias
-                    vbi1 = data[8][~np.isnan(data[8])] #V bias
-                    wpul = data[15][~np.isnan(data[15])] #ancho pulso
-                    peri = data[16][~np.isnan(data[16])] #periodo
-                    temperatura = temp[0]
+                try:
+                    if self.modo == 'no_t':
+                        self.indoff = self.newoff(data[1][~np.isnan(data[1])])
+                        time = data[0][~np.isnan(data[0])] #tiempo
+                        ipul = data[1][~np.isnan(data[1])] #I pulso
+                        try:
+                            vin1 = np.array(data[2][~np.isnan(data[2])])-np.array(data[2][~np.isnan(data[2])][self.indoff]) #V instant
+                        except IndexError:
+                            vin1 = np.array(data[2][~np.isnan(data[2])])
+                        iin1 = data[3][~np.isnan(data[3])] #I instant
+                        rin1 = data[4][~np.isnan(data[4])] #R instant
+                        rre1 = data[5][~np.isnan(data[5])] #R remanente
+                        ibi1 = data[6][~np.isnan(data[6])] #I bias
+                        vbi1 = data[7][~np.isnan(data[7])] #V bias
+                        wpul = data[14][~np.isnan(data[14])] #ancho pulso
+                        peri = data[15][~np.isnan(data[15])] #periodo
+                        temperatura = 'T_amb'
+                    elif self.modo == 'si_t':
+                        self.indoff = self.newoff(data[2][~np.isnan(data[2])])
+                        time = data[0][~np.isnan(data[0])] #tiempo
+                        temp = data[1][~np.isnan(data[1])] #temp(k)
+                        ipul = data[2][~np.isnan(data[2])] #I pulso
+                        try:
+                            vin1 = np.array(data[3][~np.isnan(data[3])])-np.array(data[3][~np.isnan(data[3])][self.indoff]) #V instant
+                        except IndexError:
+                            vin1 = np.array(data[3][~np.isnan(data[3])])
+                        iin1 = data[4][~np.isnan(data[4])] #I instant
+                        rin1 = data[5][~np.isnan(data[5])] #R instant
+                        rre1 = data[6][~np.isnan(data[6])] #R remanente
+                        ibi1 = data[7][~np.isnan(data[7])] #I bias
+                        vbi1 = data[8][~np.isnan(data[8])] #V bias
+                        wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                        peri = data[16][~np.isnan(data[16])] #periodo
+                        temperatura = temp[0]
+                except Exception as e:
+                    print(e)
             elif self.channel=='2':
                 if self.modo == 'no_t':
                     iin1 = data[9][~np.isnan(data[9])] #I instant
@@ -631,213 +760,260 @@ class MyWindow(QMainWindow):
                     wpul = data[15][~np.isnan(data[15])] #ancho pulso
                     peri = data[16][~np.isnan(data[16])] #periodo
                     temperatura = temp[0]
-            #vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
-            #iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
-            iin1gol = iin1
-            vin1gol = vin1
-            #didv = diff(iin1)/diff(vin1)
-            #didvgol = diff(iin1gol)/diff(vin1gol)
-            #ibi1gol = scipy.signal.savgol_filter(ibi1, window_size, 3)        # Ibias1 savgol
-            #vbi1gol = scipy.signal.savgol_filter(vbi1, window_size, 3)        # Vbias1 savgol
-            ibi1gol = ibi1
-            vbi1gol = vbi1
-            #rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol, window_size, 3) # Rrem1 savgol
-            rre1calcgol = vbi1gol/ibi1gol
-            rin1calcgol = vin1gol/iin1gol
-            gamma1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
-            gamma1gol = diff(np.log(np.abs(iin1gol)))/diff(np.log(np.abs(vin1gol))) #gamma savgol
-            if '|I| vs V' in self.seleccion:
-                plt.figure()
-                # graficamos I vs V
-                plt.scatter(vin1gol, np.abs(iin1gol), c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.ylabel('|I| [mA]')
-                plt.xlabel('V [V]')
-                plt.tight_layout()
-                plt.title(f'|I| vs V T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'Log(I) vs V' in self.seleccion:
-                plt.figure()
-                # graficamos la Log(abs(I)) vs V    
-                plt.scatter(vin1gol, np.log(np.abs(iin1gol)), c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.yscale('log')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                plt.xlabel('V (V)')
-                plt.ylabel('I (A)')
-                plt.title(f'Log(I) vs V T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'Log(Ibias) vs V' in self.seleccion:
-                plt.figure()
-                # graficamos Log(abs(Ibias)) vs V
-                plt.scatter(vin1gol, np.log(np.abs(ibi1gol)), c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.yscale('log')
-                plt.xlabel('V (V)')
-                plt.ylabel('I$_{bias}$ (A)')
-                plt.xlim(-max(vin1gol), max(vin1gol))
-                plt.title(f'Log(I_{bias}) vs V T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'Rinst' in self.seleccion:
-                plt.figure()
-                plt.subplot(1, 2, 1)
-                # graficamos la Rinst vs V    
-                plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                plt.xlabel('Voltage (V)')
-                plt.ylabel('R$_{inst}$ (k$\Omega$)')
-                #plt.xlim(-2, 2)
-                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
-                plt.title('R$_{inst}$ vs V '+f'T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                
-                plt.subplot(1, 2, 2)
-                # graficamos la Rinst vs I    
-                plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                plt.xlabel('I (A)')
-                plt.ylabel('R$_{inst}$ (k$\Omega$)')
-                #plt.xlim(-2, 2)
-                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
-                plt.title('R$_{inst}$ vs I '+f' T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'Rrem' in self.seleccion:
-                plt.figure()
-                plt.subplot(1,2,1)
-                # graficamos la Rrem vs V    
-                plt.scatter(vin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                plt.xlabel('Voltage (V)')
-                plt.ylabel('R$_{rem}$ (k$\Omega$)')
-                #plt.xlim(-2, 2)
-                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
-                plt.title('R$_{rem}$ vs V '+f'T={temperatura}')
-                plt.tight_layout()
-                plt.grid()
-                
-                plt.subplot(1,2,2)
-                # graficamos la Rrem vs I    
-                plt.scatter(iin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                plt.xlabel('I (A)')
-                plt.ylabel('R$_{rem}$ (k$\Omega$)')
-                #plt.xlim(-2, 2)
-                plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
-                plt.title('R$_{rem}$ vs I '+f'T={temperatura}')
-                plt.tight_layout()
-                plt.grid()
-                plt.show()
-            if 'γ vs V' in self.seleccion:
-                plt.figure()
-                # graficamos la gamma vs V    
-                plt.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
-                plt.xlabel('Voltage (V)')
-                plt.ylabel('$\gamma$')
-                #plt.xlim(-2, 2)
-                plt.ylim(0, 2.5)
-                plt.title('$\gamma$ vs V '+ f'T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'γ vs √V' in self.seleccion:
-                plt.figure()
-                plt.scatter(np.sign(vin1[0:-1])*np.sqrt(np.abs(vin1[0:-1])), gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
-                plt.xlabel('V$^{1/2}$ (V$^{0.5}$)')
-                plt.ylabel('$\gamma$')
-                #plt.xlim(-2, 2)
-                plt.ylim(0, 2.5)
-                plt.title('$\gamma$ vs V$^{1/2}$ '+f'T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'γ vs 1/V' in self.seleccion:
-                plt.figure()
-                plt.scatter(1/vin1[0:-1], gamma1gol, gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
-                plt.colorbar(label='Tiempo [s]')
-                plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
-                plt.xlabel('1/V (1/V)')
-                plt.ylabel('$\gamma$')
-                plt.xlim(-10, 10)
-                plt.ylim(0, 2.5)
-                plt.title(f'$\gamma$ vs 1/V T={temperatura}')
-                plt.grid()
-                plt.tight_layout()
-                plt.show()
-            if 'Panorama' in self.seleccion:
-                # Create figure
-                fig = plt.figure()
-                mng = plt.get_current_fig_manager()
-                mng.window.showMaximized()
-                fig.suptitle(f'T = {temperatura}')
-                # First subplot (top-left)
-                ax1 = plt.subplot2grid((2, 3), (0, 0))
-                sc1 = ax1.scatter(vin1gol, iin1gol, c=time, cmap='cool')
-                ax1.set_xlabel('Voltage (V)')
-                ax1.set_ylabel('I (mA)')
-                ax1.set_title('I vs V')
-
-                # Second subplot (bottom-left)
-                ax2 = plt.subplot2grid((2, 3), (1, 0))
-                sc2 = ax2.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool')
-                ax2.set_xlabel('Voltage (V)')
-                ax2.set_ylim(0,3)
-                ax2.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
-                ax2.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
-                ax2.set_ylabel('γ')
-                ax2.set_title('γ vs V')
-
-                # Third subplot (top-right)
-                ax3 = plt.subplot2grid((2, 3), (0, 1), rowspan=2)
-                sc3 = ax3.scatter(vin1gol, rin1calcgol, c=time, cmap='cool')
-                ax3.set_ylim(np.nanmax(np.mean(rin1calcgol))*0.6,np.nanmax(np.mean(rin1calcgol))*1.4)
-                ax3.set_xlabel('Voltage (V)')
-                ax3.set_ylabel('$R_{inst}$ (kΩ)')
-                ax3.set_title('R_inst vs V')
-
-                # Fourth subplot (bottom-right)
-                ax4 = plt.subplot2grid((2, 3), (0, 2), rowspan=2)
-                sc4 = ax4.scatter(vin1gol, rre1calcgol, c=time, cmap='cool')
-                ax4.set_ylim(np.nanmin(rre1calcgol)*0.98,np.nanmax(rre1calcgol)*1.02)
-                ax4.set_xlabel('Voltage (V)')
-                ax4.set_ylabel('$R_{rem}$ (kΩ)')
-                ax4.set_title('$R_{rem}$ vs V')
-                cbar4 = plt.colorbar(sc4, ax=ax4)
-                cbar4.set_label('Time [s]')
-                ax1.grid()
-                ax2.grid()
-                ax3.grid()
-                ax4.grid()
-                plt.show()
+            elif self.channel == 'crio':
+                data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
+                self.indoff = 0
+                vin1 = np.array(data[0][~np.isnan(data[0])])
+                iin1 = data[1][~np.isnan(data[1])]*1000 #I instant
+                ibi1 = data[3][~np.isnan(data[3])]*1000 #I bias
+                vbi1 = data[2][~np.isnan(data[0])] #V bias
+                time = np.linspace(0,1,len(iin1)) #tiempo
+                temperatura = archivos.split('-')[-1]
+                if 'nplc' in archivo_actual:
+                    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
+                    time = data[0][~np.isnan(data[0])] #tiempo
+                    self.indoff = 0
+                    vin1 = np.array(data[1][~np.isnan(data[1])])
+                    iin1 = data[2][~np.isnan(data[2])]*1000 #I instant
+                    ibi1 = data[4][~np.isnan(data[4])]*1000 #I bias
+                    vbi1 = data[3][~np.isnan(data[3])] #V bias
+                    time = np.linspace(0,1,len(iin1)) #tiempo
+                    temperatura = archivos.split('-')[-1]
+            try:
+                iin1gol = iin1
+                vin1gol = vin1
+                ibi1gol = ibi1
+                vbi1gol = vbi1
+                rre1calcgol = vbi1gol/ibi1gol*1000
+                rin1calcgol = vin1gol/iin1gol*1000
+            except Exception as err:
+                print(err)
+                continue
+            with np.errstate(all='raise'):
+                try:
+                    gamma1gol = diff(np.log(np.abs(iin1gol)))/diff(np.log(np.abs(vin1gol))) #gamma
+                except Exception as err:
+                    print(err)
+                    try:
+                        gamma1gol = diff(np.log(np.abs(iin1gol)+0.01))/diff(np.log(np.abs(vin1gol)+0.01)) #gamma savgol
+                    except:
+                        gamma1gol = np.full_like(vin1gol[0:-1], 100)
+                        print('No hay gamma')
+            if self.filt == 'si':
+                try:
+                    vin1gol = scipy.signal.savgol_filter(vin1, window_size, 3)
+                    iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
+                    ibi1gol = scipy.signal.savgol_filter(ibi1, window_size, 3)        # Ibias1 savgol
+                    vbi1gol = scipy.signal.savgol_filter(vbi1, window_size, 3)        # Vbias1 savgol
+                    rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol, window_size, 3) # Rrem1 savgol
+                    rin1calcgol = scipy.signal.savgol_filter(vin1gol/iin1gol, window_size, 3) # Rin1 savgol
+                except:
+                    pass
+                with np.errstate(all='raise'):
+                    try:
+                        gamma1gol = diff(np.log(np.abs(iin1gol)))/diff(np.log(np.abs(vin1gol))) #gamma savgol
+                    except Exception as err:
+                        print(err)
+                        gamma1gol = diff(np.log(np.abs(iin1gol)+0.01))/diff(np.log(np.abs(vin1gol)+0.01)) #gamma savgol
+                        print((np.abs(vin1gol)))
+            try:
+                if  'I vs V' in self.seleccion:
+                    plt.figure()
+                    # graficamos I vs V
+                    plt.scatter(vin1gol, np.abs(iin1gol), c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.ylabel('|I| [mA]')
+                    plt.xlabel('V [V]')
+                    plt.tight_layout()
+                    plt.title(f'|I| vs V T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'Log(I) vs V' in self.seleccion:
+                    plt.figure()
+                    # graficamos la Log(abs(I)) vs V    
+                    plt.scatter(vin1gol, np.log(np.abs(iin1gol)+0.001), c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.yscale('log')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.xlabel('V (V)')
+                    plt.ylabel('I (A)')
+                    plt.title(f'Log(I) vs V T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'Log(Ibias) vs V' in self.seleccion:
+                    plt.figure()
+                    # graficamos Log(abs(Ibias)) vs V
+                    plt.scatter(vin1gol, np.log(np.abs(ibi1gol)+0.001), c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.yscale('log')
+                    plt.xlabel('V (V)')
+                    plt.ylabel('I$_{bias}$ (A)')
+                    plt.xlim(-max(vin1gol), max(vin1gol))
+                    plt.title(f'Log(I_{'bias'}) vs V T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'Rinst' in self.seleccion:
+                    plt.figure()
+                    plt.subplot(1, 2, 1)
+                    # graficamos la Rinst vs V    
+                    plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.xlabel('Voltage (V)')
+                    plt.ylabel('R$_{inst}$ ($\Omega$)')
+                    #plt.xlim(-2, 2)
+                    plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                    plt.title('R$_{inst}$ vs V '+f'T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    
+                    plt.subplot(1, 2, 2)
+                    # graficamos la Rinst vs I    
+                    plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.xlabel('I (A)')
+                    plt.ylabel('R$_{inst}$ ($\Omega$)')
+                    #plt.xlim(-2, 2)
+                    plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                    plt.title('R$_{inst}$ vs I '+f' T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'Rrem' in self.seleccion:
+                    plt.figure()
+                    plt.subplot(1,2,1)
+                    # graficamos la Rrem vs V    
+                    plt.scatter(vin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.xlabel('Voltage (V)')
+                    plt.ylabel('R$_{rem}$ ($\Omega$)')
+                    #plt.xlim(-2, 2)
+                    plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                    plt.title('R$_{rem}$ vs V '+f'T={temperatura}')
+                    plt.tight_layout()
+                    plt.grid()
+                    
+                    plt.subplot(1,2,2)
+                    # graficamos la Rrem vs I    
+                    plt.scatter(iin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.xlabel('I (A)')
+                    plt.ylabel('R$_{rem}$ ($\Omega$)')
+                    #plt.xlim(-2, 2)
+                    plt.ylim(0, 1.1*(np.nanmax(rin1calcgol)))
+                    plt.title('R$_{rem}$ vs I '+f'T={temperatura}')
+                    plt.tight_layout()
+                    plt.grid()
+                    plt.show()
+                if 'γ vs V' in self.seleccion:
+                    plt.figure()
+                    # graficamos la gamma vs V    
+                    plt.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
+                    plt.xlabel('Voltage (V)')
+                    plt.ylabel('$\gamma$')
+                    #plt.xlim(-2, 2)
+                    plt.ylim(0, 2.5)
+                    plt.title('$\gamma$ vs V '+ f'T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'γ vs √V' in self.seleccion:
+                    plt.figure()
+                    plt.scatter(np.sign(vin1[0:-1])*np.sqrt(np.abs(vin1[0:-1])), gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
+                    plt.xlabel('V$^{1/2}$ (V$^{0.5}$)')
+                    plt.ylabel('$\gamma$')
+                    #plt.xlim(-2, 2)
+                    plt.ylim(0, 2.5)
+                    plt.title('$\gamma$ vs V$^{1/2}$ '+f'T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'γ vs 1/V' in self.seleccion:
+                    plt.figure()
+                    plt.scatter(1/vin1[0:-1], gamma1gol, gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                    plt.colorbar(label='Tiempo [s]')
+                    plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
+                    plt.xlabel('1/V (1/V)')
+                    plt.ylabel('$\gamma$')
+                    plt.xlim(-10, 10)
+                    plt.ylim(0, 2.5)
+                    plt.title(f'$\gamma$ vs 1/V T={temperatura}')
+                    plt.grid()
+                    plt.tight_layout()
+                    plt.show()
+                if 'Panorama' in self.seleccion:
+                    # Create figure
+                    fig = plt.figure()
+                    mng = plt.get_current_fig_manager()
+                    mng.window.showMaximized()
+                    fig.suptitle(f'T = {temperatura}')
+                    # First subplot (top-left)
+                    ax1 = plt.subplot2grid((2, 3), (0, 0))
+                    sc1 = ax1.scatter(vin1gol, iin1gol, c=time, cmap='cool')
+                    ax1.set_xlabel('Voltage (V)')
+                    ax1.set_ylabel('I (mA)')
+                    ax1.set_title('I vs V')
+                    plt.tight_layout()
+                    # Second subplot (bottom-left)
+                    ax2 = plt.subplot2grid((2, 3), (1, 0))
+                    sc2 = ax2.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool')
+                    ax2.set_xlabel('Voltage (V)')
+                    ax2.set_ylim(0,3)
+                    ax2.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
+                    ax2.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
+                    ax2.set_ylabel('γ')
+                    ax2.set_title('γ vs V')
+                    plt.tight_layout()
+                    # Third subplot (top-right)
+                    ax3 = plt.subplot2grid((2, 3), (0, 1), rowspan=2)
+                    sc3 = ax3.scatter(vin1gol, rin1calcgol, c=time, cmap='cool')
+                    ax3.set_ylim(np.nanmin(rin1calcgol)*0.98,np.nanmax(rin1calcgol)*1.02)
+                    ax3.set_xlabel('Voltage (V)')
+                    ax3.set_ylabel('$R_{inst}$ (Ω)')
+                    ax3.set_title('$R_{inst}$ vs V')
+                    plt.tight_layout()
+                    # Fourth subplot (bottom-right)
+                    ax4 = plt.subplot2grid((2, 3), (0, 2), rowspan=2)
+                    sc4 = ax4.scatter(vin1gol, rre1calcgol, c=time, cmap='cool')
+                    ax4.set_ylim(np.nanmin(rre1calcgol)*0.98,np.nanmax(rre1calcgol)*1.02)
+                    ax4.set_xlabel('Voltage (V)')
+                    ax4.set_ylabel('$R_{rem}$ (Ω)')
+                    ax4.set_title('$R_{rem}$ vs V')
+                    cbar4 = plt.colorbar(sc4, ax=ax4)
+                    cbar4.set_label('Time [s]')
+                    ax1.grid()
+                    ax2.grid()
+                    ax3.grid()
+                    ax4.grid()
+                    plt.tight_layout()
+                    plt.tight_layout()
+                    plt.show()
+            except Exception as err:
+                print(err)
+            plt.tight_layout()
 ###################### FIN LOGICA GRAF #########################
 #%%
 class VentanaAjustes(QWidget):
@@ -848,12 +1024,14 @@ class VentanaAjustes(QWidget):
         self.setGeometry(200, 200, 300, 200)
         self.setWindowIcon(QtGui.QIcon('snowflake.png'))
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        popt[1] = popt[1]
         errores = np.sqrt(np.diag(pcov))
+        errores[1] = errores[1]
         # Create layout and widgets
         layout = QVBoxLayout(self)
         h_layout1 = QHBoxLayout()
         h_layout2 = QHBoxLayout()
-        h_layout3 = QHBoxLayout()
+        # h_layout3 = QHBoxLayout()
         
         self.copy_button1 = QPushButton('♻', self)
         self.copy_button1.setFixedSize(30, 30)  # Set the button to be square
@@ -863,9 +1041,9 @@ class VentanaAjustes(QWidget):
         self.copy_button2.setFixedSize(30, 30)  # Set the button to be square
         self.copy_button2.clicked.connect(partial(self.copy_to_clipboard2, popt, errores))
 
-        self.copy_button3 = QPushButton('♻', self)
-        self.copy_button3.setFixedSize(30, 30)  # Set the button to be square
-        self.copy_button3.clicked.connect(partial(self.copy_to_clipboard3, popt, errores))
+        # self.copy_button3 = QPushButton('♻', self)
+        # self.copy_button3.setFixedSize(30, 30)  # Set the button to be square
+        # self.copy_button3.clicked.connect(partial(self.copy_to_clipboard3, popt, errores))
         
         # Create non-editable text displays
         self.text_display0 = QLineEdit(r'A*V**n+V/R')
@@ -876,11 +1054,11 @@ class VentanaAjustes(QWidget):
         self.text_display1.setReadOnly(True)
         layout.addWidget(self.text_display1)
         
-        self.text_display2 = QLineEdit('R = '+str(np.round(popt[1],3))+' ± '+str(np.round(errores[1],3))+' kOhm')
+        self.text_display2 = QLineEdit('R = '+str(np.round(popt[1]*1000,3))+' ± '+str(np.round(errores[1]*1000,3))+' Ohm')
         self.text_display2.setReadOnly(True)
 
-        self.text_display3 = QLineEdit('n = '+str(np.round(popt[2],3))+' ± '+str(np.round(errores[2],3)))
-        self.text_display2.setReadOnly(True)
+        # self.text_display3 = QLineEdit('n = '+str(np.round(popt[2],3))+' ± '+str(np.round(errores[2],3)))
+        # self.text_display2.setReadOnly(True)
         
         h_layout1.addWidget(self.text_display1)
         h_layout1.addWidget(self.copy_button1)
@@ -888,12 +1066,12 @@ class VentanaAjustes(QWidget):
         h_layout2.addWidget(self.text_display2)
         h_layout2.addWidget(self.copy_button2)
 
-        h_layout3.addWidget(self.text_display3)
-        h_layout3.addWidget(self.copy_button3)
+        # h_layout3.addWidget(self.text_display3)
+        # h_layout3.addWidget(self.copy_button3)
         
         layout.addLayout(h_layout1)
         layout.addLayout(h_layout2)
-        layout.addLayout(h_layout3)
+        # layout.addLayout(h_layout3)
         
         self.setLayout(layout)
         
@@ -906,19 +1084,19 @@ class VentanaAjustes(QWidget):
         return
     
     def copy_to_clipboard2(self,popt, errores):
-        text1 = str(np.round(popt[1],3))
-        text2 = str(np.round(errores[1],3))
+        text1 = str(np.round(popt[1]*1000,3))
+        text2 = str(np.round(errores[1]*1000,3))
         text = text1 + '±' + text2
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
         return
     
-    def copy_to_clipboard3(self,popt, errores):
-        text1 = str(np.round(popt[2],3))
-        text2 = str(np.round(errores[2],3))
-        text = text1 + '±' + text2
-        clipboard = QApplication.clipboard()
-        clipboard.setText(text)
+    # def copy_to_clipboard3(self,popt, errores):
+    #     text1 = str(np.round(popt[2],3))
+    #     text2 = str(np.round(errores[2],3))
+    #     text = text1 + '±' + text2
+    #     clipboard = QApplication.clipboard()
+    #     clipboard.setText(text)
         return
 #%% Codigo de pyqt5 para arrancar
 if __name__ == '__main__':

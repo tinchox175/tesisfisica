@@ -1,3 +1,4 @@
+#%%
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug  8 15:05:04 2024
@@ -21,14 +22,14 @@ R = [22.205,38.635,37.572,50.848,60.911,83.712,142.270,226.394,251.732,507.971,7
 Rb = [26.169,32.421,38.020,52.951,98.432,250.974,312.865,494.964,642.656,916.187]
 r = np.concatenate((R,Rb))
 #%%
-fig = plt.figure()
-mng = plt.get_current_fig_manager()
-mng.window.showMaximized()
+fig = plt.figure(figsize=(10,5))
+#mng = plt.get_current_fig_manager()
+#mng.window.showMaximized()
 
 # First subplot (top-left)
 ax1 = plt.subplot(1,2,1)
-sc1 = ax1.scatter(t, a, c=t, cmap='cool')
-ax1.set_xlabel('T (K)')
+sc1 = ax1.scatter(1/np.array(t), a, c=t, cmap='cool')
+ax1.set_xlabel('1/T (1/K)')
 ax1.set_ylabel('A')
 ax1.set_title('A vs T en')
 
@@ -36,7 +37,7 @@ ax1.set_title('A vs T en')
 ax2 = plt.subplot(1,2,2)
 sc2 = ax2.scatter(np.ones_like(t)/t, np.log(r), c=t, cmap='cool')
 ax2.set_xlabel('1/T (1/K)')
-ax2.set_ylabel('Log(R) (k$\Omega$?)')
+ax2.set_ylabel('Log(R)')
 ax2.set_title('R vs T')
 
 ax1.grid()
@@ -44,48 +45,40 @@ ax2.grid()
 
 plt.show()
 #%%
-fig = plt.figure()
-mng = plt.get_current_fig_manager()
-mng.window.showMaximized()
-
+fig = plt.figure(figsize=(10,5))
 # First subplot (top-left)
 ax1 = plt.subplot(1,2,1)
-sc1 = ax1.scatter(T, A, c=T, cmap='cool')
+sc1 = ax1.scatter(T, A, c=T, cmap='cool', marker='o', label='Subida')
 ax1.set_xlabel('T (K)')
 ax1.set_ylabel('A')
 ax1.set_title('A vs T en subida')
 
 # Second subplot (bottom-left)
 ax2 = plt.subplot(1,2,2)
-sc2 = ax2.scatter(np.ones_like(T)/T, np.log(R), c=T, cmap='cool')
+sc2 = ax2.scatter(np.ones_like(T)/T, np.log(R), c=T, cmap='cool', marker='o', label='Subida')
 ax2.set_xlabel('1/T (1/K)')
 ax2.set_ylabel('Log(R) (k$\Omega$?)')
 ax2.set_title('R vs T en subida')
 
-ax1.grid()
-ax2.grid()
-
-plt.show()
-#%%
-fig = plt.figure()
-mng = plt.get_current_fig_manager()
-mng.window.showMaximized()
-
 # First subplot (top-left)
 ax1 = plt.subplot(1,2,1)
-sc1 = ax1.scatter(Tb, Ab, c=Tb, cmap='cool')
+sc1 = ax1.scatter(Tb, Ab, c=Tb, cmap='cool', marker='x', label='Bajada')
 ax1.set_xlabel('T (K)')
 ax1.set_ylabel('A')
 ax1.set_title('A vs T en bajada')
 
 # Second subplot (bottom-left)
 ax2 = plt.subplot(1,2,2)
-sc2 = ax2.scatter(np.ones_like(Tb)/Tb, np.log(Rb), c=Tb, cmap='cool')
+sc2 = ax2.scatter(np.ones_like(Tb)/Tb, np.log(Rb), c=Tb, cmap='cool', marker='x', label='Bajada')
 ax2.set_xlabel('1/T (1/K)')
-ax2.set_ylabel('Log(R) (k$\Omega$?)')
+ax2.set_ylabel('R (k$\Omega$)')
+#ax2.set_yscale('log')
 ax2.set_title('R vs T en bajada')
 
-ax1.grid()
-ax2.grid()
-
+ax1.grid(True)
+ax2.grid(True)
+plt.legend()
+plt.suptitle('Ajustes SCLC n=2 Cristales viejos')
+plt.tight_layout()
 plt.show()
+# %%

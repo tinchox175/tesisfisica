@@ -25,7 +25,6 @@ from scipy.optimize import curve_fit
 from matplotlib.colors import Normalize
 from os.path import abspath, dirname
 os.chdir(dirname(abspath(__file__)))
-print(os.getcwd())
 window_size=31 
 #%%
 ################# BOTON ###########################
@@ -46,12 +45,12 @@ class MyWindow(QMainWindow):
     def __init__(self):
         super(MyWindow, self).__init__()
         self.setWindowTitle('Graficador')
-        self.setFixedWidth(300)
+        self.setFixedWidth(600)
         self.rows = 6
         self.columns = 6
-        self.memoria = np.loadtxt('tempfilelcr.txt' ,unpack=True, dtype='str')
+        self.memoria = np.loadtxt('tempfilelcr.txt', dtype=str)
+        self.memoria = self.memoria.tolist()
         self.setWindowIcon(QtGui.QIcon('snowflake.png'))
-        print(self.memoria)
         os.chdir(dirname(abspath(__file__)))
         self.home = os.getcwd()
         
@@ -71,17 +70,22 @@ class MyWindow(QMainWindow):
         self.vbias = 0
         len_list = len(_list)-1
         self.seleccion = 'rdy'
-        self.texto_archivos = self.memoria
         self.fileName = []
         try:
-            index = str(self.texto_archivos).find(r'/IVs')
-            print(index)
-            self.texto_archivos = str(self.texto_archivos)[index:-2]
-            self.fileName = [os.getcwd()+self.texto_archivos]
-            print(self.fileName)
-        except TypeError:
+            self.texto_archivos = self.memoria.split('¡')
+        except Exception as e:
+            print(e,'77')
+            self.texto_archivos = ''
+            self.fileName = []
+        try:
+            for i in self.texto_archivos:
+                    index = i.find(r'/IVs')
+                    i = i[index:]
+                    self.fileName.append(i)
+        except Exception as e:
+            print(e,'85')
             self.fileName = [str(self.texto_archivos)]
-            print('3')
+        print(self.fileName,'87')
         i = 0
         for row in range(3): 
            for column in range(2):
@@ -108,7 +112,12 @@ class MyWindow(QMainWindow):
         self.layout.addWidget(file, 4, 1)
         file.setFixedSize(130, 50)  
         file.setCheckable(True)
-    
+
+        closer = PushButton('Cerrar', self)
+        closer.clicked.connect(partial(self.closer))
+        self.layout.addWidget(closer, 4, 2)
+        closer.setFixedSize(130, 50)
+
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)  # Ensures that the widget inside the scroll area can resize
         self.main_layout.addWidget(scroll_area)
@@ -146,11 +155,17 @@ class MyWindow(QMainWindow):
         elif i in self.seleccion:
             self.seleccion.remove(i)
 
-        print(self.seleccion)
     def open_file_explorer(self):
         options = QFileDialog.Options()
-        self.fileName = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)[0]
-        self.texto_archivos = self.fileName
+        self.fileName, _ = QFileDialog.getOpenFileNames(self, "Open File", "", "All Files (*)", options=options)
+        self.texto_archivos = ''
+        for i in np.arange(0,len(self.fileName)):
+            print(self.fileName[i])
+            index = self.fileName[i].find(r'/IVs')
+            archtemp = self.fileName[i][index:]
+            print(self.fileName[i][index:])
+            self.texto_archivos = self.texto_archivos + archtemp + '¡'
+            self.fileName[i] = self.fileName[i][index:]
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
         np.savetxt('tempfilelcr.txt', [self.texto_archivos], fmt='%s')
 
@@ -159,7 +174,10 @@ class MyWindow(QMainWindow):
             self.boton.setStyleSheet("background-color: #4CAF50; color: white;")  # Set style when pressed
         else:
             self.toggle_button.setStyleSheet("")
-            
+
+    def closer(self):
+        plt.close('all')
+
     def eiser(self):
         for archivos in self.fileName:
             path = self.home
@@ -169,135 +187,147 @@ class MyWindow(QMainWindow):
             f = data[0] #frecuencia
             zreal = data[1] #lectura promedio A (Z real)
             SD_A = data[2] #sigma A
-            zimag = data[3] #lectura promedio B (Z img)
+            zimag = -data[3] #lectura promedio B (Z img)
             SD_B = data[4] #sigma B
             Amp = data[5] #amplitud
             index = archivo_actual.find('IVs')
             archivo_actual = archivo_actual[index:]
-            path = './eis'
-            os.chdir(path)
             filename = str(archivo_actual)
-            filename = filename.split(r'/')
-            print(filename)
-            filename = filename[2]+filename[3]
-            output = open(str(filename)+'_eis.txt', 'w')
+            filename_i = filename.find(r'/Off')
+            filename2 = path+r'/'+filename[:filename_i]
+            print(filename[:filename_i])
+            print(filename2)
+            output = open(str(filename2)+r'/'+str(filename.split('_')[-2])+'mV_eis.', 'w')
             output.write(str(len(f)) + '\n' )
             for i in np.arange(len(f)):
-                output.write(f'{zreal[i]} {-zimag[i]} {f[i]}\n')
+                output.write(f'{zreal[i]} {zimag[i]} {f[i]}\n')
             output.close()
             os.chdir(self.home+r'/IVs')
 #%% Logica graficador de IVS
 
     def graficar(self):
-        try:
-            archivo_actual = self.fileName[0]
-            print(self.fileName)
-            data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
-        except FileNotFoundError:
-            archivo_actual = self.fileName
-            print(self.fileName)
-            data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
-        f = data[0] #frecuencia
-        zreal = data[1] #lectura promedio A (Z real)
-        SD_A = data[2] #sigma A
-        zimag = data[3] #lectura promedio B (Z img)
-        SD_B = data[4] #sigma B
-        Amp = data[5] #amplitud
-        vbias = float(archivo_actual.split('/')[-1].split('_')[-2])
-        zrealgol = scipy.signal.savgol_filter(zreal, window_size, 7)
-        zimaggol = scipy.signal.savgol_filter(zimag, window_size, 7)
-        z = zreal +1j*zimag
-        zmod = np.abs(z)
-        zmodgol = scipy.signal.savgol_filter(zmod, window_size, 3)
-        omega = 2*np.pi*f
-        fase = 180/np.pi*np.angle(z)
-        fasegol = scipy.signal.savgol_filter(fase, window_size, 3)
-        if 'ω vs |z|, θ' in self.seleccion:
-            plt.figure()
-            plt.subplot(1, 2, 1)
-            plt.scatter(omega, zmodgol)
-            plt.xlabel(r'$\omega$ [rad/s]')
-            plt.ylabel(r'$|Z_{eq}| ~[\Omega]$')
-            plt.xscale('log')
-            plt.legend(title='$V_{bias}$ (mV)')
-            plt.grid()
-            
-            plt.subplot(1, 2, 2)
-            plt.scatter(omega, fasegol)
-            plt.xlabel(r'$\omega$ [rad/s]')
-            plt.ylabel(r'Phase [deg]')
-            plt.xscale('log')
-            plt.legend(title='$V_{bias}$ (mV)')
-            plt.grid()
-            plt.tight_layout()
-            plt.show()
-            
-        if 'ω v Re(Z),-Im(Z) (gol)' in self.seleccion:
-            plt.figure()
-            plt.subplot(1, 2, 1)
-            plt.scatter(omega, zrealgol)
-            plt.xlabel(r'$\omega$ [rad/s]')
-            plt.ylabel(r'Z$^{´}$ [$\Omega$]')
-            plt.xscale('log')
-            plt.legend(title='$V_{bias}$ (mV)')
-            plt.grid()
+        for i in self.fileName:
+            try:
+                archivo_actual = os.getcwd()+i
+                print(archivo_actual)
+                data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
+            except Exception as e:
+                print(e)
+                continue
+            f = data[0] #frecuencia
+            zreal = data[1] #lectura promedio A (Z real)
+            SD_A = data[2] #sigma A
+            zimag = data[3] #lectura promedio B (Z img)
+            SD_B = data[4] #sigma B
+            Amp = data[5] #amplitud
+            try:
+                vbias = float(i.split('/')[-1].split('_')[-2])
+                T = float(i.split('/')[-2].split('_')[-3])
+            except Exception as e:
+                print(e)
+                continue
+            zrealgol = zreal
+            zimaggol = zimag
+            z = zreal +1j*zimag
+            zmod = np.abs(z)
+            zmodgol = zmod
+            omega = 2*np.pi*f
+            fase = 180/np.pi*np.angle(z)
+            fasegol = fase
+            if 'ω vs |z|, θ' in self.seleccion:
+                plt.figure()
+                plt.subplot(1, 2, 1)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.scatter(omega, zmodgol)
+                plt.xlabel(r'$\omega$ [rad/s]')
+                plt.ylabel(r'$|Z_{eq}| ~[\Omega]$')
+                plt.xscale('log')
+                plt.legend(title='$V_{bias}$ (mV)')
+                plt.grid()
                 
-            plt.subplot(1, 2, 2)
-            plt.scatter(omega, -zimaggol)
-            plt.xlabel(r'$\omega$ [rad/s]')
-            plt.ylabel(r'-Z$^{´´}$ [$\Omega$]')
-            plt.xscale('log')
-            plt.legend(title='$V_{bias}$ (mV)')
-            plt.grid()
-            plt.tight_layout()
-            plt.show()
-            
-        if 'Re(Z) vs -Im(Z)' in self.seleccion:
-            plt.figure()
-            plt.scatter(zrealgol, -zimaggol)
-            plt.xlabel(r'Z$^{´}$ [$\Omega$]')
-            plt.ylabel(r'-Z$^{´´}$ [$\Omega$]')
-            plt.legend(title='T (K)')
-            plt.grid()
-            plt.tight_layout()
-            plt.show()
-            
-        if 'V bias vs Max(re/img z)' in self.seleccion:
-            plt.figure()
-            plt.subplot(1, 2, 1)
-            plt.scatter(vbias, np.isfinite(zreal).max(), linestyle='dashed', color='blue',  linewidth=2)
-            plt.xlabel(r'$V_{bias}$ [V]')
-            plt.ylabel(r'Z$^{´}$ [$\Omega$]')
-            plt.grid()
-            plt.legend(title='T (K)')
+                plt.subplot(1, 2, 2)
+                plt.scatter(omega, fasegol)
+                plt.xlabel(r'$\omega$ [rad/s]')
+                plt.ylabel(r'Phase [deg]')
+                plt.xscale('log')
+                plt.legend(title='$V_{bias}$ (mV)')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
                 
-            plt.subplot(1, 2, 2)
-            plt.scatter(vbias, np.isfinite(zimag).max(), linestyle='dashed', color='red',  linewidth=2)
-            plt.xlabel(r'$V_{bias}$ [V]')
-            plt.ylabel(r'-Z$^{´´}$ [$\Omega$]')
-            plt.legend(title='T (K)')
-            plt.grid()
-            plt.tight_layout()
-            plt.show()
-        if 'ω vs Re(Z),-Im(Z)' in self.seleccion:
-            plt.figure()
-            plt.subplot(1, 2, 1)
-            plt.scatter(omega, zreal)
-            plt.xlabel(r'$\omega$ [rad/s]')
-            plt.ylabel(r'Z$^{´}$ [$\Omega$]')
-            plt.xscale('log')
-            plt.legend(title='$V_{bias}$ (mV)')
-            plt.grid()
+            if 'ω v Re(Z),-Im(Z) (gol)' in self.seleccion:
+                plt.figure()
+                plt.subplot(1, 2, 1)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.scatter(omega, zrealgol)
+                plt.xlabel(r'$\omega$ [rad/s]')
+                plt.ylabel(r'R [$\Omega$]')
+                plt.xscale('log')
+                plt.legend(title='$V_{bias}$ (mV)')
+                plt.grid()
+                    
+                plt.subplot(1, 2, 2)
+                plt.scatter(omega, zimaggol)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.xlabel(r'$\omega$ [rad/s]')
+                plt.ylabel(r'X [$\Omega$]')
+                plt.xscale('log')
+                plt.legend(title='$V_{bias}$ (mV)')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
                 
-            plt.subplot(1, 2, 2)
-            plt.scatter(omega, -zimag)
-            plt.xlabel(r'$\omega$ [rad/s]')
-            plt.ylabel(r'-Z$^{´´}$ [$\Omega$]')
-            plt.xscale('log')
-            plt.legend(title='$V_{bias}$ (mV)')
-            plt.grid()
-            plt.tight_layout()
-            plt.show()
+            if 'Re(Z) vs -Im(Z)' in self.seleccion:
+                plt.figure()
+                plt.scatter(zrealgol, -zimaggol)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.xlabel(r'Z$^{´}$ [$\Omega$]')
+                plt.ylabel(r'-Z$^{´´}$ [$\Omega$]')
+                plt.legend(title='T (K)')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+                
+            if 'V bias vs Max(re/img z)' in self.seleccion:
+                plt.figure()
+                plt.subplot(1, 2, 1)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.scatter(vbias, np.isfinite(zreal).max(), linestyle='dashed', color='blue',  linewidth=2)
+                plt.xlabel(r'$V_{bias}$ [V]')
+                plt.ylabel(r'Z$^{´}$ [$\Omega$]')
+                plt.grid()
+                plt.legend(title='T (K)')
+                    
+                plt.subplot(1, 2, 2)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.scatter(vbias, np.isfinite(zimag).max(), linestyle='dashed', color='red',  linewidth=2)
+                plt.xlabel(r'$V_{bias}$ [V]')
+                plt.ylabel(r'-Z$^{´´}$ [$\Omega$]')
+                plt.legend(title='T (K)')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
+            if 'ω vs Re(Z),-Im(Z)' in self.seleccion:
+                plt.figure()
+                plt.subplot(1, 2, 1)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.scatter(omega, zreal)
+                plt.xlabel(r'$\omega$ [rad/s]')
+                plt.ylabel(r'R [$\Omega$]')
+                plt.xscale('log')
+                plt.legend(title='$V_{bias}$ (mV)')
+                plt.grid()
+                    
+                plt.subplot(1, 2, 2)
+                plt.suptitle(f'$V_{'dc'}$ = {vbias} mV T={T} K')
+                plt.scatter(omega, zimag)
+                plt.xlabel(r'$\omega$ [rad/s]')
+                plt.ylabel(r'X [$\Omega$]')
+                plt.xscale('log')
+                plt.legend(title='$V_{bias}$ (mV)')
+                plt.grid()
+                plt.tight_layout()
+                plt.show()
 
 ###################### FIN LOGICA GRAF #########################
 #%% Codigo de pyqt5 para arrancar

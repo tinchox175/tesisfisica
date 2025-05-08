@@ -246,7 +246,7 @@ import matplotlib.colors as mcolors
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "C:/tesis git/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "D:/porno/tesis 3/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 rmin = []
 rmax = []
@@ -282,6 +282,8 @@ ax.set_ylabel('Resistencia (Ohm)')
 ax.set_xlabel('Tiempo (s)')
 cbar4 = plt.colorbar(sc, ax=ax)
 cbar4.set_label('Corriente (A)')
+ax.set_xlim(0,2950)
+ax.set_ylim(0,15)
 ax.legend()
 fig, ax = plt.subplots(1,1, figsize=(12,7))
 ax.scatter(N, r0, c='green', label='r0')

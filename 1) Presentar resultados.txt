@@ -1,0 +1,10 @@
+8) Parte previa de instrumental y experiment
+9) Parte previa de descripción de trabajos previos, antecedentes (incluyendo lo de Guadalupe 2terminales, switching)
+11) 100 K: Oxigenado dificil ver no linealidad-> son lo mismo en principio (IVS untitled presentation) unica diferencia es entre 4t desox y ox es uno es mas lineal
+13) Acople corriente-estructura, interacción magnética
+14) Reemplazar en mapa de color por algo que muestre major parte imaginaria (incluir figuras originales)
+15) Narrar major las figuras: tienen que contar algo, dar un mensaje-> ayudar a que ese mensaje se entienda (recordar 7))
+17) Comparación entre ordines resistivos puede estar poniendo diferencias en I-V
+
+4) Oscilador biestable
+5) Mencionar mas temprano en curvas resistivas que hubo estrés eléctrico entre primeras y posteriores partes

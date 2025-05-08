@@ -20,20 +20,20 @@ sadf = []
 rdf = []
 srdf = []
 for i in np.arange(0,len(ad)):
-    adf.append(np.float64(str(ad[i]).split('Â±')[0]))
-    rdf.append(np.float64(str(rd[i]).split('Â±')[0]))
-    sadf.append(np.float64(str(ad[i]).split('Â±')[1]))
-    srdf.append(np.float64(str(rd[i]).split('Â±')[1]))
+    adf.append(np.float64(str(ad[i]).split('±')[0]))
+    rdf.append(np.float64(str(rd[i]).split('±')[0]))
+    sadf.append(np.float64(str(ad[i]).split('±')[1]))
+    srdf.append(np.float64(str(rd[i]).split('±')[1]))
 aaf = []
 saaf = []
 raf = []
 sraf = []
 for i in np.arange(0,len(aa)-2):
-    aaf.append(np.float64(str(aa[i]).split('Â±')[0]))
-    raf.append(np.float64(str(ra[i]).split('Â±')[0]))
-    saaf.append(np.float64(str(aa[i]).split('Â±')[1]))
-    sraf.append(np.float64(str(ra[i]).split('Â±')[1]))
-plt.errorbar(td, adf, yerr=sadf,capsize=1, fmt='o-')
+    aaf.append(np.float64(str(aa[i]).split('±')[0]))
+    raf.append(np.float64(str(ra[i]).split('±')[0]))
+    saaf.append(np.float64(str(aa[i]).split('±')[1]))
+    sraf.append(np.float64(str(ra[i]).split('±')[1]))
+plt.errorbar(taf, aaf, yerr=saaf,capsize=1, fmt='o-')
 plt.grid()
 plt.xlabel('Temperatura')
 plt.ylabel('A')

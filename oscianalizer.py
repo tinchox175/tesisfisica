@@ -6,19 +6,20 @@ import matplotlib
 import scipy.signal
 window_size=400
 matplotlib.rcParams.update({'font.size': 14})
-%matplotlib qt
+%matplotlib inline
 off = [0,0.05,0.1,0.15,0.2,0,0.05,0.1,0.15,0.2]
 m=0
-f = 1e3
+f = 100
 dv12 = []
 dv12e = []
 dv3 = []
 dv3e = []
 dv34 = []
 dv34e = []
-for n in ['09','10','11','12','13','28','29','30','31','32']:
-#for n in ['09',10,11,12,13]:
-    fr, c1, c2, c3, c4 = np.genfromtxt(f'./IVs/2611/B/tek00{n}ALL.csv', unpack=True, delimiter=',', skip_header=20)
+for n in ['14','15','16','17','18','23','24','25','26','27']:
+    if float(n)>30:
+        f = 100
+    fr, c1, c2, c3, c4 = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/IVs/2611/B/tek00{n}ALL.csv', unpack=True, delimiter=',', skip_header=20)
     x = fr[3500:-2000]
     y1 = c1[3500:-2000]
     y2 = c2[3500:-2000]
@@ -129,7 +130,7 @@ for n in ['09','10','11','12','13','28','29','30','31','32']:
     #plt.savefig(f'{n} 3-4')
 #plt.show()
 
-# %%
+    # %%
 dv12 = np.array(dv12) #v
 dv23 = np.array(dv3) #v
 dv34 = np.array(dv34) #v
@@ -141,23 +142,25 @@ R4T = dv34/i #ohm
 fig, ax1 = plt.subplots(figsize=(10,8))
 ax1.plot(off[0:5], R2T[0:5], linestyle='--', color='purple', marker='o', linewidth=0.5, markersize=5, label='R 2 term. 300K')
 ax1.errorbar(off[0:5], R2T[0:5], yerr=dv3e[0:5], color='purple', fmt='none')
-ax1.plot(off[5:9], R2T[5:9], linestyle='--', color='magenta', marker='o', linewidth=0.5, markersize=5, label='R 2 term. 200K')
-ax1.errorbar(off[5:9], R2T[5:9], yerr=dv3e[5:9], color='magenta', fmt='none')
+ax1.plot(off[5:10], R2T[5:10], linestyle='--', color='magenta', marker='o', linewidth=0.5, markersize=5, label='R 2 term. 200K')
+ax1.errorbar(off[5:10], R2T[5:10], yerr=dv3e[5:10], color='magenta', fmt='none')
 ax1.set_ylabel('Resistencia ($\Omega$)')
 ax1.set_xlabel('Offset (V)')
 ax1.grid(True)
 ax1.legend()
-plt.suptitle(f'$f={f} Hz$ $T = 300 K$ $A=200mV$')
+# plt.suptitle(f'R2T $f={f} Hz$ $T = 300 K$ $A=200mV$')
+plt.savefig(f'R2T $f={f} Hz$ $T = 300 K$ $A=200mV$.png')
 fig, ax1 = plt.subplots(figsize=(10,8))
 ax1.plot(off[0:5], R4T[0:5], linestyle='--', color='red', marker='o', linewidth=0.5, markersize=5, label='R 4 term. 300K')
 ax1.errorbar(off[0:5], R4T[0:5], yerr=dv34e[0:5], color='red', fmt='none')
-ax1.plot(off[5:9], R4T[5:9], linestyle='--', color='orange', marker='o', linewidth=0.5, markersize=5, label='R 4 term. 200K')
-ax1.errorbar(off[5:9], R4T[5:9], yerr=dv34e[5:9], color='orange', fmt='none')
+ax1.plot(off[5:10], R4T[5:10], linestyle='--', color='orange', marker='o', linewidth=0.5, markersize=5, label='R 4 term. 200K')
+ax1.errorbar(off[5:10], R4T[5:10], yerr=dv34e[5:10], color='orange', fmt='none')
 ax1.set_ylabel('Resistencia ($\Omega$)')
-ax1.set_xlabel('Offset (V)')
+ax1.set_xlabel('Polarización DC (V)')
 ax1.grid(True)
 ax1.legend()
-plt.suptitle(f'$f={f} Hz$ $T = 300 K$ $A=200mV$')
+# plt.suptitle(f'R4T $f={f} Hz$ $T = 300 K$ $A=200mV$')
+plt.savefig(f'R4T $f={f} Hz$ $T = 300 K$ $A=200mV$.png')
 plt.tight_layout()
 plt.show()
 # %%

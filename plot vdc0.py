@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import itertools
+import matplotlib as mpl
+
 marker_l = lambda : itertools.cycle(('.',
  'o',
  'v',
@@ -48,8 +50,9 @@ def list_folders_in_folder(folder_path):
     return [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
 #%%
 # Example usage
-%matplotlib qt
-dirs = "C:/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+%matplotlib ipympl
+plt.rcParams['figure.dpi'] = 70
+dirs = "D:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
 fig.suptitle('$V_{dc}=0$ mV $V_{ac}=100$ mV')
