@@ -733,9 +733,9 @@ class MyWindow(QMainWindow):
                     time = data[0][~np.isnan(data[0])] #tiempo
                     ipul = data[1][~np.isnan(data[1])] #I pulso
                     try:
-                        vin1 = np.array(data[8][~np.isnan(data[9])])-np.array(data[9][~np.isnan(data[9])][self.indoff]) #V instant
+                        vin1 = np.array(data[8][~np.isnan(data[8])])-np.array(data[8][~np.isnan(data[8])][self.indoff]) #V instant
                     except IndexError:
-                        vin1 = np.array(data[8][~np.isnan(data[9])])
+                        vin1 = np.array(data[8][~np.isnan(data[8])])
                     rin1 = data[10][~np.isnan(data[10])] #R instant
                     rre1 = data[11][~np.isnan(data[11])] #R remanente
                     ibi1 = data[12][~np.isnan(data[12])] #I bias

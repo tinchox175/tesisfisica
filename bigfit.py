@@ -8,6 +8,11 @@ from os.path import abspath, dirname
 #%%
 %matplotlib qt
 os.chdir('E:/porno/tesis 3/tesisfisica')
+def calculate_dV_dI_diff(V_array, I_array):
+    dV = np.diff(V_array)
+    dI = np.diff(I_array)
+    dV_dI = dV / dI
+    return dV_dI
 
 def get_files_with_path(folder):
     print(folder)
@@ -26,7 +31,8 @@ def sclc_p(x, A, R):
 # def sclc_s(x, A, R, n):
 #     return A()
 
-archivo_actual = '/criostato/Archivos/iv/1012/iv(ac20hz)-x5-c-95K.csv'
+archivo_actual = '/criostato/Archivos/iv/1312/iv-x5-w1-14K-2nplc.csv'
+# archivo_actual = '\IVs\\1411\IV_1234_14-11-24b\\85.txt'
 channel = 'crio'
 files = ['255.txt']
 fig = plt.figure(figsize=(12, 6))
@@ -134,15 +140,18 @@ for i in files:
         print('hola')
     # iin1 = [np.abs(iin1[j]) for j in np.arange(len(iin1)) if vin1[j]>0]
     # vin1 = [j for j in vin1 if j>0]
-    plt.scatter(vin1,iin1, label='Experimental')
+    vdif = calculate_dV_dI_diff(vin1, iin1)
+    sc4 = plt.scatter(vin1[:-1],vdif*1000, c=time[:-1], cmap='cool')
+    cbar4 = plt.colorbar(sc4)
+    cbar4.set_label('Time [s]')
     # popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), p0=[1,3], absolute_sigma = True, bounds=[[0,0],[1e3,100e3]])
     # A, R = popt[0], popt[1]
     # plt.plot(vin1, sclc_p(vin1, *popt), label='Ajuste', c='r', zorder=10)
 v = 'V (V)'
-i = 'I (A)'
+i = 'dV/dI ($\Omega$)'
 r = 'R ($\Omega$)'
 plt.xlabel(v)
-plt.legend()
+# plt.legend()
 plt.ylabel(i)
 plt.grid()
 
@@ -153,12 +162,12 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import os
 from os.path import abspath, dirname
-%matplotlib inline
+%matplotlib qt
 os.chdir('e:/porno/tesis 3/tesisfisica/')
 
-files = ['26-12-ajustes-canal1b.csv']
+files = ['14-11-ajustes-canal1.csv']
+fig, ax = plt.subplots(1,1, figsize=(8,5))
 for i in files:
-    fig, ax = plt.subplots(1,1, figsize=(8,5))
     # ax2 = ax.twiny()
     # fig.suptitle(i)
     T = []
@@ -187,61 +196,142 @@ for i in files:
     Re = np.array(Re)
     R4 = np.array(R4)
     R4e = np.array(R4e)
-    line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='o', markersize=3, label='Log(A)', color='#0CA0DC')
-    line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='o', markersize=3, label='Log($R_{2t}$)', color='#2A9D8F')
-    line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='o', markersize=3, label='Log($R_{4t}$)', color='#E63946')
+    line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='o', markersize=9, label='Log(A)', color='#0CA0DC')
+    line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='o', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
+    line3 = ax.errorbar(1/T, R4, yerr=R4e/R4, marker='o', markersize=9, label='Log($n$)', color='#E63946')
     ax.set_xlabel('1/T (1/K)')
     # ax.set_ylim(0.5e-1,1e1)
     # ax2.set_xlim(310, 85)
     ax.set_ylabel('Log(R)')
     # ax2.set_ylabel('Log(R)')
-    ax.grid()
-    lines = [line1, line2, line3]
+    lines = [line1, line2]
     labels = [line.get_label() for line in lines]
     ax.legend(lines, labels, loc='right')
-
-files = ['14-11-ajustes-canal1b.csv']
-for i in files:
-    # ax2 = ax.twiny()
-    # fig.suptitle(i)
-    T = []
-    A = []
-    Ae = []
-    R = []
-    Re = []
-    R4 = []
-    R4e = []
-    data = np.genfromtxt(os.getcwd()+'/'+i, delimiter=',', skip_header=1, unpack=True, dtype='str')
-    for i in data[0]:
-        T.append(float(i))
-    for i in data[1]:
-        A.append(float(i.split('Â±')[0]))
-        Ae.append(float(i.split('Â±')[1]))
-    for i in data[2]:
-        R.append(float(i.split('Â±')[0]))
-        Re.append(float(i.split('Â±')[1]))
-    for i in data[3]:
-        R4.append(float(i.split('Â±')[0]))
-        R4e.append(float(i.split('Â±')[1]))
-    T = np.array(T)
-    A = np.array(A)
-    Ae = np.array(Ae)
-    R = np.array(R)
-    Re = np.array(Re)
-    R4 = np.array(R4)
-    R4e = np.array(R4e)
-    line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='none', linestyle='dashed', markersize=3, label='Log(A)', color='#0CA0DC')
-    line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='none', linestyle='dashed', markersize=3, label='Log($R_{2t}$)', color='#2A9D8F')
-    line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='none', linestyle='dashed', markersize=3, label='Log($R_{4t}$)', color='#E63946')
-    # ax.set_xlabel('1/T (1/K)')
-    # # ax.set_ylim(0.5e-1,1e1)
-    # # ax2.set_xlim(310, 85)
-    # ax.set_ylabel('Log(R)')
-    # # ax2.set_ylabel('Log(R)')
-    # ax.grid()
-    # lines = [line1, line2, line3]
-    # labels = [line.get_label() for line in lines]
-    # ax.legend(lines, labels, loc='right')
+# files = ['07-08-ajustes-canal1x4.csv']
+# for i in files:
+#     # ax2 = ax.twiny()
+#     # fig.suptitle(i)
+#     T = []
+#     A = []
+#     Ae = []
+#     R = []
+#     Re = []
+#     R4 = []
+#     R4e = []
+#     data = np.genfromtxt(os.getcwd()+'/'+i, delimiter=',', skip_header=1, unpack=True, dtype='str')
+#     for i in data[0]:
+#         T.append(float(i))
+#     for i in data[1]:
+#         A.append(float(i.split('Â±')[0]))
+#         Ae.append(float(i.split('Â±')[1]))
+#     for i in data[2]:
+#         R.append(float(i.split('Â±')[0]))
+#         Re.append(float(i.split('Â±')[1]))
+#     # for i in data[3]:
+#     #     R4.append(float(i.split('Â±')[0]))
+#     #     R4e.append(float(i.split('Â±')[1]))
+#     T = np.array(T)
+#     A = np.array(A)
+#     Ae = np.array(Ae)
+#     R = np.array(R)
+#     Re = np.array(Re)
+#     # R4 = np.array(R4)
+#     # R4e = np.array(R4e)
+#     line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='x', markersize=9, label='Log(A)', color='#0CA0DC')
+#     line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='x', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
+#     # line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='o', markersize=9, label='Log($R_{4t}$)', color='#E63946')
+#     ax.set_xlabel('1/T (1/K)')
+#     # ax.set_ylim(0.5e-1,1e1)
+#     # ax2.set_xlim(310, 85)
+#     ax.set_ylabel('Log(R)')
+#     # ax2.set_ylabel('Log(R)')
+#     lines = [line1, line2]
+#     labels = [line.get_label() for line in lines]
+#     ax.legend(lines, labels, loc='right')
+# files = ['26-12-ajustes-canal1b.csv']
+# for i in files:
+#     # ax2 = ax.twiny()
+#     # fig.suptitle(i)
+#     T = []
+#     A = []
+#     Ae = []
+#     R = []
+#     Re = []
+#     R4 = []
+#     R4e = []
+#     data = np.genfromtxt(os.getcwd()+'/'+i, delimiter=',', skip_header=1, unpack=True, dtype='str')
+#     for i in data[0][:-1]:
+#         T.append(float(i))
+#     for i in data[1][:-1]:
+#         A.append(float(i.split('Â±')[0]))
+#         Ae.append(float(i.split('Â±')[1]))
+#     for i in data[2][:-1]:
+#         R.append(float(i.split('Â±')[0]))
+#         Re.append(float(i.split('Â±')[1]))
+#     # for i in data[3]:
+#     #     R4.append(float(i.split('Â±')[0]))
+#     #     R4e.append(float(i.split('Â±')[1]))
+#     T = np.array(T)
+#     A = np.array(A)
+#     Ae = np.array(Ae)
+#     R = np.array(R)
+#     Re = np.array(Re)
+#     # R4 = np.array(R4)
+#     # R4e = np.array(R4e)
+#     line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='^', markersize=9, label='Log(A)', color='#0CA0DC')
+#     line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='^', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
+#     # line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='o', markersize=9, label='Log($R_{4t}$)', color='#E63946')
+#     ax.set_xlabel('1/T (1/K)')
+#     # ax.set_ylim(0.5e-1,1e1)
+#     # ax2.set_xlim(310, 85)
+#     ax.set_ylabel('Log(R)')
+#     # ax2.set_ylabel('Log(R)')
+#     lines = [line1, line2]
+#     labels = [line.get_label() for line in lines]
+#     ax.legend(lines, labels, loc='lower right')
+ax.grid()
+# files = ['07-08-ajustes-canal1x4.csv', '14-11-ajustes-canal1b.csv']
+# for i in files:
+#     # ax2 = ax.twiny()
+#     # fig.suptitle(i)
+#     T = []
+#     A = []
+#     Ae = []
+#     R = []
+#     Re = []
+#     # R4 = []
+#     # R4e = []
+#     data = np.genfromtxt(os.getcwd()+'/'+i, delimiter=',', skip_header=1, unpack=True, dtype='str')
+#     for i in data[0]:
+#         T.append(float(i))
+#     for i in data[1]:
+#         A.append(float(i.split('Â±')[0]))
+#         Ae.append(float(i.split('Â±')[1]))
+#     for i in data[2]:
+#         R.append(float(i.split('Â±')[0]))
+#         Re.append(float(i.split('Â±')[1]))
+#     # for i in data[3]:
+#     #     R4.append(float(i.split('Â±')[0]))
+#     #     R4e.append(float(i.split('Â±')[1]))
+#     T = np.array(T)
+#     A = np.array(A)
+#     Ae = np.array(Ae)
+#     R = np.array(R)
+#     Re = np.array(Re)
+#     # R4 = np.array(R4)
+#     # R4e = np.array(R4e)
+#     line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='none', linestyle='dashed', markersize=9, label='Log(A)', color='#0CA0DC')
+#     line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='none', linestyle='dashed', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
+#     # line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='none', linestyle='dashed', markersize=9, label='Log($R_{4t}$)', color='#E63946')
+#     # ax.set_xlabel('1/T (1/K)')
+#     # # ax.set_ylim(0.5e-1,1e1)
+#     # # ax2.set_xlim(310, 85)
+#     # ax.set_ylabel('Log(R)')
+#     # # ax2.set_ylabel('Log(R)')
+#     # ax.grid()
+#     # lines = [line1, line2, line3]
+#     # labels = [line.get_label() for line in lines]
+#     # ax.legend(lines, labels, loc='right')
 
     # ax.set_yscale('log')
 
