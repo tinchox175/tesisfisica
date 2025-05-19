@@ -165,7 +165,7 @@ from os.path import abspath, dirname
 %matplotlib qt
 os.chdir('e:/porno/tesis 3/tesisfisica/')
 
-files = ['14-11-ajustes-canal1.csv']
+files = ['14-11-ajustes-canal1b.csv']
 fig, ax = plt.subplots(1,1, figsize=(8,5))
 for i in files:
     # ax2 = ax.twiny()
@@ -197,14 +197,14 @@ for i in files:
     R4 = np.array(R4)
     R4e = np.array(R4e)
     line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='o', markersize=9, label='Log(A)', color='#0CA0DC')
-    line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='o', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
-    line3 = ax.errorbar(1/T, R4, yerr=R4e/R4, marker='o', markersize=9, label='Log($n$)', color='#E63946')
+    line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='o', markersize=9, label='Log($R_{2T}$)', color='#2A9D8F')
+    line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='o', markersize=9, label='Log($R_{4T}$)', color='#E63946')
     ax.set_xlabel('1/T (1/K)')
     # ax.set_ylim(0.5e-1,1e1)
     # ax2.set_xlim(310, 85)
     ax.set_ylabel('Log(R)')
     # ax2.set_ylabel('Log(R)')
-    lines = [line1, line2]
+    lines = [line1, line2, line3]
     labels = [line.get_label() for line in lines]
     ax.legend(lines, labels, loc='right')
 # files = ['07-08-ajustes-canal1x4.csv']
@@ -290,49 +290,87 @@ for i in files:
 #     labels = [line.get_label() for line in lines]
 #     ax.legend(lines, labels, loc='lower right')
 ax.grid()
-# files = ['07-08-ajustes-canal1x4.csv', '14-11-ajustes-canal1b.csv']
-# for i in files:
-#     # ax2 = ax.twiny()
-#     # fig.suptitle(i)
-#     T = []
-#     A = []
-#     Ae = []
-#     R = []
-#     Re = []
-#     # R4 = []
-#     # R4e = []
-#     data = np.genfromtxt(os.getcwd()+'/'+i, delimiter=',', skip_header=1, unpack=True, dtype='str')
-#     for i in data[0]:
-#         T.append(float(i))
-#     for i in data[1]:
-#         A.append(float(i.split('Â±')[0]))
-#         Ae.append(float(i.split('Â±')[1]))
-#     for i in data[2]:
-#         R.append(float(i.split('Â±')[0]))
-#         Re.append(float(i.split('Â±')[1]))
-#     # for i in data[3]:
-#     #     R4.append(float(i.split('Â±')[0]))
-#     #     R4e.append(float(i.split('Â±')[1]))
-#     T = np.array(T)
-#     A = np.array(A)
-#     Ae = np.array(Ae)
-#     R = np.array(R)
-#     Re = np.array(Re)
-#     # R4 = np.array(R4)
-#     # R4e = np.array(R4e)
-#     line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='none', linestyle='dashed', markersize=9, label='Log(A)', color='#0CA0DC')
-#     line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='none', linestyle='dashed', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
-#     # line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='none', linestyle='dashed', markersize=9, label='Log($R_{4t}$)', color='#E63946')
-#     # ax.set_xlabel('1/T (1/K)')
-#     # # ax.set_ylim(0.5e-1,1e1)
-#     # # ax2.set_xlim(310, 85)
-#     # ax.set_ylabel('Log(R)')
-#     # # ax2.set_ylabel('Log(R)')
-#     # ax.grid()
-#     # lines = [line1, line2, line3]
-#     # labels = [line.get_label() for line in lines]
-#     # ax.legend(lines, labels, loc='right')
+#%%
+files = ['26-12-ajustes-canal1b.csv', '14-11-ajustes-canal1b.csv']
+fig, ax = plt.subplots(1,1, figsize=(8,5))
+n=0
+for i in files:
+    # ax2 = ax.twiny()
+    T = []
+    A = []
+    Ae = []
+    R = []
+    Re = []
+    R4 = []
+    R4e = []
+    data = np.genfromtxt(os.getcwd()+'/'+i, delimiter=',', skip_header=1, unpack=True, dtype='str')
+    for i in data[0]:
+        T.append(float(i))
+    for i in data[1]:
+        A.append(float(i.split('Â±')[0]))
+        Ae.append(float(i.split('Â±')[1]))
+    for i in data[2]:
+        R.append(float(i.split('Â±')[0]))
+        Re.append(float(i.split('Â±')[1]))
+    for i in data[3]:
+        R4.append(float(i.split('Â±')[0]))
+        R4e.append(float(i.split('Â±')[1]))
+    T = np.array(T)
+    A = np.array(A)
+    Ae = np.array(Ae)
+    R = np.array(R)
+    Re = np.array(Re)
+    R4 = np.array(R4)
+    R4e = np.array(R4e)
+    if n==0:
+        line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='o', markersize=9, label='Log(A)', color='#0CA0DC')
+        line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='o', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
+        line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='o', markersize=9, label='Log($R_{4t}$)', color='#E63946')
+    else:
+        line1 = ax.errorbar(1/T, np.log(A), yerr=Ae/A, marker='none', linestyle='dashed', markersize=9, label='Log(A)', color='#0CA0DC')
+        line2 = ax.errorbar(1/T, np.log(R), yerr=Re/R, marker='none', linestyle='dashed', markersize=9, label='Log($R_{2t}$)', color='#2A9D8F')
+        line3 = ax.errorbar(1/T, np.log(R4), yerr=R4e/R4, marker='none', linestyle='dashed', markersize=9, label='Log($R_{4t}$)', color='#E63946')
+    n+=1
+    ax.set_xlabel('1/T (1/K)')
+    # ax.set_ylim(0.5e-1,1e1)
+    # ax2.set_xlim(310, 85)
+    ax.set_ylabel('Log(R)')
+    # ax2.set_ylabel('Log(R)')
+ax.grid()
+lines = [line1, line2, line3]
+labels = [line.get_label() for line in lines]
+ax.legend(lines, labels, loc='right')
 
     # ax.set_yscale('log')
 
 # %%
+files=['datos0.05VNOV.csv', 'datos1VNOV.csv']
+i = files[0]
+dire = 'E:/porno/tesis 3/tesisfisica/'
+data = np.genfromtxt(dire+i, unpack=True, skip_header=1, delimiter=',')
+fig, ax = plt.subplots(1,1, figsize=(8,5))
+ax2 = ax.twinx()
+l = ax.errorbar(data[0], data[1], color='#E63946', label='$R_{inst}$')
+le = ax2.errorbar(data[0], data[2], color='#084887', label='$\gamma$')
+lines = [l, le]
+labels = [line.get_label() for line in lines]
+ax.grid()
+ax2.set_ylim(0.98, 1.33)
+ax.set_xlabel('Temperatura (K)')
+ax.set_ylabel('R ($\Omega$)')
+ax2.set_ylabel('$\gamma$')
+ax.legend(lines, labels)
+i = files[1]
+dire = 'E:/porno/tesis 3/tesisfisica/'
+data = np.genfromtxt(dire+i, unpack=True, skip_header=1, delimiter=',')
+fig, ax = plt.subplots(1,1, figsize=(8,5))
+ax2 = ax.twinx()
+l = ax.errorbar(data[0], data[1], color='#2A9D8F', label='$R_{inst}$')
+le = ax2.errorbar(data[0], data[2], color='#084887', label='$\gamma$')
+lines = [l, le]
+labels = [line.get_label() for line in lines]
+ax.grid()
+ax.set_xlabel('Temperatura (K)')
+ax.set_ylabel('R ($\Omega$)')
+ax2.set_ylabel('$\gamma$')
+ax.legend(lines, labels)

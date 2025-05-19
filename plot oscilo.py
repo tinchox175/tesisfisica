@@ -116,10 +116,10 @@ plt.show()
 %matplotlib qt
 der = 'e:/porno/tesis 3/tesisfisica/IVs/2611/B/'
 t_skip = -10
-for i in ['tek0004ALL.csv', 'tek0005ALL.csv', 'tek0006ALL.csv', 'tek0007ALL.csv', 'tek0008ALL.csv']:
+for i in ['tek0033ALL.csv', 'tek0034ALL.csv', 'tek0035ALL.csv', 'tek0036ALL.csv', 'tek0037ALL.csv']:
     fig, ax = plt.subplots(1,2, figsize=(10, 6), layout='compressed')
-    axr = ax[0].twinx()
-    axp = ax[1].twiny()
+    # axr = ax[0].twinx()
+    # axp = ax[1].twiny()
     data = np.genfromtxt(der+i, unpack=True, delimiter=',', skip_header=20, skip_footer=0)
     threshold = -10
     indices = get_indices_above_threshold(data[1], threshold)
@@ -165,31 +165,30 @@ for i in ['tek0004ALL.csv', 'tek0005ALL.csv', 'tek0006ALL.csv', 'tek0007ALL.csv'
     I = (y-z)/30
     # ies = axi.plot(x, I, label='I', color='k')
     # sc1 = ax[1].scatter(z-v, I, marker='o', c=x, cmap='hot', label='IV 2T', zorder=1)
-    pel = axp.scatter(w-v, I, marker='o', c=x, cmap='cool', label='IV 4T', zorder=0)
+    pel = ax[1].scatter(w-v, I, marker='o', c=x, cmap='cool', label='IV 4T', zorder=0)
     popt, pcov = curve_fit(lin, w-v, I, p0=[0.0001,0])
-    aj = axp.plot(w-v, lin(w-v,*popt), color='black', zorder=10, label='Ajuste 4T')
+    aj = ax[1].plot(w-v, lin(w-v,*popt), color='black', zorder=10, label='Ajuste 4T')
     ax[1].grid()
     ax[1].set_ylabel('Corriente (mA)')
-    ax[1].set_xlabel('Voltaje 2t (V)')
-    axp.set_xlabel('Voltaje 4t (V)')
+    ax[1].set_xlabel('Voltaje (V)')
     lines, labels = ax[1].get_legend_handles_labels()
-    lines2, labels2 = axp.get_legend_handles_labels()
-    plt.legend(lines + lines2, labels + labels2, framealpha=1.0)
+    # lines2, labels2 = axp.get_legend_handles_labels()
+    plt.legend(lines , labels , framealpha=1.0)
     rx = (w-v)/I
     rxsg = savgol_filter(rx, ws, 3)
-    re = axr.scatter(x[np.where(rx<4)], savgol_filter(rx, ws, 3)[np.where(rx<4)], s=1, color='k', label='$R_{inst}$', zorder=0)
-    axr.set_ylabel('Resistencia (Ohm)')
-    axr.set_ylim(-10,10)
+    # re = axr.scatter(x[np.where(rx<4)], savgol_filter(rx, ws, 3)[np.where(rx<4)], s=1, color='k', label='$R_{inst}$', zorder=0)
+    # axr.set_ylabel('Resistencia (Ohm)')
+    # axr.set_ylim(-10,10)
     lines, labels = ax[0].get_legend_handles_labels()
-    lines2, labels2 = axr.get_legend_handles_labels()
-    axr.legend(lines + lines2, labels + labels2, framealpha=1.0)
+    # lines2, labels2 = axr.get_legend_handles_labels()
+    ax[0].legend(lines , labels , framealpha=1.0)
     # cbar1 = plt.colorbar(sc1, ax=ax[1], label="Tiempo")
     # cbar2 = plt.colorbar(pel, ax=ax[1])
     # cbar2.ax.yaxis.set_ticks([])
-    plt.colorbar(pel, ax=axp, label='Tiempo')
-    plt.suptitle(f'ws={ws}, p={p}, {i} \n'+'$R_{ajuste}$'+f'={np.round(popt[0],3)}$\pm${np.round(np.sqrt(np.diag(pcov))[0],3)}')
+    # plt.colorbar(pel, ax=ax[1], label='Tiempo')
+    # plt.suptitle(f'ws={ws}, p={p}, {i} \n'+'$R_{ajuste}$'+f'={np.round(popt[0],3)}$\pm${np.round(np.sqrt(np.diag(pcov))[0],3)}')
     # plt.tight_layout()
-    # plt.savefig(i+'.png')
+    plt.savefig(i+'.png')
     # break
 
 # %%

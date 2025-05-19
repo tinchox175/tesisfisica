@@ -1,1 +1,1 @@
-/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv@0.0,-1.0@12.0,30000.0@105.0,300.0@0.0,33.696
+/criostato/Archivos/iv/1312/iv-x5-c-15K-2nplc.csv¡/criostato/Archivos/iv/1312/iv-x5-d-15K-2nplc.csv¡/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv¡/criostato/Archivos/iv/1312/iv-x5-f1-15K-2nplc.csv¡/criostato/Archivos/iv/1312/iv-x5-f2-15K-2nplc.csv@0.0,-1.0@12.0,30000.0@105.0,300.0@0.0,33.696
