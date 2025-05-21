@@ -242,11 +242,14 @@ for i in files[2:]:
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import ticker
 import matplotlib.colors as mcolors
+import itertools
+%matplotlib qt
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "D:/porno/tesis 3/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "C:/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 rmin = []
 rmax = []
@@ -258,46 +261,54 @@ tcont = []
 icont = []
 n = 0
 t0 = 0
-fig, ax = plt.subplots(1,1, figsize=(12,7))
-
-for i in files[2:]:
+fig, ax = plt.subplots(1,1, figsize=(20,6))
+lbls = lambda : itertools.cycle(('0','a','b','c','d','e','f','g','h','i','j'))
+lbl = lbls()
+for i in files[:]:
     data = np.genfromtxt(folder_path+i, unpack=True, delimiter=',', skip_header=1)
-    t, V, I = data[0], data[1], data[2]
-    r0.append(V[0]/I[0])
-    rf.append(V[-1]/I[-1])
-    rmin.append(np.min(V/I))
-    rmax.append(np.max(V/I))
-    rcont += [x for x in V/I]
+    t, V, I = data[0], data[1], data[2]*1000
+    r0.append(V[0]/I[0]*1000)
+    rf.append(V[-1]/I[-1]*1000)
+    rmin.append(np.min(V/I*1000))
+    rmax.append(np.max(V/I*1000))
+    rcont += [x for x in V/I*1000]
     icont += [x for x in I]
     tcont += [x+t0 for x in t]
     N.append(i.split('-')[2])
     n += 1
     t0 += t[-1]
+    lb = next(lbl)
     ax.axvline(t0,0,15,c='gray',ls='dashed')
-    ax.text(t0, 0.99, i.split('-')[2], color='r', ha='right', va='top', rotation=90,
-            transform=ax.get_xaxis_transform())
-sc = ax.scatter(tcont, rcont, c=icont, cmap='cool')
+    if i.split('-')[2] in ['d','e','h','i','j','p','q','r1','r2']:
+        print(i.split('-')[2])
+        ax.text(t0, 0.99, lb, color='r', ha='right', va='top', rotation=90,
+                transform=ax.get_xaxis_transform())
 ax.grid(True)
-ax.set_ylabel('Resistencia (Ohm)')
+ax.set_ylabel('$R_{inst} (\Omega)$')
 ax.set_xlabel('Tiempo (s)')
-cbar4 = plt.colorbar(sc, ax=ax)
-cbar4.set_label('Corriente (A)')
+# Adjust the colorbar to shift cyan to blue around 2.5
+norm = mcolors.LogNorm(vmin=0.5, vmax=30)  # Set logarithmic normalization
+sc = ax.scatter(tcont, rcont, s=6, c=icont, cmap='cool', norm=norm)  # Apply normalization
+cbar4 = plt.colorbar(sc, ax=ax, ticks=[1, 5, 10, 15, 20, 25, 30])  # Set specific ticks
+cbar4.ax.yaxis.set_major_formatter(ticker.FixedFormatter([1, 5, 10, 15, 20, 25, 30]))  # Ensure ticks match
+cbar4.set_label('Corriente (mA)')
 ax.set_xlim(0,2950)
 ax.set_ylim(0,15)
-ax.legend()
-fig, ax = plt.subplots(1,1, figsize=(12,7))
-ax.scatter(N, r0, c='green', label='r0')
-ax.scatter(N, rf, c='red', label='rf')
+# ax.legend()
+fig, ax = plt.subplots(1,1, figsize=(9,5))
+ax.plot(N, r0, c='#0CA0DC', lw=5, linestyle='dashed', label='$R_{inicial}$')
+ax.plot(N, rf, c='#C77DFF', lw=5, linestyle='dashed', label='$R_{final}$')
+# ax.grid(True)
+# ax.set_ylabel('$R_{inst} (\Omega)$')
+# ax.set_xlabel('Medición')
+# ax.legend()
+# fig, ax = plt.subplots(1,1, figsize=(12,7))
+ax.scatter(N, rmin, c='#2A9D8F', marker='s', s=150, label='$R_{mín}$')
+ax.scatter(N, rmax, c='#E63946', marker='s', s=150, label='$R_{máx}$')
 ax.grid(True)
-ax.set_ylabel('Resistencia (Ohm)')
+ax.set_ylabel('$R (\Omega)$')
 ax.set_xlabel('Medición')
-ax.legend()
-fig, ax = plt.subplots(1,1, figsize=(12,7))
-ax.scatter(N, rmin, c='green', label='rmin')
-ax.scatter(N, rmax, c='red', label='rmax')
-ax.grid(True)
-ax.set_ylabel('Resistencia (Ohm)')
-ax.set_xlabel('Medición')
+plt.xticks(N,['']*25)
 ax.legend()
 
 plt.tight_layout()
