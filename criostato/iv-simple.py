@@ -249,7 +249,7 @@ import itertools
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "C:/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "e:/porno/tesis 3/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 rmin = []
 rmax = []
@@ -264,6 +264,9 @@ t0 = 0
 fig, ax = plt.subplots(1,1, figsize=(20,6))
 lbls = lambda : itertools.cycle(('0','a','b','c','d','e','f','g','h','i','j'))
 lbl = lbls()
+lb = next(lbl)
+lb = next(lbl)
+tos = []
 for i in files[:]:
     data = np.genfromtxt(folder_path+i, unpack=True, delimiter=',', skip_header=1)
     t, V, I = data[0], data[1], data[2]*1000
@@ -277,12 +280,13 @@ for i in files[:]:
     N.append(i.split('-')[2])
     n += 1
     t0 += t[-1]
-    lb = next(lbl)
     ax.axvline(t0,0,15,c='gray',ls='dashed')
     if i.split('-')[2] in ['d','e','h','i','j','p','q','r1','r2']:
         print(i.split('-')[2])
         ax.text(t0, 0.99, lb, color='r', ha='right', va='top', rotation=90,
                 transform=ax.get_xaxis_transform())
+        lb = next(lbl)
+        tos.append(t0)
 ax.grid(True)
 ax.set_ylabel('$R_{inst} (\Omega)$')
 ax.set_xlabel('Tiempo (s)')
@@ -306,9 +310,18 @@ ax.plot(N, rf, c='#C77DFF', lw=5, linestyle='dashed', label='$R_{final}$')
 ax.scatter(N, rmin, c='#2A9D8F', marker='s', s=150, label='$R_{mín}$')
 ax.scatter(N, rmax, c='#E63946', marker='s', s=150, label='$R_{máx}$')
 ax.grid(True)
+# lbls = lambda : itertools.cycle(('0','a','b','c','d','e','f','g','h','i','j'))
+# lbl = lbls()
+# lb = next(lbl)
+# lb = next(lbl)
+# for i in len(tos):
+#     ax.text(i, 0.99, lb, color='r', ha='right', va='top', rotation=90,
+#                 transform=ax.get_xaxis_transform())
+#     lb = next(lbl)
 ax.set_ylabel('$R (\Omega)$')
 ax.set_xlabel('Medición')
-plt.xticks(N,['']*25)
+plt.xticks(N,['','a','b','','','','c','d','e','','','','','f','g'
+              ,'h','i','','','','','','','',''])
 ax.legend()
 
 plt.tight_layout()

@@ -81,7 +81,7 @@ colors = [
 ]
 
 n = 0
-# dirs = "D:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+# dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
 dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
@@ -102,8 +102,8 @@ for j in fil:
         pass
     files = get_files_with_path(folder_path)
     n+=1
-    if n!=1:
-        pass
+    # if n!=1:
+    #     pass
         #continue
     fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(12,8))
     ax = fig.add_subplot(111)
@@ -144,6 +144,7 @@ for j in fil:
 #%% Reactance
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.interpolate import griddata
+plt.rcParams.update({'font.size': 16})
 %matplotlib inline
 colors = [
     (0.0, "#000000"),   # Black at -5
@@ -165,8 +166,8 @@ colors = [
 ]
 
 n = 0
-# dirs = "D:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+# dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     print(j)
@@ -189,29 +190,29 @@ for j in fil:
     # if n!=1:
     #     pass
         #continue
-    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(12,8))
+    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(9,6))
     ax = fig.add_subplot(111)
-    fig.suptitle(f'{folder_path.split('_')[5]} K')
+    # fig.suptitle(f'{folder_path.split('_')[5]} K')
     fig.subplots_adjust(top=1.1, bottom=-.1)
     Zfalse = []
     for i in files:
         data = np.genfromtxt(i, unpack=True, delimiter=',')
-        Zfalse.append(data[3][2:])
+        Zfalse.append(data[1][2:])
     for i in files:
         data = np.genfromtxt(i, unpack=True, delimiter=',')
         X = data[0][1:]
-        Z = data[3][1:]
+        Z = data[1][1:]
         Y = np.full_like(X, (i.split('_')[-2]).split('.')[0])
         X0 = np.append(X0,X)
         Y0 = np.append(Y0,Y)
         Z0 = np.append(Z0,Z)
-        norm = Normalize(vmin=0, vmax=3)
+        norm = Normalize(vmin=-700, vmax=20)
         positions, color_names = zip(*colors)
         ax.axvline(26,0,200, c='red', ls='--', alpha=0)
         ax.axvline(180,0,200, c='gray', ls='--', alpha=1)
         ax.axvline(29000, 0, 200, c='gray', ls='--', alpha=0)
         ax.set_xlabel('f [Hz]')
-        ax.set_ylabel('Offset [mV]')
+        ax.set_ylabel('Polarización DC [mV]')
         ax.set_xscale('log')
         ax.grid(True) 
     xi = np.linspace(np.min(X0), np.max(X0), 1500)  # 200 is an example resolution
@@ -220,14 +221,17 @@ for j in fil:
     Zi = griddata((X0, Y0), Z0, (Xi, Yi), method='linear')
     cemap = LinearSegmentedColormap.from_list("custom_cmap", list(colors))
     mesh = ax.pcolormesh(Xi, Yi, Zi, antialiased=True, shading='gouraud', cmap=cemap, norm=norm)
-    contour = ax.contour(Xi, Yi, Zi, levels=[-0.1], colors='yellow', linewidths=2)
-    plt.colorbar(mesh, label='X [Ohm]')
+    contour = ax.contour(Xi, Yi, Zi, alpha=1, levels=[-0.1], colors='Grey', linestyle='dashed', linewidths=4)
+    contour = ax.contourf(Xi, Yi, Zi, alpha=0.7, levels=[-9999,-0.1], cmap='Greys', antialiased=True, linestyle='dashed', linewidths=10)
+    plt.colorbar(mesh, label='R [Ohm]')
     plt.tight_layout()
-    plt.savefig(f'E:/porno/tesis 3/tesisfisica/{folder_path.split('_')[5]} 1611X.png')
+    # break
+    plt.savefig(f'E:/porno/tesis 3/tesisfisica/{folder_path.split('_')[5]} 1412X.png')
 #plt.show()
 # %%
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.interpolate import griddata
+plt.rcParams.update({'font.size': 22})
 colors = [
     (0.0, "#000000"),   # Black at -5
     (0.1, "#2c105c"),   # Deep purple
@@ -253,8 +257,8 @@ X0 = []
 Y0 = []
 Z0 = []
 n=0
-dirs = "D:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-#dirs = "D:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+#dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     if '11' or '30' or '50' in j:
@@ -269,7 +273,7 @@ for j in fil:
     if n!=1:
         pass
         #continue
-    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(16,8))
+    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(12,8))
     ax = fig.add_subplot(111)
     fig.suptitle(f'{folder_path.split('_')[5]} K')
     fig.subplots_adjust(top=1.1, bottom=-.1)
@@ -297,7 +301,7 @@ for j in fil:
     cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
     #break
     # plt.tight_layout()
-    # plt.savefig(f'D:/porno/tesis 3/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
+    # plt.savefig(f'e:/porno/tesis 3/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
 plt.show()
 # %%
 from matplotlib.colors import LinearSegmentedColormap
@@ -327,8 +331,8 @@ X0 = []
 Y0 = []
 Z0 = []
 n=0
-dirs = "D:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-#dirs = "D:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+#dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     folder_path = dirs+j
@@ -339,7 +343,7 @@ for j in fil:
     if n!=1:
         pass
         #continue
-    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(16,8))
+    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(12,8))
     ax = fig.add_subplot(111)
     fig.suptitle(f'{folder_path.split('_')[5]} K')
     fig.subplots_adjust(top=1.1, bottom=-.1)
@@ -367,5 +371,5 @@ for j in fil:
     cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
     #break
     # plt.tight_layout()
-    # plt.savefig(f'D:/porno/tesis 3/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
+    # plt.savefig(f'e:/porno/tesis 3/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
 plt.show()

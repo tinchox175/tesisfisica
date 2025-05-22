@@ -31,13 +31,13 @@ def sclc_p(x, A, R):
 # def sclc_s(x, A, R, n):
 #     return A()
 
-archivo_actual = '/criostato/Archivos/iv/1312/iv-x5-w1-14K-2nplc.csv'
+archivo_actual = '/IVs/escrituras/IV_1234_01.txt'
 # archivo_actual = '\IVs\\1411\IV_1234_14-11-24b\\85.txt'
 channel = 'crio'
 files = ['255.txt']
 fig = plt.figure(figsize=(12, 6))
 for i in files:
-    channel = 'crio'
+    channel = '2'
     modo = 't'
     data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
     data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
@@ -142,12 +142,13 @@ for i in files:
     # vin1 = [j for j in vin1 if j>0]
     vdif = calculate_dV_dI_diff(vin1, iin1)
     sc4 = plt.scatter(vin1[:-1],vdif*1000, c=time[:-1], cmap='cool')
+    sc4 = plt.scatter(vin1,rin1, c='gray')
     cbar4 = plt.colorbar(sc4)
     cbar4.set_label('Time [s]')
     # popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), p0=[1,3], absolute_sigma = True, bounds=[[0,0],[1e3,100e3]])
     # A, R = popt[0], popt[1]
     # plt.plot(vin1, sclc_p(vin1, *popt), label='Ajuste', c='r', zorder=10)
-v = 'V (V)'
+v = 'Voltaje (V)'
 i = 'dV/dI ($\Omega$)'
 r = 'R ($\Omega$)'
 plt.xlabel(v)
