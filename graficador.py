@@ -523,7 +523,7 @@ class MyWindow(QMainWindow):
             except AttributeError:
                 initial_guess = [0, 0]
             try:
-                popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), absolute_sigma = True, p0=initial_guess, bounds=[[0,0],[1e3,100e3]])
+                popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), absolute_sigma = True, p0=initial_guess, bounds=[[0,0],[1e40,100e3]])
             except (RuntimeError, ValueError) as err:
                 print(err)
                 return

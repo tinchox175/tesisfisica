@@ -1,1 +1,1 @@
-/IVs/2011/ZdeW_1234_16-11-24/ZdeW_1234_Temperatura_280.79_K_0534/Offset_0.00_mV.txt¡/IVs/2011/ZdeW_1234_16-11-24/ZdeW_1234_Temperatura_280.79_K_0534/Offset_100.00_mV.txt¡/IVs/2011/ZdeW_1234_16-11-24/ZdeW_1234_Temperatura_280.79_K_0534/Offset_200.00_mV.txt¡
+/IVs/2011/ZdeW_1234_16-11-24/ZdeW_1234_Temperatura_200.58_K_2214/Offset_0.00_mV.txt�
