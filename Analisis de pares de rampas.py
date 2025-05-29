@@ -64,17 +64,6 @@ colors = [
 ]
 
 # Create a colormap
-def arrower(x, y):
-    x0 = x.iloc[range(len(x)-1)].values
-    x1 = x.iloc[range(1,len(x))].values
-    y0 = y.iloc[range(len(y)-1)].values
-    y1 = y.iloc[range(1,len(y))].values
-    xpos = (x0+x1)/2
-    ypos = (y0+y1)/2
-    xdir = x1-x0
-    ydir = y1-y0
-    return xpos, ypos, xdir, ydir
-
 dirs2 = get_files_with_path('e:/porno/tesis 3/tesisfisica/IVs/rampasT-ZdeW/temp')
 dirs = []
 for i in dirs2:
@@ -89,20 +78,21 @@ s=10
 n = 0
 bounds = []
 for i in dirs:
+    print(i)
     data = np.genfromtxt(i, unpack=True, delimiter=',')
-    time = data[0][1:]
-    T = data[2][1:]
-    Z40 = data[5][1:]
-    t40 = data[6][1:]
-    Z200k = data[7][1:]
-    t200k = data[8][1:]
+    time = data[0][2:]
+    T = data[2][2:]
+    Z40 = data[5][2:]
+    t40 = data[6][2:]
+    Z200k = data[7][2:]
+    t200k = data[8][2:]
     R40 = Z40*np.cos(t40*np.pi/180)
     X40 = t40*np.sin(t40*np.pi/180)
     R200k = Z200k*np.cos(t200k*np.pi/180)
     X200k = t200k*np.sin(t200k*np.pi/180)
-    vac, vdc = data[-5][10], data[-4][10]
+    vac, vdc = data[-6][10], data[-5][10]
     if int(vdc)==75:
-        sc1 = axs[0, 0].plot(T[:50], X40[:50], color=colors[n], label=f'{i.split("_")[1].split('-')[0]}.{i.split("_")[1].split('-')[1]}' + ' $V_{ac}$='+str(vac)+' mV $V_{dc}$=' +str(vdc)+ ' mV') 
+        sc1 = axs[0, 0].plot(T[:50], X40[:50], color=colors[n], label=f'{i.split("_")[2].split('-')[0]}.{i.split("_")[2].split('-')[1]}' + ' $V_{ac}$='+str(vac)+' mV $V_{dc}$=' +str(vdc)+ ' mV') 
         sc2 = axs[0, 1].plot(T[:50], X200k[:50], color=colors[n])
         sc3 = axs[1, 0].plot(T[:50], R40[:50], color=colors[n])
         sc4 = axs[1, 1].plot(T[:50], R200k[:50], color=colors[n])
@@ -116,7 +106,7 @@ for i in dirs:
         sc4 = axs[1, 1].plot(T[120:], R200k[120:], color=colors[n])
         n+=1
     else:
-        sc1 = axs[0, 0].plot(T, X40, color=colors[n], label=f'{i.split("_")[1].split('-')[0]}.{i.split("_")[1].split('-')[1]}' + ' $V_{ac}$='+str(vac)+' mV $V_{dc}$=' +str(vdc)+ ' mV') 
+        sc1 = axs[0, 0].plot(T, X40, color=colors[n], label=f'{i.split("_")[2].split('-')[0]}.{i.split("_")[2].split('-')[1]}' + ' $V_{ac}$='+str(vac)+' mV $V_{dc}$=' +str(vdc)+ ' mV') 
         sc2 = axs[0, 1].plot(T, X200k, color=colors[n])
         sc3 = axs[1, 0].plot(T, R40, color=colors[n])
         sc4 = axs[1, 1].plot(T, R200k, color=colors[n])
@@ -149,14 +139,14 @@ axs[0,0].grid(True)
 axs[1,0].grid(True)
 axs[0,1].grid(True)
 axs[1,1].grid(True)
-axs[0,0].set_ylim(0,150)
-axs[1,0].set_ylim(0,10)
-axs[1,1].set_ylim(-12,5)
-axs[0,1].set_ylim(0,130)
-axs[0,0].set_yscale('symlog', linthresh=1e-1)
-axs[0,1].set_yscale('symlog', linthresh=1e1)
-axs[1,0].set_yscale('symlog', linthresh=1e0)
-axs[1,1].set_yscale('symlog', linthresh=1e1)
+# axs[0,0].set_ylim(0,150)
+# axs[1,0].set_ylim(0,10)
+# axs[1,1].set_ylim(-12,5)
+# axs[0,1].set_ylim(0,130)
+# axs[0,0].set_yscale('symlog', linthresh=1e-1)
+# axs[0,1].set_yscale('symlog', linthresh=1e1)
+# axs[1,0].set_yscale('symlog', linthresh=1e0)
+# axs[1,1].set_yscale('symlog', linthresh=1e1)
 axs[0,0].set_title('40 Hz')
 axs[0,1].set_title('200 kHz')
 # axs[0,0].legend()
@@ -169,7 +159,7 @@ norm = mcolors.BoundaryNorm(bounds, cmap.N)
 cbar_ax_rect = [0.92, 0.11, 0.03, 0.77]
 cbar_ax = fig.add_axes(cbar_ax_rect)
 cbar = fig.colorbar(plt.cm.ScalarMappable(cmap=cmap, norm=norm), cax=cbar_ax, ticks=tick_locs, orientation='vertical')
-cbar.ax.set_yticklabels([0, 50, 75, 100, 120, 150, 200])
+cbar.ax.set_yticklabels([100, 200, 300, 400])
 cbar.set_label('Polarización DC (mV)')
 plt.show()
 # plt.tight_layout()

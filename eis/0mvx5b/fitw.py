@@ -103,7 +103,8 @@ import csv
 with open('Parametros_ajustados.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['T', 'R1', 'C1', 'L1', 'R2', 'C2', 'R3', 'C3'])
-t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
+t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90', '70',
+    '50', '30', '11']
 initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
     data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
@@ -126,8 +127,6 @@ for i in t:
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
     plt.show()
     print(circuit)
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados.csv', unpack=True, delimiter=',', skip_header=1)
-print(data)
 #%%
 from impedance import preprocessing
 from impedance.models.circuits import CustomCircuit
@@ -135,10 +134,11 @@ import csv
 with open('Parametros_ajustados_b.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['T', 'L1', 'R2', 'C2', 'R3', 'C3'])
-t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
+t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90', '70',
+    '50', '30', '11']
 initial_guess = [0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -158,8 +158,6 @@ for i in t:
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
     plt.show()
     print(circuit)
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
-print(data)
 #%%
 data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 T, Lr, Rl, Cl, Rn, Cn = data

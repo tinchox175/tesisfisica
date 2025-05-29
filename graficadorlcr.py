@@ -53,7 +53,6 @@ class MyWindow(QMainWindow):
         self.setWindowIcon(QtGui.QIcon('snowflake.png'))
         os.chdir(dirname(abspath(__file__)))
         self.home = os.getcwd()
-        
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
         self.main_layout = QVBoxLayout(centralWidget)
@@ -167,7 +166,7 @@ class MyWindow(QMainWindow):
             self.texto_archivos = self.texto_archivos + archtemp + '¡'
             self.fileName[i] = self.fileName[i][index:]
         self.archivaje.setText(f'<html>Archivos:{self.texto_archivos}.</html>')
-        np.savetxt('tempfilelcr.txt', [self.texto_archivos], fmt='%s')
+        np.savetxt('tempfilelcr.txt', [self.texto_archivos[-1]], fmt='%s')
 
     def toggle(self, boton):
         if self.boton.isChecked():
@@ -181,8 +180,8 @@ class MyWindow(QMainWindow):
     def eiser(self):
         for archivos in self.fileName:
             path = self.home
-            os.chdir(path)
-            archivo_actual = archivos
+            archivo_actual = path+archivos
+            print(archivo_actual)
             data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
             f = data[0] #frecuencia
             zreal = data[1] #lectura promedio A (Z real)
@@ -208,6 +207,7 @@ class MyWindow(QMainWindow):
     def graficar(self):
         for i in self.fileName:
             try:
+                print(os.getcwd())
                 archivo_actual = os.getcwd()+i
                 print(archivo_actual)
                 data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)

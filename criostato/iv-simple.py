@@ -245,7 +245,7 @@ import numpy as np
 from matplotlib import ticker
 import matplotlib.colors as mcolors
 import itertools
-%matplotlib qt
+%matplotlib inline
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
@@ -320,8 +320,11 @@ ax.grid(True)
 #     lb = next(lbl)
 ax.set_ylabel('$R (\Omega)$')
 ax.set_xlabel('Medición')
-plt.xticks(N,['','a','b','','','','c','d','e','','','','','f','g'
-              ,'h','i','','','','','','','',''])
+# plt.xticks(N,['','a','b','','','','c','d','e','','','','','f','g'
+#               ,'h','i','','','','','','','',''])
+ax.fill_between(N[3:6], [-6,-6,-6], [18,18,16], color='green', alpha=0.2)
+ax.fill_between(N[16:], [-6,-6,-6,-6,-6,-6,-6,-6,-6], [18,18,18,18,18,18,18,18,19], color='green', alpha=0.2)    
+ax.set_ylim(0,15)
 ax.legend()
 
 plt.tight_layout()
