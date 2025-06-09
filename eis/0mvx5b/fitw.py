@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 from natsort import natsorted
 import csv
 %matplotlib inline
-dire = 'E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
-os.chdir('E:/porno/tesis 3/tesisfisica/IVs/')
+dire = 'C:/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
+os.chdir('C:/tesisfisica/IVs/')
 def get_files_with_path(folder):
     print(folder)
     return natsorted([os.path.join(folder, file) for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
 def list_folders_in_folder(folder_path):
     # List only directories in the given folder
     return natsorted([name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))])
-files = (list_folders_in_folder('E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'))
+files = (list_folders_in_folder('C:/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'))
 
 def zr(w, R, C):
     return R/(1+(w*R*C)**2)
@@ -63,7 +63,7 @@ for i in files:
 #%%
 fig, ax = plt.subplots(1,1,figsize=(9,7), dpi=800)
 ax2 = ax.twinx()
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/1611_ajuste_zdew.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('C:/tesisfisica/IVs/1611_ajuste_zdew.csv', unpack=True, delimiter=',', skip_header=1)
 ln1 = ax.scatter((1/data[0]), np.log(data[1]), color="#9858db", label='$R_{real}$')
 ln2 = ax2.scatter((1/data[0]), np.log(data[2]), color="#c7c750", label='$C_{real}$')
 ln3 = ax.scatter((1/data[0]), np.log(data[3]), color="#609ee0", label='$R_{img}$')
@@ -107,7 +107,7 @@ t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90',
     '50', '30', '11']
 initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'C:/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -138,7 +138,7 @@ t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90',
     '50', '30', '11']
 initial_guess = [0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'C:/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -159,10 +159,10 @@ for i in t:
     plt.show()
     print(circuit)
 #%%
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('C:/tesisfisica/eis/0mvx5a/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 T, Lr, Rl, Cl, Rn, Cn = data
 fig, ax= plt.subplots(figsize=(10, 6))
-ax2 = ax.twinx()
+fig, ax2 = plt.subplots(figsize=(10, 6))
 ax2.set_ylabel('Capacitancia (F)')
 ax.plot(1/T, Lr, 's-', label='Lr', c='#609ee0')      # Lr
 ax.plot(1/T, Rl, 'o-', label='Rl', c='#e07b67')      # Rl
@@ -173,7 +173,8 @@ lines, labels = ax.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
 ax.legend(lines + lines2, labels + labels2, loc='center', bbox_to_anchor=(0.7, 0.5))
 ax.grid()
-ax.set_yscale('log')
+# ax.set_yscale('log')
+ax2.grid()
 ax2.set_yscale('log')
 # Set log scale ticks for both y-axes
 ax.set_xlabel('T (K)')
@@ -186,7 +187,7 @@ with open('Parametros_ajustados.csv', mode='w', newline='') as file:
         writer.writerow(['T', 'R1', 'C1', 'L1', 'R2', 'C2', 'R3', 'C3'])
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'C:/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -208,7 +209,7 @@ for i in t:
 # plt.show()
 # print(circuit)
 #%%
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/eis/0mvx5a/Parametros 0mV ZdeW X5-a.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('C:/tesisfisica/eis/0mvx5a/Parametros 0mV ZdeW X5-a.csv', unpack=True, delimiter=',', skip_header=1)
 T, Rr, Cr, Lr, Rl, Cl, Rn, Cn = data
 fig, ax= plt.subplots(figsize=(10, 6))
 ax2 = ax.twinx()
@@ -219,7 +220,7 @@ ax2.plot(T, Cr, 'x-', label='Cr', c='#c7c750')     # Cr
 ax.plot(T, Lr, 'o-', label='Lr', c='#609ee0')      # Lr
 ax.plot(T, Rl, 'o-', label='Rl', c='#e07b67')      # Rl
 ax2.plot(T, Cl, 'x-', label='Cl', c='#a1e067')     # Cl
-ax.plot(T, Rn, 'o-', label='Rn', c='#e067b7')      # Rn
+# ax.plot(T, Rn, 'o-', label='Rn', c='#e067b7')      # Rn
 ax2.plot(T, Cn, 'x-', label='Cn', c='#67e0e0')     # Cn
 # ax.set_xscale('log')
 # Combine legends from both axes and place outside the plot
