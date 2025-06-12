@@ -25,6 +25,7 @@ from scipy.interpolate import lagrange
 from scipy.optimize import newton
 from scipy.optimize import curve_fit
 from matplotlib.colors import Normalize
+from matplotlib.ticker import StrMethodFormatter
 from os.path import abspath, dirname
 os.chdir(dirname(abspath(__file__)))
 window_size=31 
@@ -559,7 +560,7 @@ class MyWindow(QMainWindow):
                 plt.figure()
                 indices = np.arange(len(vin1))
                 sc = plt.scatter(vin1, iin1, s=1, c=time, cmap='viridis')
-                cbar = plt.colorbar(sc, label='Tiempo [s]')
+                cbar = plt.colorbar(sc, label='Tiempo (s)')
                 for i in indices:
                     if iin1[i] > 0:
                         rgba_color = sc.cmap(sc.norm(time[i]))
@@ -818,16 +819,15 @@ class MyWindow(QMainWindow):
                         print((np.abs(vin1gol)))
             try:
                 if  'I vs V' in self.seleccion:
-                    plt.figure()
+                    plt.figure(figsize=(4,3), dpi=150)
                     # graficamos I vs V
-                    plt.scatter(vin1gol, np.abs(iin1gol), c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.plot(vin1gol, iin1gol, lw=4, c="#4A85F1")  # pastel blue
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
-                    plt.ylabel('|I| [mA]')
-                    plt.xlabel('V [V]')
+                    plt.ylabel('I (mA)')
+                    plt.xlabel('V (V)')
                     plt.tight_layout()
-                    plt.title(f'|I| vs V T={temperatura}')
+                    # plt.title(f'|I| vs V T={temperatura}')
                     plt.grid()
                     plt.tight_layout()
                     plt.show()
@@ -835,7 +835,7 @@ class MyWindow(QMainWindow):
                     plt.figure()
                     # graficamos la Log(abs(I)) vs V    
                     plt.scatter(vin1gol, np.log(np.abs(iin1gol)+0.001), c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.yscale('log')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -849,7 +849,7 @@ class MyWindow(QMainWindow):
                     plt.figure()
                     # graficamos Log(abs(Ibias)) vs V
                     plt.scatter(vin1gol, np.log(np.abs(ibi1gol)+0.001), c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.yscale('log')
                     plt.xlabel('V (V)')
                     plt.ylabel('I$_{bias}$ (A)')
@@ -863,7 +863,7 @@ class MyWindow(QMainWindow):
                     plt.subplot(1, 2, 1)
                     # graficamos la Rinst vs V    
                     plt.scatter(vin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     plt.xlabel('Voltaje (V)')
@@ -877,7 +877,7 @@ class MyWindow(QMainWindow):
                     plt.subplot(1, 2, 2)
                     # graficamos la Rinst vs I    
                     plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     plt.xlabel('I (A)')
@@ -893,7 +893,7 @@ class MyWindow(QMainWindow):
                     plt.subplot(1,2,1)
                     # graficamos la Rrem vs V    
                     plt.scatter(vin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     plt.xlabel('Voltaje (V)')
@@ -907,7 +907,7 @@ class MyWindow(QMainWindow):
                     plt.subplot(1,2,2)
                     # graficamos la Rrem vs I    
                     plt.scatter(iin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     plt.xlabel('I (A)')
@@ -922,7 +922,7 @@ class MyWindow(QMainWindow):
                     plt.figure()
                     # graficamos la gamma vs V    
                     plt.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
@@ -937,7 +937,7 @@ class MyWindow(QMainWindow):
                 if 'γ vs √V' in self.seleccion:
                     plt.figure()
                     plt.scatter(np.sign(vin1[0:-1])*np.sqrt(np.abs(vin1[0:-1])), gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
@@ -952,7 +952,7 @@ class MyWindow(QMainWindow):
                 if 'γ vs 1/V' in self.seleccion:
                     plt.figure()
                     plt.scatter(1/vin1[0:-1], gamma1gol, gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
-                    plt.colorbar(label='Tiempo [s]')
+                    plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
@@ -1003,7 +1003,7 @@ class MyWindow(QMainWindow):
                     ax4.set_ylabel('$R_{rem}$ (Ω)')
                     ax4.set_title('$R_{rem}$ vs V')
                     cbar4 = plt.colorbar(sc4, ax=ax4)
-                    cbar4.set_label('Time [s]')
+                    cbar4.set_label('Time (s)')
                     ax1.grid()
                     ax2.grid()
                     ax3.grid()

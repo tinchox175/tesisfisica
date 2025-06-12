@@ -58,7 +58,7 @@ def msr(cu,bias=True):
     return [tr, v_iv, cu,v_bias, cu]
 #%%
 def add_row(values, file_name, ctrl=0):
-    directory = 'C:/tesis git/tesisfisica/criostato/Archivos/iv/1312'
+    directory = 'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1312'
     file_path = directory +'/'+ file_name + '.csv'
     with open(file_path, mode='a+', newline='') as file:
         writer = csv.writer(file)
@@ -156,8 +156,8 @@ for k in curva_r:
 #%%
 for i in ['c-207K']:
     nm=i
-    V, I, Vb, Ib = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}.csv', delimiter=',', unpack=True)
-    #Vn, In, Vbn, Ibn = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}-n.csv', delimiter=',', unpack=True)
+    V, I, Vb, Ib = np.loadtxt(f'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}.csv', delimiter=',', unpack=True)
+    #Vn, In, Vbn, Ibn = np.loadtxt(f'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}-n.csv', delimiter=',', unpack=True)
     from scipy.optimize import curve_fit
     def r(V,R):
         return V/R
@@ -186,7 +186,7 @@ plt.show()
 p=0
 for i in ['a-100K']:
     nm=i
-    V, I, Vb, Ib = np.loadtxt(f'C:/tesis git/tesisfisica/criostato/Archivos/iv/1012/iv(+-)-x5-{nm}.csv', delimiter=',', unpack=True)
+    V, I, Vb, Ib = np.loadtxt(f'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1012/iv(+-)-x5-{nm}.csv', delimiter=',', unpack=True)
     from scipy.optimize import curve_fit
     def r(V,R):
         return V/R
@@ -223,7 +223,7 @@ import matplotlib.colors as mcolors
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "C:/tesis git/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 for i in files[2:]:
     data = np.genfromtxt(folder_path+i, unpack=True, delimiter=',', skip_header=1)
@@ -245,11 +245,12 @@ import numpy as np
 from matplotlib import ticker
 import matplotlib.colors as mcolors
 import itertools
+from matplotlib.colors import LinearSegmentedColormap
 %matplotlib inline
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "e:/porno/tesis 3/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "e:/porno/tesis 3//tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 rmin = []
 rmax = []
@@ -261,7 +262,7 @@ tcont = []
 icont = []
 n = 0
 t0 = 0
-fig, ax = plt.subplots(1,1, figsize=(20,6))
+fig, ax = plt.subplots(1,1, figsize=(12,4), dpi=150)
 lbls = lambda : itertools.cycle(('0','a','b','c','d','e','f','g','h','i','j'))
 lbl = lbls()
 lb = next(lbl)
@@ -281,7 +282,7 @@ for i in files[:]:
     n += 1
     t0 += t[-1]
     ax.axvline(t0,0,15,c='gray',ls='dashed')
-    if i.split('-')[2] in ['d','e','h','i','j','p','q','r1','r2']:
+    if i.split('-')[2] in ['d','e', 'f1','h','i','j','p','q','r1','r2']:
         print(i.split('-')[2])
         ax.text(t0, 0.99, lb, color='r', ha='right', va='top', rotation=90,
                 transform=ax.get_xaxis_transform())
@@ -291,24 +292,26 @@ ax.grid(True)
 ax.set_ylabel('$R_{inst} (\Omega)$')
 ax.set_xlabel('Tiempo (s)')
 # Adjust the colorbar to shift cyan to blue around 2.5
+# Create a custom colormap from '#084887' (blue) to '#E63946' (red)
+blue = LinearSegmentedColormap.from_list('blue_red', ['#4c86f0', '#E63946'])
 norm = mcolors.LogNorm(vmin=0.5, vmax=30)  # Set logarithmic normalization
-sc = ax.scatter(tcont, rcont, s=6, c=icont, cmap='cool', norm=norm)  # Apply normalization
+sc = ax.scatter(tcont, rcont, s=6, c=icont, cmap=blue, norm=norm)  # Apply normalization
 cbar4 = plt.colorbar(sc, ax=ax, ticks=[1, 5, 10, 15, 20, 25, 30])  # Set specific ticks
 cbar4.ax.yaxis.set_major_formatter(ticker.FixedFormatter([1, 5, 10, 15, 20, 25, 30]))  # Ensure ticks match
 cbar4.set_label('Corriente (mA)')
 ax.set_xlim(0,2950)
 ax.set_ylim(0,15)
 # ax.legend()
-fig, ax = plt.subplots(1,1, figsize=(9,5))
-ax.plot(N, r0, c='#0CA0DC', lw=5, linestyle='dashed', label='$R_{inicial}$')
-ax.plot(N, rf, c='#C77DFF', lw=5, linestyle='dashed', label='$R_{final}$')
+fig, ax = plt.subplots(1,1, figsize=(9,4), dpi=150)
+ax.plot(N, r0, c='#4c86f0', lw=5, linestyle='dashed', label='$R_{inicial}$')
+ax.plot(N, rf, c='#E63946', lw=5, linestyle='dashed', label='$R_{final}$')
 # ax.grid(True)
 # ax.set_ylabel('$R_{inst} (\Omega)$')
 # ax.set_xlabel('Medición')
 # ax.legend()
 # fig, ax = plt.subplots(1,1, figsize=(12,7))
 ax.scatter(N, rmin, c='#2A9D8F', marker='s', s=150, label='$R_{mín}$')
-ax.scatter(N, rmax, c='#E63946', marker='s', s=150, label='$R_{máx}$')
+ax.scatter(N, rmax, c='#C77DFF', marker='s', s=150, label='$R_{máx}$')
 ax.grid(True)
 # lbls = lambda : itertools.cycle(('0','a','b','c','d','e','f','g','h','i','j'))
 # lbl = lbls()

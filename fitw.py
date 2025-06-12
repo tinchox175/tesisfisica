@@ -100,21 +100,21 @@ plt.show()
 from impedance import preprocessing
 from impedance.models.circuits import CustomCircuit
 import csv
+%matplotlib inline
 with open('Parametros_ajustados.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['T', 'R1', 'C1', 'L1', 'R2', 'C2', 'R3', 'C3'])
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
 initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
-
     circuit = 'p(R1-C1-L1,R2,C2)-p(R3,C3)'
     circuit = CustomCircuit(circuit, initial_guess=initial_guess)
     circuit.fit(f, Z, 
                 bounds=([0, 0, 0, 0, 0, -300, 0],
-                        [np.inf, 1, np.inf, np.inf, 10, 0, 10]))
+                        [np.inf, np.inf, np.inf, np.inf, 10, 0, 10]))
 
     paramteres = circuit.parameters_
     initial_guess = circuit.parameters_
@@ -124,29 +124,30 @@ for i in t:
     print(f'T = {i}K')
     circuit.plot(f_data=f, Z_data=Z, kind='nyquist')
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
-    plt.show()
     print(circuit)
+    # break
 data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados.csv', unpack=True, delimiter=',', skip_header=1)
 print(data)
 #%%
 from impedance import preprocessing
 from impedance.models.circuits import CustomCircuit
 import csv
+%matplotlib inline
 with open('Parametros_ajustados_b.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['T', 'L1', 'R2', 'C2', 'R3', 'C3'])
+        writer.writerow(['T', 'L1', 'R1', 'R2', 'C2', 'R3', 'C3'])
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
-initial_guess = [0.855,3.48,24.9e-9,-1.3,67.9e-9]
+initial_guess = [16, 4,1,24.9e-9,-1.3,1e-4]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
-    circuit = 'p(L1,R2,C2)-p(R3,C3)'
+    circuit = 'p(L1-R1,R2,C2)-p(R3,C3)'
     circuit = CustomCircuit(circuit, initial_guess=initial_guess)
     circuit.fit(f, Z, 
-                bounds=([0, 0, 0, -300, 0],
-                        [np.inf, np.inf, 10, 0, 10]))
+                bounds=([0, 0, 0, 0, -300, 0],
+                        [np.inf, np.inf, np.inf, 10, 0, 1]))
 
     paramteres = circuit.parameters_
     initial_guess = circuit.parameters_
@@ -162,24 +163,29 @@ data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.cs
 print(data)
 #%%
 data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
-T, Lr, Rl, Cl, Rn, Cn = data
-fig, ax= plt.subplots(figsize=(10, 6))
-ax2 = ax.twinx()
-ax2.set_ylabel('Capacitancia (F)')
-ax.plot(1/T, Lr, 's-', label='Lr', c='#609ee0')      # Lr
-ax.plot(1/T, Rl, 'o-', label='Rl', c='#e07b67')      # Rl
-ax2.plot(1/T, Cl, 'x-', label='Cl', c='#a1e067')     # Cl
-ax.plot(1/T, Rn, 'o-', label='Rn', c='#e067b7')      # Rn
-ax2.plot(1/T, Cn, 'x-', label='Cn', c='#67e0e0')     # Cn
-lines, labels = ax.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax.legend(lines + lines2, labels + labels2, loc='center', bbox_to_anchor=(0.7, 0.5))
-ax.grid()
-ax.set_yscale('log')
-ax2.set_yscale('log')
+T, Lr, Rr, Rl, Cl, Rn, Cn = data
+fig, ax= plt.subplots(3,1,figsize=(8, 7), sharex=True, dpi=800)
+ax[1].set_ylabel('Capacitancia (F)')
+ax[2].plot(1/T, Lr, 's-', label='Lr', c='#609ee0')      # Lr
+ax[0].plot(1/T, Rr, 'o-', label='Rr', c='#e07b67')      # Rl
+ax[0].plot(1/T, Rl, 'o-', label='Rl', c="#67e08f")      # Rl
+# ax[1].plot(1/T, Cr, 'x-', label='Cl', c='#a1e067')     # Cl
+ax[1].plot(1/T, Cl, 'x-', label='Cl', c='#a1e067')     # Cl
+ax[1].plot(1/T, Cn, 'x-', label='Cn', c="#6f67e0")      # Rn
+ax[0].plot(1/T, Rn, 'o-', label='Rn', c='#e067b7')      # Rn
+ax[0].legend()
+ax[1].legend()
+ax[2].legend()
+ax[0].grid()
+# ax.set_yscale('log')
+ax[1].set_yscale('log')
 # Set log scale ticks for both y-axes
-ax.set_xlabel('T (K)')
-ax.set_ylabel('Resisencia ($\Omega$) / Inductancia (H)')
+ax[1].grid()
+ax[2].grid()
+ax[2].set_xlabel('1/T (1/K)')
+ax[0].set_ylabel('Resisencia ($\Omega$)')
+ax[2].set_ylabel('Inductancia (H)')
+
 #%%
 import csv
 from matplotlib.ticker import LogLocator, NullFormatter
