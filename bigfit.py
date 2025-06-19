@@ -8,7 +8,7 @@ from os.path import abspath, dirname
 from numpy import diff
 
 #%%
-%matplotlib qt
+%matplotlib inline
 os.chdir('e:/porno/tesis 3/tesisfisica')
 def calculate_dV_dI_diff(V_array, I_array):
     dV = np.diff(V_array)
@@ -34,17 +34,18 @@ def sclc_p(x, A, R):
 #     return A()
 
 # archivo_actual = '/IVs/1411/IV_1234_14-11-24/300.txt'
-# files=['/criostato/Archivos/iv/1312/iv-x5-d-15K-2nplc.csv',
-#        '/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv',
-#        '/criostato/Archivos/iv/1312/iv-x5-h-15K-0.2nplc.csv',
-#        '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
-#        '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
-#        '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv']
-files = ['/IVs/escrituras/IV_1234_01.txt','/IVs/escrituras/IV_1234_04.txt']
+files=['/criostato/Archivos/iv/1312/iv-x5-d-15K-2nplc.csv',
+       '/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv',
+       '/criostato/Archivos/iv/1312/iv-x5-h-15K-0.2nplc.csv',
+       '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
+       '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
+       '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv']
+n=0
+# files = ['/IVs/escrituras/IV_1234_01.txt']
 for i in files:
     archivo_actual = i
     fig, ax = plt.subplots(1,1,figsize=(4, 3), dpi=150)
-    channel = '2'
+    channel = 'crio'
     modo = 'si_t'
     data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
     data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
@@ -147,15 +148,15 @@ for i in files:
         print('hola')
     # iin1 = [np.abs(iin1[j]) for j in np.arange(len(iin1)) if vin1[j]>0]
     # vin1 = [j for j in vin1 if j>0]
-    # vdif = calculate_dV_dI_diff(vin1, iin1)
-    # sc4 = ax.scatter(vin1[:-1],vdif*1000, c=time[:-1], cmap=cmap)
+    vdif = calculate_dV_dI_diff(vin1, iin1)
+    sc4 = ax.scatter(vin1[:-1],vdif*1000, c=time[:-1], cmap=cmap)
     # gam1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
     # iin1 /= 1
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
-    ax.scatter(vin1, iin1, s=30, c=time, cmap=cmap)
+    # ax.scatter(vin1, rin1, s=30, c=time, cmap=cmap)
     # Create a colormap from light blue to '#4c86f0'
-    # sc = ax.plot(vin1, rin1, lw=2, c='gray')
+    sc = ax.scatter(vin1, rin1, s=6, c='gray')
     # ax.scatter(vin1[:-1], gam1, s=30, c=time[:-1], cmap=cmap)
     # popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), p0=[1,3], absolute_sigma = True, bounds=[[0,0],[1e3,100e3]])
     # A, R = popt[0], popt[1]
@@ -168,12 +169,17 @@ for i in files:
     ax.set_ylabel(r)
     # ax[1].set_xlabel(v)
     # ax[1].set_ylabel('$\gamma$')
-    ax.set_ylim(1.8,15)
+    # ax.set_ylim(-50,63)
+    # if n==0:
+    #     ax.set_ylim(1.8,15)
+    # else:
+    #     ax.set_ylim(1.65,1.8)
     # # ax[0].set_xticks([0, 0.05, 0.1])
     # # ax[1].set_xticks([0, 0.05, 0.1])
     ax.grid()
     # ax[1].grid()
     # plt.grid()
+    n+=1
     plt.tight_layout()
 
 
