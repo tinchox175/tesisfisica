@@ -7,7 +7,7 @@ from natsort import natsorted
 import csv
 %matplotlib inline
 dire = 'E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
-os.chdir('E:/porno/tesis 3/tesisfisica/IVs/')
+os.chdir('E:/porno/tesis 3/tesisfisica/eis/')
 def get_files_with_path(folder):
     print(folder)
     return natsorted([os.path.join(folder, file) for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
@@ -106,7 +106,7 @@ with open('Parametros_ajustados.csv', mode='w', newline='') as file:
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
 initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -132,25 +132,27 @@ print(data)
 from impedance import preprocessing
 from impedance.models.circuits import CustomCircuit
 import csv
-with open('Parametros_ajustados_b.csv', mode='w', newline='') as file:
+with open('Parametros_ajustados_c20.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['T', 'L1', 'R2', 'C2', 'R3', 'C3'])
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
-initial_guess = [0.855,3.48,24.9e-9,-1.3,67.9e-9]
+t = ['100', '85']
+initial_guess = [3.65, 22e-9, 0.46, -1.47, 47.8e-9, 0, 2e-9]
+initial_guess = [2, 22e-9, 22, -20, 4.8e-9, 2.7, 196e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
-    circuit = 'p(L1,R2,C2)-p(R3,C3)'
+    circuit = 'p(L1,R2,C2)-p(R3,C3)-p(R4,C4)'
     circuit = CustomCircuit(circuit, initial_guess=initial_guess)
     circuit.fit(f, Z, 
-                bounds=([0, 0, 0, -300, 0],
-                        [np.inf, np.inf, 10, 0, 10]))
+                bounds=([0, 0, 0, -300, 0, 0, 0],
+                        [np.inf, np.inf, np.inf, 0, 10, np.inf, 10]))
 
     paramteres = circuit.parameters_
     initial_guess = circuit.parameters_
-    with open('Parametros_ajustados_b.csv', mode='a', newline='') as file:
+    with open('Parametros_ajustados_c20.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([i] + list(paramteres))
     print(f'T = {i}K')
@@ -158,7 +160,7 @@ for i in t:
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
     plt.show()
     print(circuit)
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/eis/Parametros_ajustados_c20.csv', unpack=True, delimiter=',', skip_header=1)
 print(data)
 #%%
 data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)

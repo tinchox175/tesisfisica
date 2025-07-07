@@ -7,7 +7,7 @@ from natsort import natsorted
 import csv
 %matplotlib inline
 dire = 'E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
-os.chdir('E:/porno/tesis 3/tesisfisica/IVs/')
+os.chdir('E:/porno/tesis 3/tesisfisica/eis/')
 def get_files_with_path(folder):
     print(folder)
     return natsorted([os.path.join(folder, file) for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
@@ -159,7 +159,6 @@ for i in t:
     plt.show()
     print(circuit)
 data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
-print(data)
 #%%
 data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 T, Lr, Rr, Rl, Cl, Rn, Cn = data
@@ -184,55 +183,72 @@ ax[2].grid()
 ax[2].set_xlabel('1/T (1/K)')
 ax[0].set_ylabel('Resisencia ($\Omega$)')
 ax[2].set_ylabel('Inductancia (H)')
-
-#%%
+#%% CON EL CIRCUITO NUEVO
+from impedance import preprocessing
+from impedance.models.circuits import CustomCircuit
 import csv
-from matplotlib.ticker import LogLocator, NullFormatter
-with open('Parametros_ajustados.csv', mode='w', newline='') as file:
+%matplotlib inline
+with open('Parametros_ajustados_cx5b.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['T', 'R1', 'C1', 'L1', 'R2', 'C2', 'R3', 'C3'])
-t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
+        writer.writerow(['T', 'R1', 'L1', 'C1', 'R2', 'C2', 'R3', 'C3'])
+t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90', '70']
+initial_guess = [25, 13, 5.69e-10, -23, 10e-15, 6e-3 , 8.91e-4]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
-    f = data[2][1:]
-    Z = data[0][1:] - 1j*data[1][1:]
-
-    initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-1.3,67.9e-9]
-    initial_guesss = [None, None, None, None, None, -300, None] 
-    circuit = 'p(R1-C1-L1,C2,R2)-p(R3,C3)'
-    circuit = CustomCircuit(circuit, initial_guess=initial_guesss, constants={'R1':initial_guess[0],
-    'C1':initial_guess[1], 'L1':initial_guess[2], 'R2':initial_guess[3], 'C2':initial_guess[4],
-    'C3':initial_guess[6]})
+    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    f = data[2][1:-1]
+    Z = data[0][1:-1] - 1j*data[1][1:-1]
+    if i == '110':
+        initial_guess = [250, 46.7, 1.11e-8, -250, 10e-15, 93 , 7.5]
+    elif i == '90':
+        initial_guess = [256, 46.7, 1.11e-8, -254, 10e-15, 93 , 7.5]
+    elif i == '70':
+        f = data[2][1:-3]
+        Z = data[0][1:-3] - 1j*data[1][1:-3]
+        initial_guess = [500, 200, 1.14e-28, -500, 5e-13, 93 , 12]
+    # elif i == '50':
+    #     f = data[2][1:-3]
+    #     Z = data[0][1:-3] - 1j*data[1][1:-3]
+    #     initial_guess = [162, 200, 2.2e-08, -155, 1.16e-8, 93 , 9]
+    # else:
+    #     continue
+    circuit = 'p(R1,L1,C1)-p(R2,C2)-p(R3,C3)'
+    circuit = CustomCircuit(circuit, initial_guess=initial_guess)
     circuit.fit(f, Z, 
-                bounds=([-300],
-                        [0]))
-    paramteres = circuit.parameters_
-    with open('Parametros_ajustados.csv', mode='a', newline='') as file:
+                bounds=([0, 0, 0, -1000, 1e-15, 0, 0],
+                        [np.inf, np.inf, 10, 0, 10, np.inf, 20]))
+
+    paramteres = circuit.parameters_+'@'+circuit.conf_
+    initial_guess = circuit.parameters_
+    with open('Parametros_ajustados_cx5b.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([i] + list(paramteres))
-# circuit.plot(f_data=f, Z_data=Z, kind='nyquist')
-# circuit.plot(f_data=f, Z_data=Z, kind='bode')
-# plt.show()
-# print(circuit)
+    print(f'T = {i}K')
+    circuit.plot(f_data=f, Z_data=Z, kind='nyquist')
+    circuit.plot(f_data=f, Z_data=Z, kind='bode')
+    plt.show()
+    print(circuit)
 #%%
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/eis/0mvx5a/Parametros 0mV ZdeW X5-a.csv', unpack=True, delimiter=',', skip_header=1)
-T, Rr, Cr, Lr, Rl, Cl, Rn, Cn = data
-fig, ax= plt.subplots(figsize=(10, 6))
-ax2 = ax.twinx()
-ax2.set_ylabel('Capacitance (F)')
-# Plot each parameter with its corresponding label (matching y data name)
-ax.plot(T, Rr, 'o-', label='Rr', c='#9858db')      # Rr
-ax2.plot(T, Cr, 'x-', label='Cr', c='#c7c750')     # Cr
-ax.plot(T, Lr, 'o-', label='Lr', c='#609ee0')      # Lr
-ax.plot(T, Rl, 'o-', label='Rl', c='#e07b67')      # Rl
-ax2.plot(T, Cl, 'x-', label='Cl', c='#a1e067')     # Cl
-ax.plot(T, Rn, 'o-', label='Rn', c='#e067b7')      # Rn
-ax2.plot(T, Cn, 'x-', label='Cn', c='#67e0e0')     # Cn
-# ax.set_xscale('log')
-# Combine legends from both axes and place outside the plot
-lines, labels = ax.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax.legend(lines + lines2, labels + labels2, loc='center left', bbox_to_anchor=(-0.02, 0.5))
-ax.grid()
-plt.xlabel('T (K)')
-plt.ylabel('Parameters')
+data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/eis/Parametros_ajustados_cx5b.csv', unpack=True, delimiter=',', skip_header=1)
+T, Rl, Ll, Cl, Rn, Cn, Ra, Ca = data
+fig, ax= plt.subplots(3,1,figsize=(8, 7), sharex=True, dpi=800)
+ax[2].set_ylabel('Capacitancia (F)')
+ax[0].plot(1/T, Rl, 'o-', label='Rl', c='#e07b67')      # Rl
+ax[1].plot(1/T, Ll, 'o-', label='Ll', c='#609ee0')      # Ll
+ax[2].plot(1/T, Cl, 'o-', label='Cl', c='#a1e067')     # Cl
+ax[0].plot(1/T, Rn, 'o-', label='Rn', c="#67e08f")      # Rn
+ax[2].plot(1/T, Cn, 'o-', label='Cn', c="#e0a767")     # Cn
+ax[0].plot(1/T, Ra, 'o-', label='Ra', c="#6f67e0")      # Ra
+ax[2].plot(1/T, Ca, 'o-', label='Ca', c='#e067b7')      # Ca
+ax[0].legend()
+ax[1].legend()
+ax[2].legend()
+ax[0].grid()
+# ax.set_yscale('log')
+ax[2].set_yscale('log')
+# Set log scale ticks for both y-axes
+ax[2].grid()
+ax[1].grid()
+ax[2].set_xlabel('1/T (1/K)')
+ax[0].set_ylabel('Resisencia ($\Omega$)')
+ax[1].set_ylabel('Inductancia (H)')
+# %%
