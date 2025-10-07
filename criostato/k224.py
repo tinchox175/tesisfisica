@@ -96,9 +96,9 @@ class KEITHLEY_224(object):
         if (voltage < 1):
             self._voltage = voltage
             self._inst.write('V'+ '1'+'X')
-        elif (voltage > 105):
+        elif (voltage > 10):
             self._voltage = voltage
-            self._inst.write('V'+ '105'+'X')
+            self._inst.write('V'+ '10'+'X')
         self._voltage = voltage
         self._inst.write('V'+ _format_e(voltage)+'X')
 
@@ -111,9 +111,9 @@ class KEITHLEY_224(object):
         if (current < -0.11):
             self._current = current
             self._inst.write('I' + '-0.10' + 'X')
-        elif (current > 0.11):
+        elif (current > 0.011):
             self._current = current
-            self._inst.write('I' + '0.10' + 'X')
+            self._inst.write('I' + '0.010' + 'X')
         else:
             self._current = current
             self._inst.write('I' + _format_e(current) + 'X')

@@ -27,6 +27,8 @@ class AgilentE3643A:
         
         :param voltage: Desired voltage in volts (float).
         """
+        if voltage>4.9:
+            voltage=4.9
         self.inst.write(f"APPL {voltage},0")
         self.inst.write(f"OUTP ON")
 

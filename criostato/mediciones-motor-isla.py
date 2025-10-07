@@ -24,14 +24,14 @@ w = 340
 dpg.create_context()
 dpg.create_viewport(title='Termo+Motor', width=800, height=500)
 
-config_ls = np.genfromtxt('C:/tesis git/tesisfisica/criostato/configlsisla.txt', delimiter=',')
+config_ls = np.genfromtxt('C:/LBT/tesisfisica/criostato/configlsisla.txt', delimiter=',')
 with dpg.value_registry():
     try:
         dpg.add_string_value(default_value=config_ls[4], tag="M_m")
     except IndexError:
         dpg.add_string_value(default_value=2.6, tag="M_m")
 
-directory = "C:/tesis git/tesisfisica/criostato/Archivos"
+directory = "C:/LBT/tesisfisica/criostato/Archivos"
 
 #file_name = "nn" + str(time.strftime("%H:%M:%S", time.gmtime(time.time())))
 
@@ -54,7 +54,7 @@ def add_row(values, ctrl=0):
             writer = csv.writer(file)
             writer.writerow(values)
     except PermissionError:
-        with open("C:/tesis git/tesisfisica/criostato/Archivos/test" + str(time.strftime("%H %M %S", time.localtime())), mode='a', newline='') as file:
+        with open("C:/LBT/tesisfisica/criostato/Archivos/test" + str(time.strftime("%H %M %S", time.localtime())), mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(values)
 
@@ -82,6 +82,8 @@ def lecturas(mode = 'bip'): #esta funcion lee los aparatos y guarda todo lo que 
     tiempo_pasar = time.time()-t0_lectura
     data_rs = []
     data_r = N_stat_msr()
+    if data_r[0]>1e20:
+        data_r = N_stat_msr()
     data_ls = data_r[2]
     dpg.set_value("tl", f'{data_ls[0]} K')
     dpg.set_value("sl", f'{data_ls[1]} K')
@@ -105,18 +107,18 @@ def lecturas(mode = 'bip'): #esta funcion lee los aparatos y guarda todo lo que 
     dpg.set_value("T_act_p", [t_plot, T_plot])
     dpg.set_value("T_setp_p", [t_plot, Ts_plot])
     dpg.set_value("Pot_p", [t_plot, Pot_plot])
-    dpg.fit_axis_data('t_temp_ax')
-    dpg.fit_axis_data('T_setp_y')
+    # dpg.fit_axis_data('t_temp_ax')
+    # dpg.fit_axis_data('T_setp_y')
     dpg.set_value("r_1_p", [t_plot, r1_plot])
     dpg.set_value("r_2_p", [t_plot, r2_plot])
-    dpg.fit_axis_data('t_temp_ax_m')
-    dpg.fit_axis_data('Res_y')
+    # dpg.fit_axis_data('t_temp_ax_m')
+    # dpg.fit_axis_data('Res_y')
     dpg.set_value("R1_p", [T_plot, r1_plot])
-    dpg.fit_axis_data('t_temp_ax_r')
-    dpg.fit_axis_data('rdt_y')
+    # dpg.fit_axis_data('t_temp_ax_r')
+    # dpg.fit_axis_data('rdt_y')
     dpg.set_value("R2_p", [T_plot, r2_plot])
-    dpg.fit_axis_data('t_temp_ax_r')
-    dpg.fit_axis_data('rdt_y')
+    # dpg.fit_axis_data('t_temp_ax_r')
+    # dpg.fit_axis_data('rdt_y')
     add_row([data_t, data_ls[0], data_ls[1], data_ls[2], data_rs[0], data_rs[1], data_rs[2], data_rs[3], data_rs[4], data_rs[5]])
 
 
@@ -198,7 +200,7 @@ with dpg.window(label="LSDRC91CA", width=w, height=60, pos=(0,290)):
     dpg.add_text("Estabilidad (s)", pos=(20,20))
     motor = dpg.add_input_text(default_value=f"{dpg.get_value("M_m")}", width=40, tag="M_in", pos=(150, 40))
     dpg.add_text("Voltaje motor", pos=(150, 20))
-    rvolt = dpg.add_input_text(default_value=f"{0.01}", width=40, tag="v_range", pos=(20, 80))
+    rvolt = dpg.add_input_text(default_value=f"{0.1}", width=40, tag="v_range", pos=(20, 80))
     dpg.add_text("Rango volt.", pos=(20, 60))
     dpg.add_button(label='Motor', callback=lambda:update_vars(), pos=(150,60))
     motorh = dpg.add_input_text(default_value=f"{4.8}", width=40, tag="mhi", pos=(270, 40))
@@ -286,16 +288,16 @@ def ramp_T(T, rate):
     print(current_setpoint, target_setpoint, rate)
     if target_setpoint > current_setpoint and float(rate) < 0:
         rate = -float(rate)
-    rampa = np.arange(float(current_setpoint), float(target_setpoint), float(rate)/12)
+    rampa = np.arange(float(current_setpoint), float(target_setpoint), float(rate)/15)
     try:
         rampa = np.append(rampa, target_setpoint)
     except IndexError:
-        rampa = np.arange(float(current_setpoint), float(target_setpoint), float(-rate)/12)
+        rampa = np.arange(float(current_setpoint), float(target_setpoint), float(-rate)/15)
         rampa = np.append(rampa, target_setpoint)
     v = 2.6
     for i in rampa:
         tK = time.time()
-        while (time.time()-tK) < 60/12:
+        while (time.time()-tK) < 60/20:
             update_vars()
             controller = LakeShoreDRC91CA()
             controller.set_setpoint(f'{np.round(i,2)}')
@@ -304,14 +306,13 @@ def ramp_T(T, rate):
             T_real = controller.read_temperature()
             setpoint = i
             v = float(v)
-            if float(T_real)>float(setpoint)+1.5 and v > 2.0 and float(controller.get_HTR())<10.0:
+            if float(T_real)>float(setpoint)+1.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<10.0:
                 v -= 0.1
-            elif float(T_real)<float(setpoint)-1.5 and v < 3.0 and float(controller.get_HTR())>70.0:
+            elif float(T_real)<float(setpoint)-1.5 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
                 v += 0.1
             elif float(T_real)<float(setpoint)+1.5 and float(T_real)>float(setpoint)-1.5:
                 v = 2.6
             lecturas()
-            time.sleep(1)
             t_report = time.time()-t0
             dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(t_report)))
             t_tot = time.time()-tiempo_total
@@ -326,7 +327,6 @@ tiempo_total = 0
 def medir_tabla_T():#a temperaturas fijas barre campos
     tiempo_total = time.time()
     update_vars()
-    tiempo_start = time.time() #pongo tiempos iniciales y levanto las listas que se van a medir
     tiempo_est = 0
     controller = LakeShoreDRC91CA()
     algo_T = dpg.get_item_children("Tabla", 1)
@@ -348,13 +348,13 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             estable = dpg.get_value(parametros_T[2])
             estable = float(estable)
             controller = LakeShoreDRC91CA()
-            T_real = controller.read_temperature()
+            T_real = controller.read_temperature()  
             supply = AgilentE3643A()
             supply.apply(v)
             v = float(v)
-            if float(T_real)>float(setpoint)+1 and v > 2.0 and float(controller.get_HTR())<10.0 :
+            if float(T_real)>float(setpoint)+1 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<10.0 :
                 v -= 0.05
-            elif float(T_real)<float(setpoint)-1 and v < 3.0 and float(controller.get_HTR())>70.0:
+            elif float(T_real)<float(setpoint)-1 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
                 v += 0.05
             elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
                 v = 2.6
@@ -364,8 +364,6 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             t_tot = time.time()-tiempo_total
             dpg.set_value('ttl', time.strftime("%H:%M:%S", time.gmtime(t_tot))) #esto actualiza un tiempo para diagnostico, no representa lo guardado (tiempo real)
             dpg.set_value('ttal', time.strftime("%H:%M:%S", time.gmtime(tiempo_est)))
-            if (estable == 0 or estable == 0.00): #esto es por si se quiere saltear este punto
-                break
             time.sleep(1)
         tiempo_est = time.time()
         v = 2.6
@@ -378,9 +376,9 @@ def medir_tabla_T():#a temperaturas fijas barre campos
             estable = float(estable)
             T_real = controller.read_temperature() #acá abajo dice que si la diferencia es mayor a un porcentaje, empiece a contar otra vez
             v = float(v)
-            if float(T_real)>float(setpoint)+1 and v < 2.0 and float(controller.get_HTR())<10.0:
+            if float(T_real)>float(setpoint)+1 and v < float(dpg.get_value("mlo")) and float(controller.get_HTR())<10.0:
                 v += 0.1
-            elif float(T_real)<float(setpoint)-1 and v > 3.0 and float(controller.get_HTR())>70.0:
+            elif float(T_real)<float(setpoint)-1 and v > float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
                 v -= 0.1
             elif float(T_real)<float(setpoint)+1 and float(T_real)>float(setpoint)-1:
                 v = 2.6
