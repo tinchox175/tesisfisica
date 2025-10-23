@@ -6,15 +6,32 @@ from scipy.optimize import curve_fit
 import os
 from os.path import abspath, dirname
 from numpy import diff
-
-#%%
 %matplotlib inline
+#%%
+
 os.chdir('e:/porno/tesis 3/tesisfisica')
 def calculate_dV_dI_diff(V_array, I_array):
     dV = np.diff(V_array)
     dI = np.diff(I_array)
     dV_dI = dV / dI
     return dV_dI
+
+def arrower(x,y):
+    x0 = x[range(len(x)-1)][::7]
+    x1 = x[range(1,len(x))][::7]
+    y0 = y[range(len(y)-1)][::7]
+    y1 = y[range(1,len(y))][::7]
+    xpos = (x0+x1)/2
+    ypos = (y0+y1)/2
+    xdir = x1-x0
+    ydir = y1-y0
+    for X,Y,dX,dY in zip(xpos, ypos, xdir, ydir):
+        if dX == 0 or dY == 0:
+            continue
+        if abs(dX) < 0.015 or abs(dY) < 10:
+            continue
+        ax.annotate("", xytext=(X,Y),xy=(X+0.001*dX,Y+0.001*dY), 
+        arrowprops=dict(arrowstyle="->", color='k'), size = 20)
 
 def get_files_with_path(folder):
     print(folder)
@@ -33,22 +50,35 @@ def sclc_p(x, A, R):
 # def sclc_s(x, A, R, n):
 #     return A()
 
-# archivo_actual = '/IVs/1411/IV_1234_14-11-24/300.txt'
-files=['/criostato/Archivos/iv/1312/iv-x5-d-15K-2nplc.csv',
-       '/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv',
-       '/criostato/Archivos/iv/1312/iv-x5-h-15K-0.2nplc.csv',
-       '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
-       '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
-       '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv']
+# archivo_actual = '/IVs/escrituras/IV_1234_14-11-24/300.txt'
+files=[
+#        '/IVs/1411/IV_1234_14-11-24b/130.txt']
+       '/IVs/1411/IV_1234_14-11-24b/85.txt']
+#        '/criostato/Archivos/iv/1012/iv(ac20hz)-x5-c-95K.csv',
+#        '/criostato/Archivos/iv/1012/iv(ac100hz)-x5-a-95K.csv',
+#        '/criostato/Archivos/iv/1012/iv(ac29khz)-x5-e-95K.csv']
 n=0
-# files = ['/IVs/escrituras/IV_1234_01.txt']
+# files = ['/IVs/1411/IV_1234_14-11-24/300.txt','/IVs/1411/IV_1234_14-11-24b/130.txt','/IVs/1411/IV_1234_14-11-24b/85.txt',]
+# files = ['/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-f1-15K-2nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-h-15K-0.2nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-j-15K-1nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-q-14K-1nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv',
+#          '/criostato/Archivos/iv/1312/iv-x5-r2-14K-1nplc.csv']
+# files = ['IVs/escrituras/IV_1234_04.txt']
+# files = get_files_with_path('IVs/escrituras/')
+name = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+# name = ['a', 'b', 'd', 'e', 'g', 'i']
 for i in files:
     archivo_actual = i
-    fig, ax = plt.subplots(1,1,figsize=(4, 3), dpi=150)
-    channel = 'crio'
+    channel = '1'
     modo = 'si_t'
-    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-    data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
+    data = np.genfromtxt(os.getcwd()+'/'+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+    data_t = np.genfromtxt(os.getcwd()+'/'+archivo_actual, delimiter='\t', dtype='str', unpack=True)
     if '(K)' in data_t[1][0]:
         modo = 'si_t'
     elif '(K)' not in data_t[1][0]:
@@ -110,22 +140,22 @@ for i in files:
             peri = data[15][~np.isnan(data[15])] #periodo
             temperatura = 'T_amb'
         elif modo == 'si_t':
-            time = data[0][~np.isnan(data[0])] #tiempo
-            iin1 = data[9][~np.isnan(data[9])] #I instant
-            indoff = newoff(iin1)
-            temp = data[1][~np.isnan(data[1])] #temp(k)
-            ipul = data[2][~np.isnan(data[2])] #I pulso
-            try:
-                vin1 = np.array(data[8][~np.isnan(data[8])])-np.array(data[8][~np.isnan(data[8])][indoff]) #V instant
-            except IndexError:
-                vin1 = np.array(data[8][~np.isnan(data[8])])
-            rin1 = data[11][~np.isnan(data[11])] #R instant
-            rre1 = data[12][~np.isnan(data[12])] #R remanente
-            ibi1 = data[13][~np.isnan(data[13])] #I bias
-            vbi1 = data[14][~np.isnan(data[14])] #V bias
-            wpul = data[15][~np.isnan(data[15])] #ancho pulso
-            peri = data[16][~np.isnan(data[16])] #periodo
-            temperatura = temp[0]
+                indoff = newoff(data[2][~np.isnan(data[2])])
+                time = data[0][~np.isnan(data[0])] #tiempo
+                temp = data[1][~np.isnan(data[1])] #temp(k)
+                ipul = data[2][~np.isnan(data[2])] #I pulso
+                try:
+                    vin1 = np.array(data[9][~np.isnan(data[9])])-np.array(data[9][~np.isnan(data[9])][indoff]) #V instant
+                except IndexError:
+                    vin1 = np.array(data[9][~np.isnan(data[9])])
+                iin1 = data[10][~np.isnan(data[10])] #I instant
+                rin1 = data[11][~np.isnan(data[11])] #R instant
+                rre1 = data[12][~np.isnan(data[12])] #R remanente
+                ibi1 = data[13][~np.isnan(data[13])] #I bias
+                vbi1 = data[14][~np.isnan(data[14])] #V bias
+                wpul = data[15][~np.isnan(data[15])] #ancho pulso
+                peri = data[16][~np.isnan(data[16])] #periodo
+                temperatura = temp[0]
     elif channel == 'crio':
         data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
         indoff = 0
@@ -145,42 +175,88 @@ for i in files:
             ibi1 = data[4][~np.isnan(data[4])]*1000 #I bias
             temperatura = archivo_actual.split('-')[-2]
         rin1 = np.array(vin1)/np.array(iin1)*1000
-        print('hola')
     # iin1 = [np.abs(iin1[j]) for j in np.arange(len(iin1)) if vin1[j]>0]
     # vin1 = [j for j in vin1 if j>0]
     vdif = calculate_dV_dI_diff(vin1, iin1)
-    sc4 = ax.scatter(vin1[:-1],vdif*1000, c=time[:-1], cmap=cmap)
-    # gam1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
+    gam1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
     # iin1 /= 1
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
-    # ax.scatter(vin1, rin1, s=30, c=time, cmap=cmap)
-    # Create a colormap from light blue to '#4c86f0'
-    sc = ax.scatter(vin1, rin1, s=6, c='gray')
-    # ax.scatter(vin1[:-1], gam1, s=30, c=time[:-1], cmap=cmap)
-    # popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), p0=[1,3], absolute_sigma = True, bounds=[[0,0],[1e3,100e3]])
-    # A, R = popt[0], popt[1]
-    # plt.plot(vin1, sclc_p(vin1, *popt), label='Ajuste', c='r', zorder=10)
+    i = 0
+    # f = -500 #for esc1
+    f = -1
+    x = vin1[i:f]
+    y = rin1[i:f]
+    z = iin1[i:f]
+    g = gam1[i:f]
+    w = rre1[i:f]
+    time = time[i:f]
+    # arrower(x,y)
     v = 'V (V)'
     i = 'I (mA)'
     r = '$R_{inst}$ ($\Omega$)'
-    ax.set_xlabel(v)
-    # # plt.legend()
-    ax.set_ylabel(r)
+    r2 = '$R_{rem}$ ($\Omega$)'
+    r3 = '$R$ ($\Omega$)'
+    # fig, ax = plt.subplots(2,1,figsize=(5, 8), dpi=200) # gamma
+    # ax[0].scatter(x, z, s=30, c=time, cmap=cmap)
+    # ax[0].set_xlabel(v)
+    # ax[0].set_ylabel(i)
+    # ax[0].grid()
+    # ax[1].scatter(x[:-1], g, s=30, c='#4c86f0', cmap=cmap)
     # ax[1].set_xlabel(v)
     # ax[1].set_ylabel('$\gamma$')
-    # ax.set_ylim(-50,63)
-    # if n==0:
-    #     ax.set_ylim(1.8,15)
-    # else:
-    #     ax.set_ylim(1.65,1.8)
-    # # ax[0].set_xticks([0, 0.05, 0.1])
-    # # ax[1].set_xticks([0, 0.05, 0.1])
-    ax.grid()
+    # ax[1].set_ylim(0.9,1.5)
     # ax[1].grid()
-    # plt.grid()
+    # ax[0].tick_params(axis='both')
+    # ax[1].tick_params(axis='both')
+    # # ax[0].xaxis.label.set_size(14)
+    # # ax[0].yaxis.label.set_size(14)
+    # # ax[1].xaxis.label.set_size(14)
+    # # ax[1].yaxis.label.set_size(14)
+    # plt.tight_layout()
+    # ax.plot(x, z, lw=8, c='#4c86f0')
+    fig, ax = plt.subplots(1,1,figsize=(4, 4), dpi=300) # I, R
+    ax.scatter(x, w, s=50, c=time, cmap=cmap)
+    # # sc4 = ax.scatter(vin1[:-1],vdif*1000, c=time[:], s=100, cmap=cmap, label='$R_{dif}$')
+    ax.set_xlabel(v)
+    ax.set_ylabel(r2)
+    ax.grid()
+    # ax.set_ylim(90,300)
+    # # ax.set_xticks([-0.075, -0.04, 0, 0.04, 0.075])
+    # plt.tight_layout()
+    # ax.plot(x, z, lw=8, c='#4c86f0')
+    # ax.set_xticks([-0.075, -0.05, -0.025, 0, 0.025, 0.05, 0.075])
+    # ax[1].set_xlabel(v)
+    # ax[1].set_ylabel(r)
+    # ax[1].grid()
+    # plt.tight_layout()
+    # fig, ax = plt.subplots(1,1,figsize=(3, 5), dpi=300)
+    # ax.scatter(x, y, s=30, c=time, cmap=cmap)
+    # ax.set_xlabel(v)
+    # ax.set_ylabel(r)
+    # ax.grid()
+    # plt.tight_layout()
+    # fig, ax = plt.subplots(1,1,figsize=(3, 5), dpi=300)
+    # ax.scatter(x, z/1000, s=30, c=time, cmap=cmap)
+    # ax.set_xlabel(v)
+    # ax.set_ylabel(i)
+    # ax.grid()
+    # plt.tight_layout()
+    # fig, ax = plt.subplots(1,1,figsize=(3, 5), dpi=300)
+    # ax.scatter(x, w, s=30, c=time, cmap=cmap)
+    # ax.set_xlabel(v)
+    # ax.set_ylabel(r2)
+    # ax.grid()
+    # plt.tight_layout()
+    # Create a colormap from light blue to '#4c86f0'
+    # sc = ax.plot(vin1, rin1, lw=4, c='gray', label='$R_{inst}$')
+    # ax.scatter(vin1[:-1], gam1, s=30, c=time[:-1], cmap=cmap)
+    # popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), p0=[1,3], absolute_sigma = True, bounds=[[0,0],[1e3,100e3]])
+    # A, R = popt[0], popt[1]
+    # plt.plot(vin1, sclc_p(vin1, 2.309*1e-3,178), label='Ajuste', c='r', zorder=10)
+    # plt.savefig(f'e:/porno/tesis 3/tesisfisica/escritura/20{name[n]}.png', dpi=200)
     n+=1
-    plt.tight_layout()
+    # break
 
 
 #%%
@@ -382,11 +458,12 @@ ax2 = ax.twinx()
 l = ax.plot(data[0], data[1], lw=4, color='#E63946', label='$R_{inst}$')
 le = ax2.plot(data[0], data[2], lw=4, color='#084887', label='$\gamma$')
 ax.grid()
-ax2.set_ylim(0.98, 1.33)
+# ax2.set_ylim(0.9, 1.1)
 ax.set_xlabel('Temperatura (K)')
 ax.set_ylabel('R ($\Omega$)')
 ax2.set_ylabel('$\gamma$')
 ax.legend([l[0], le[0]], [l[0].get_label(), le[0].get_label()], loc='upper right')
+plt.tight_layout()
 #%%
 i = files[1]
 dire = 'E:/porno/tesis 3/tesisfisica/'
@@ -403,3 +480,4 @@ ax.set_ylabel('R ($\Omega$)')
 ax2.set_ylabel('$\gamma$')
 ax.legend(lines, labels)
 #efb443
+# %%

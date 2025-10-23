@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import itertools
+from natsort import natsorted
 marker_l = lambda : itertools.cycle(('.',
  'o',
  'v',
@@ -41,48 +42,164 @@ marker_l = lambda : itertools.cycle(('.',
 )) 
 
 def get_files_with_path(folder):
-    print(folder)
-    return [os.path.join(folder, file) for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))]
+    # print(folder)
+    return [os.path.join(folder, file) for file in natsorted(os.listdir(folder)) if os.path.isfile(os.path.join(folder, file))]
 def list_folders_in_folder(folder_path):
     # List only directories in the given folder
     return [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
 #%%
 # Example usage
-dirs = "C:/tesis git/tesisfisica/IVs/2711/ZdeW_1234_28-11-24/"
+dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
+# import matplotlib
+# matplotlib.rcParams['figure.figsize'] = [10, 10]
+import matplotlib
+matplotlib.rcParams['font.size'] = 14
 for j in fil:
     folder_path = dirs+j
     if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
         pass
     files = get_files_with_path(folder_path)
-
-    fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
-    fig.suptitle(f'{folder_path.split('_')[4]} K')
+    if folder_path.split('_')[5].split('.')[0] == '100':
+        pass
+    else:
+        continue
+    print(folder_path.split('_')[5].split('.')[0])
+    fig, (ax1) = plt.subplots(1, 1, figsize=(4, 4), dpi=300, sharex=True, gridspec_kw={'width_ratios': [0.8]})
+    # fig.suptitle(f'{folder_path.split('_')[5]} K')
     n = True
     marker = marker_l()
+    minr = 100
+    maxr = 0
+    minx = 100
+    maxx = 0
+    n=0
     for i in files:
+        if 'eis' in i:
+            continue
+        # if float((i.split('_')[-2]).split('.')[0])==0.0:
+        #     print(0)
+        #     pass
+        # elif float((i.split('_')[-2]).split('.')[0])==10.0:
+        #     print(10)
+        #     pass
+        # else:
+        #     continue
+        dc = (i.split('_')[-2]).split('.')[0]
+        # print(dc)
         data = np.genfromtxt(i, unpack=True, delimiter=',')
         time = data[0]
         mk = next(marker)
-        ax1.plot(data[0], data[1],markerfacecolor=None, marker= mk, label=f'{(i.split('_')[-2]).split('.')[0]} mV')
-        ax2.plot(data[0], data[3],markerfacecolor=None, marker= mk, label=f'{(i.split('_')[-2]).split('.')[0]} mV')
-        if n == True:
-            ax1.set_ylim(-0.1,np.max(data[1][1:]))
-            n = False
-        name = f'{folder_path.split('_')[4]} K'
-    ax1.set_ylabel('R ($\Omega$)')
-    ax2.set_xlabel('Frecuencia (Hz)')
-    ax2.set_xscale('log')
-    ax2.set_ylabel('X')
+        y1 = data[1][:]
+        y2 = data[3][:]
+        x = data[0][:]
+        # Update min/max for y1 (ax1)
+        # cur_minr = np.min(y1)
+        # cur_maxr = np.max(y1)
+        # if cur_minr < minr:
+        #     minr = cur_minr
+        # if cur_maxr > maxr:
+        #     maxr = cur_maxr
+        # # Update min/max for y2 (ax2)
+        # cur_minx = np.min(y2)
+        # cur_maxx = np.max(y2)
+        # if cur_minx < minx:
+        #     minx = cur_minx
+        # if cur_maxx > maxx:
+        #     maxx = cur_maxx
+        ax1.plot(x, y1, markerfacecolor=None, marker=mk, label=f'{(i.split("_")[-2]).split(".")[0]} mV')
+        # ax2.plot(x, y2, markerfacecolor=None, marker=mk, label=f'{(i.split("_")[-2]).split(".")[0]} mV')
+        name = f'{folder_path.split("_")[5]} K'
+        if n==1:
+            break
+        else:
+            n += 1
+    # Set axis limits after plotting all curves
+    ax1.set_ylim(-2.3,  4)
+    # ax2.set_ylim(minx - abs(minx) * 0.1, maxx * 1.2)
+    ax1.set_ylabel('Z\' ($\Omega$)')
+    ax1.set_xlabel('Frecuencia (Hz)')
+    ax1.set_xscale('log')
+    # ax2.set_ylabel('Z\'\' ($\Omega$)')
 
     ax1.grid()
-    ax2.grid()
+    # ax2.grid()
     handles1, labels1 = ax1.get_legend_handles_labels()
-    ax2.legend(handles1, labels1, loc='center left', bbox_to_anchor=(1, 0))
+    ax1.legend()
     # Adjust layout to make room for the legend
-    #plt.tight_layout()
+    # plt.tight_layout()
+    # print(folder_path.split('_')[5])
+    # break
+    # plt.savefig(f'{folder_path} {name}.png', dpi=300)
+    # break
+    #plt.close()
+plt.show()
+#%% UNA CELDA IDENTICA AL DE ARRIBA#############################################################################
+# Example usage
+dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+fil = list_folders_in_folder(dirs)
+fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(6, 3), dpi=300, sharex=True)
+for j in natsorted(fil)[::3]:
+    folder_path = dirs+j
+    if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
+        pass
+    files = get_files_with_path(folder_path)
+    T = folder_path.split('_')[5].split('.')[0]
+    # fig.suptitle(f'{folder_path.split('_')[5]} K')
+    n = True
+    marker = marker_l()
+    minr = 100
+    maxr = 0
+    minx = 100
+    maxx = 0
+    for i in files:
+        dc = (i.split('_')[-2]).split('.')[0]
+        if dc in ['0']:
+            pass
+        else:
+            continue
+        data = np.genfromtxt(i, unpack=True, delimiter=',')
+        time = data[0]
+        mk = next(marker)
+        ax1.plot(data[0][2:-1], data[1][2:-1],markerfacecolor=None, marker= mk, label=f'{T} K')
+        ax2.plot(data[0][2:-1], data[3][2:-1],markerfacecolor=None, marker= mk, label=f'{T} K')
+        if n == True:
+            newminx = np.min(data[3][2:-1])
+            newmaxx = np.max(data[3][2:-1])
+            newminr = np.min(data[1][2:-1])   
+            newmaxr = np.max(data[1][2:-1])
+            if  newminx < minx:
+                minx = np.min(data[3][2:-1])
+                ax1.set_ylim(minr*0.99,maxr*1.1)
+                ax2.set_ylim(minx-abs(minx)*0.7,maxx*1.1)
+            if  newmaxx > maxx:
+                maxx = np.max(data[3][2:-1])
+                ax1.set_ylim(minr*0.99,maxr*1.1)
+                ax2.set_ylim(minx-abs(minx)*0.7,maxx*1.1)
+            if newminr < minr:
+                minr = np.min(data[1][2:-1])
+                ax1.set_ylim(minr*0.99,maxr*1.1)
+                ax2.set_ylim(minx-abs(minx)*0.7,maxx*1.1)
+            if newmaxr > maxr:
+                maxr = np.max(data[1][2:-1])
+                ax1.set_ylim(minr*0.99,maxr*1.1)
+                ax2.set_ylim(minx-abs(minx)*0.7,maxx*1.1)
+ax1.set_ylim(0,150)
+ax2.set_ylim(minx-3,30+6)
+name = f'{folder_path.split('_')[5]} K'
+ax1.set_ylabel('Z\' ($\Omega$)')
+ax1.set_xlabel('Frecuencia (Hz)')
+ax2.set_xscale('log')
+ax2.set_ylabel('Z\'\' ($\Omega$)')
+
+ax1.grid()
+ax2.grid()
+handles1, labels1 = ax1.get_legend_handles_labels()
+ax2.legend(handles1, labels1, loc='center left', bbox_to_anchor=(1, 0))
+    # Adjust layout to make room for the legend
+    # plt.tight_layout()
     
-    plt.savefig(f'{folder_path} {name}.png')
+    # plt.savefig(f'{folder_path} {name}.png')
     #plt.close()
 plt.show()
 #%%
@@ -110,7 +227,7 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
         xplot = []
         %matplotlib qt
         yplot = []
-        dirs = "C:/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+        dirs = "e:/porno/tesis 3/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
         fil = list_folders_in_folder(dirs)
         for j in [1]:
             j = a
@@ -148,14 +265,14 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
         ax3.grid(True)
         ax1.legend()
         plt.tight_layout()
-    plt.savefig(f'{a} {f}.png')
+    # plt.savefig(f'{a} {f}.png')
 plt.show()
 # %%
 #%%
 # Example usage
 %matplotlib qt
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 7))
-dirs = "C:/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/porno/tesis 3/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 marker = marker_l()
 for j in fil:

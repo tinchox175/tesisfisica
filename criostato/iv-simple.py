@@ -262,7 +262,8 @@ tcont = []
 icont = []
 n = 0
 t0 = 0
-fig, ax = plt.subplots(1,1, figsize=(12,4), dpi=150)
+fig, ax = plt.subplots(1,1, figsize=(16,4), dpi=200)
+
 lbls = lambda : itertools.cycle(('0','a','b','c','d','e','f','g','h','i','j'))
 lbl = lbls()
 lb = next(lbl)
@@ -284,7 +285,7 @@ for i in files[:]:
     ax.axvline(t0,0,15,c='gray',ls='dashed')
     if i.split('-')[2] in ['d','e', 'f1','h','i','j','p','q','r1','r2']:
         print(i.split('-')[2])
-        ax.text(t0, 0.99, lb, color='r', ha='right', va='top', rotation=90,
+        ax.text(t0, 0.99, lb, size='15', color='r', ha='right', va='top', rotation=90,
                 transform=ax.get_xaxis_transform())
         lb = next(lbl)
         tos.append(t0)
@@ -296,13 +297,13 @@ ax.set_xlabel('Tiempo (s)')
 blue = LinearSegmentedColormap.from_list('blue_red', ['#4c86f0', '#E63946'])
 norm = mcolors.LogNorm(vmin=0.5, vmax=30)  # Set logarithmic normalization
 sc = ax.scatter(tcont, rcont, s=6, c=icont, cmap=blue, norm=norm)  # Apply normalization
-cbar4 = plt.colorbar(sc, ax=ax, ticks=[1, 5, 10, 15, 20, 25, 30])  # Set specific ticks
+cbar4 = plt.colorbar(sc, ax=ax, ticks=[1, 5, 10, 20, 30])  # Set specific ticks
 cbar4.ax.yaxis.set_major_formatter(ticker.FixedFormatter([1, 5, 10, 15, 20, 25, 30]))  # Ensure ticks match
 cbar4.set_label('Corriente (mA)')
 ax.set_xlim(0,2950)
 ax.set_ylim(0,15)
 # ax.legend()
-fig, ax = plt.subplots(1,1, figsize=(9,4), dpi=150)
+fig, ax = plt.subplots(1,1, figsize=(10,5), dpi=300)
 ax.set_ylabel('$R_{inst} (\Omega)$')
 ax.plot(N, r0, c='#4c86f0', lw=5, linestyle='dashed', label='$R_{inicial}$')
 ax.plot(N, rf, c='#E63946', lw=5, linestyle='dashed', label='$R_{final}$')
@@ -324,8 +325,8 @@ ax.grid(True)
 #     lb = next(lbl)
 # ax.set_ylabel('$R (\Omega)$')
 ax.set_xlabel('Medición')
-# plt.xticks(N,['','a','b','','','','c','d','e','','','','','f','g'
-#               ,'h','i','','','','','','','',''])
+plt.xticks(N,['','a','b','c','','','d','e','f','','','',''
+              ,'g','h','i','j','','','','','','','',''])
 ax.fill_between(N[3:6], [-6,-6,-6], [18,18,16], color='green', alpha=0.2)
 ax.fill_between(N[16:], [-6,-6,-6,-6,-6,-6,-6,-6,-6], [18,18,18,18,18,18,18,18,19], color='green', alpha=0.2)    
 ax.set_ylim(0,15)

@@ -27,6 +27,8 @@ from scipy.optimize import curve_fit
 from matplotlib.colors import Normalize
 from matplotlib.ticker import StrMethodFormatter
 from os.path import abspath, dirname
+from matplotlib.colors import LinearSegmentedColormap
+cmapm = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
 os.chdir(dirname(abspath(__file__)))
 window_size=31 
 #%%
@@ -661,6 +663,8 @@ class MyWindow(QMainWindow):
 
 
 #%% Logica graficador de IVS
+
+
     def newoff(self,y):
         indices = np.argmin(np.abs(y))
         return indices
@@ -806,8 +810,8 @@ class MyWindow(QMainWindow):
                     iin1gol = scipy.signal.savgol_filter(iin1, window_size, 3)
                     ibi1gol = scipy.signal.savgol_filter(ibi1, window_size, 3)        # Ibias1 savgol
                     vbi1gol = scipy.signal.savgol_filter(vbi1, window_size, 3)        # Vbias1 savgol
-                    rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol, window_size, 3) # Rrem1 savgol
-                    rin1calcgol = scipy.signal.savgol_filter(vin1gol/iin1gol, window_size, 3) # Rin1 savgol
+                    rre1calcgol = scipy.signal.savgol_filter(vbi1gol/ibi1gol*1000, window_size, 3) # Rrem1 savgol
+                    rin1calcgol = scipy.signal.savgol_filter(vin1gol/iin1gol*1000, window_size, 3) # Rin1 savgol
                 except:
                     pass
                 with np.errstate(all='raise'):
@@ -834,7 +838,7 @@ class MyWindow(QMainWindow):
                 if 'Log(I) vs V' in self.seleccion:
                     plt.figure()
                     # graficamos la Log(abs(I)) vs V    
-                    plt.scatter(vin1gol, np.log(np.abs(iin1gol)+0.001), c=time, cmap='cool', norm=Normalize())
+                    plt.scatter(vin1gol, np.log(np.abs(iin1gol)+0.001), c=time, cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.yscale('log')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
@@ -848,7 +852,7 @@ class MyWindow(QMainWindow):
                 if 'Log(Ibias) vs V' in self.seleccion:
                     plt.figure()
                     # graficamos Log(abs(Ibias)) vs V
-                    plt.scatter(vin1gol, np.log(np.abs(ibi1gol)+0.001), c=time, cmap='cool', norm=Normalize())
+                    plt.scatter(vin1gol, np.log(np.abs(ibi1gol)+0.001), c=time, cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.yscale('log')
                     plt.xlabel('V (V)')
@@ -862,7 +866,7 @@ class MyWindow(QMainWindow):
                     plt.figure()
                     plt.subplot(1, 2, 1)
                     # graficamos la Rinst vs V    
-                    plt.scatter(vin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.scatter(vin1gol, rin1calcgol, c=time, cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -876,7 +880,7 @@ class MyWindow(QMainWindow):
                     
                     plt.subplot(1, 2, 2)
                     # graficamos la Rinst vs I    
-                    plt.scatter(iin1gol, rin1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.scatter(iin1gol, rin1calcgol, c=time, cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -892,7 +896,7 @@ class MyWindow(QMainWindow):
                     plt.figure()
                     plt.subplot(1,2,1)
                     # graficamos la Rrem vs V    
-                    plt.scatter(vin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.scatter(vin1gol, rre1calcgol, c=time, cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -906,7 +910,7 @@ class MyWindow(QMainWindow):
                     
                     plt.subplot(1,2,2)
                     # graficamos la Rrem vs I    
-                    plt.scatter(iin1gol, rre1calcgol, c=time, cmap='cool', norm=Normalize())
+                    plt.scatter(iin1gol, rre1calcgol, c=time, cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -921,7 +925,7 @@ class MyWindow(QMainWindow):
                 if 'γ vs V' in self.seleccion:
                     plt.figure()
                     # graficamos la gamma vs V    
-                    plt.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                    plt.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -936,12 +940,12 @@ class MyWindow(QMainWindow):
                     plt.show()
                 if 'γ vs √V' in self.seleccion:
                     plt.figure()
-                    plt.scatter(np.sign(vin1[0:-1])*np.sqrt(np.abs(vin1[0:-1])), gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                    plt.scatter(np.sign(vin1[0:-1])*np.sqrt(np.abs(vin1[0:-1])), gamma1gol, c=time[0:-1], cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
                     # Fijamos cuestions cosméticas del grafico: etiquetas, limites, etc.
-                    plt.xlabel('V$^{1/2}$ (V$^{0.5}$)')
+                    plt.xlabel('V$^{1/2}$ (V$^{1/2}$)')
                     plt.ylabel('$\gamma$')
                     #plt.xlim(-2, 2)
                     plt.ylim(0, 2.5)
@@ -951,7 +955,7 @@ class MyWindow(QMainWindow):
                     plt.show()
                 if 'γ vs 1/V' in self.seleccion:
                     plt.figure()
-                    plt.scatter(1/vin1[0:-1], gamma1gol, gamma1gol, c=time[0:-1], cmap='cool', norm=Normalize())
+                    plt.scatter(1/vin1[0:-1], gamma1gol, gamma1gol, c=time[0:-1], cmap=cmapm, norm=Normalize())
                     plt.colorbar(label='Tiempo (s)')
                     plt.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
                     plt.axhline(1, color='black', linestyle='dashed', linewidth=0.5)
@@ -972,14 +976,14 @@ class MyWindow(QMainWindow):
                     fig.suptitle(f'T = {temperatura}')
                     # First subplot (top-left)
                     ax1 = plt.subplot2grid((2, 3), (0, 0))
-                    sc1 = ax1.scatter(vin1gol, iin1gol, c=time, cmap='cool')
+                    sc1 = ax1.scatter(vin1gol, iin1gol, c=time, cmap=cmapm)
                     ax1.set_xlabel('Voltaje (V)')
                     ax1.set_ylabel('I (mA)')
                     ax1.set_title('I vs V')
                     plt.tight_layout()
                     # Second subplot (bottom-left)
                     ax2 = plt.subplot2grid((2, 3), (1, 0))
-                    sc2 = ax2.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap='cool')
+                    sc2 = ax2.scatter(vin1gol[0:-1], gamma1gol, c=time[0:-1], cmap=cmapm)
                     ax2.set_xlabel('Voltaje (V)')
                     ax2.set_ylim(0,3)
                     ax2.axvline(0, color='black', linestyle='dashed', linewidth=0.5)
@@ -989,7 +993,7 @@ class MyWindow(QMainWindow):
                     plt.tight_layout()
                     # Third subplot (top-right)
                     ax3 = plt.subplot2grid((2, 3), (0, 1), rowspan=2)
-                    sc3 = ax3.scatter(vin1gol, rin1calcgol, c=time, cmap='cool')
+                    sc3 = ax3.scatter(vin1gol, rin1calcgol, c=time, cmap=cmapm)
                     ax3.set_ylim(np.nanmin(rin1calcgol)*0.98,np.nanmax(rin1calcgol)*1.02)
                     ax3.set_xlabel('Voltaje (V)')
                     ax3.set_ylabel('$R_{inst}$ (Ω)')
@@ -997,7 +1001,7 @@ class MyWindow(QMainWindow):
                     plt.tight_layout()
                     # Fourth subplot (bottom-right)
                     ax4 = plt.subplot2grid((2, 3), (0, 2), rowspan=2)
-                    sc4 = ax4.scatter(vin1gol, rre1calcgol, c=time, cmap='cool')
+                    sc4 = ax4.scatter(vin1gol, rre1calcgol, c=time, cmap=cmapm)
                     ax4.set_ylim(np.nanmin(rre1calcgol)*0.98,np.nanmax(rre1calcgol)*1.02)
                     ax4.set_xlabel('Voltaje (V)')
                     ax4.set_ylabel('$R_{rem}$ (Ω)')

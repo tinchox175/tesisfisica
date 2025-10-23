@@ -29,22 +29,23 @@ matplotlib.use('QtAgg')
 alpha_decay = 0.92
 line_width_decay = 0.92
 initial_linewidth = 2.5  # width of newest segment
-der = 'e:/porno/tesis 3/tesisfisica/IVs/2611/B/'
+der = 'e:/porno/tesis 3/tesisfisica/IVs/1812/'
 t_skip = -10
 fig, ax = plt.subplots(1,2, figsize=(10, 6))
 # axr = ax[0].twinx()
 # axp = ax[1].twiny()
-j = 'tek0008ALL.csv'
+j = 'tek0009ALL.csv'
 data = np.genfromtxt(der+j, unpack=True, delimiter=',', skip_header=20, skip_footer=0)
-threshold = -10
-indices = get_indices_above_threshold(data[1], threshold)
-ws = 100
-p = 3
-x, y, z, w, v = filter_arrays_by_indices([data[0], savgol_filter(data[1], ws, p), savgol_filter(data[2], ws, p), savgol_filter(data[3], ws, p), savgol_filter(data[4], ws, p)], indices)
-y = y
-z = z
-cmap = cm.plasma  # You can also try 'viridis', 'inferno', 'magma', 'cividis', etc.
-norm = mcolors.Normalize(vmin=0, vmax=len(x))
+x, y, z, w, v = data[0], data[1], data[2], data[3], data[4]
+# threshold = -10
+# indices = get_indices_above_threshold(data[1], threshold)
+# ws = 100
+# p = 3
+# x, y, z, w, v = filter_arrays_by_indices([data[0], savgol_filter(data[1], ws, p), savgol_filter(data[2], ws, p), savgol_filter(data[3], ws, p), savgol_filter(data[4], ws, p)], indices)
+# y = y
+# z = z
+# cmap = cm.plasma  # You can also try 'viridis', 'inferno', 'magma', 'cividis', etc.
+# norm = mcolors.Normalize(vmin=0, vmax=len(x))
 ax[0].plot(x, y, label='Canal 1')
 try:
     ax[0].plot(x, z, label='Canal 2')
@@ -65,30 +66,30 @@ ax[0].grid()
 ax[0].set_ylabel('Amplitud (V)')
 ax[0].set_xlabel('Tiempo (s)')
 # axi = ax[0].twinx()
-I = (y-z)/30
-# ies = axi.plot(x, I, label='I', color='k')
-# sc1 = ax[1].scatter(z-v, I, marker='o', c=x, cmap='hot', label='IV 2T', zorder=1)
-# pel = axp.scatter(w-v, I, marker='o', c=w-v, cmap='cool', label='IV 4T', zorder=0)
-# popt, pcov = curve_fit(lin, w-v, I, p0=[0.0001,0])
-# aj = axp.plot(w-v, lin(w-v,*popt), color='black', zorder=10, label='Ajuste 4T')
-ax[1].grid()
-ax[1].set_ylim(np.min(I)*0.9, np.max(I)*1.1)
-ax[1].set_xlim(np.min(w-v)*0.9, np.max(w-v)*1.1)
-trail_x = []
-trail_y = []
-# Create one Line2D object for the trail
-trail_line, = ax[1].plot([], [], color='magenta', lw=2)
-current_point, = ax[0].plot([], [], 'o', color='magenta', markersize=8)
-def animate(i):
-    trail_x.append(w[i]-v[i])
-    trail_y.append(I[i])
-    current_point.set_data([x[i]], [y[i]])
-    trail_line.set_data(trail_x, trail_y)
-    trail_line.set_color(cmap(norm(i)))  # Change color over time
-    trail_line.set_alpha(1.0)
-    return current_point, trail_line 
-ani = FuncAnimation(fig, animate, frames=len(w-v), interval=0.001, blit=True, repeat=False)
-plt.show()
+# I = (y-z)/30
+# # ies = axi.plot(x, I, label='I', color='k')
+# # sc1 = ax[1].scatter(z-v, I, marker='o', c=x, cmap='hot', label='IV 2T', zorder=1)
+# # pel = axp.scatter(w-v, I, marker='o', c=w-v, cmap='cool', label='IV 4T', zorder=0)
+# # popt, pcov = curve_fit(lin, w-v, I, p0=[0.0001,0])
+# # aj = axp.plot(w-v, lin(w-v,*popt), color='black', zorder=10, label='Ajuste 4T')
+# ax[1].grid()
+# ax[1].set_ylim(np.min(I)*0.9, np.max(I)*1.1)
+# ax[1].set_xlim(np.min(w-v)*0.9, np.max(w-v)*1.1)
+# trail_x = []
+# trail_y = []
+# # Create one Line2D object for the trail
+# trail_line, = ax[1].plot([], [], color='magenta', lw=2)
+# current_point, = ax[0].plot([], [], 'o', color='magenta', markersize=8)
+# def animate(i):
+#     trail_x.append(w[i]-v[i])
+#     trail_y.append(I[i])
+#     current_point.set_data([x[i]], [y[i]])
+#     trail_line.set_data(trail_x, trail_y)
+#     trail_line.set_color(cmap(norm(i)))  # Change color over time
+#     trail_line.set_alpha(1.0)
+#     return current_point, trail_line 
+# ani = FuncAnimation(fig, animate, frames=len(w-v), interval=0.001, blit=True, repeat=False)
+# plt.show()
 # ax[1].grid()
 # ax[1].set_ylabel('Corriente (mA)')
 # ax[1].set_xlabel('Voltaje 2t (V)')
