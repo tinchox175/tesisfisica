@@ -34,42 +34,42 @@ stop_event = threading.Event()
 pause_event = threading.Event()
 
 # --- MEDICION ---
-def N_stat_msr():
+def N_stat_msr(N_stat, vmax, vmin, auto):
     i_bias = instrument_c.current
     print('curent'+str(i_bias))
-    mode = float(dpg.get_value('auto'))
+    mode = auto
     meas_v = []
     sent_i = []
-    for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
+    for i in np.arange(1, 1+int(N_stat)):
         instrument_c.current = float(i_bias)
         instrument_c.operate = True
         med_v = instrument_v.measure_voltage()
         while float(instrument_v.custom_command('*OPC?')) != 1:
             print('opc?1')
         if mode == 1:
-            if np.abs(float(med_v)) > float(dpg.get_value('v_scale_max')):
+            if np.abs(float(med_v)) > float(vmax):
                 if float(i_bias) > 1e-9:
                     i_bias = format(float(i_bias)/10, '.3e')
                 pass
-            elif np.abs(float(med_v)) < float(dpg.get_value('v_scale_min')):
+            elif np.abs(float(med_v)) < float(vmin):
                 if float(i_bias) < 10e-3:
                     i_bias = format(float(i_bias)*10, '.3e')
                 pass
         meas_v.append(np.abs(med_v))
         sent_i.append(np.abs(float(i_bias)))
     data_ls = [float(controller.read_temperature()), float(controller.get_setpoint()), float(controller.get_HTR())]
-    for i in np.arange(1, 1+int(dpg.get_value("N_stat"))):
+    for i in np.arange(1, 1+int(N_stat)):
         instrument_c.current = -float(i_bias)
         instrument_c.operate = True
         med_v = instrument_v.measure_voltage()
         while float(instrument_v.custom_command('*OPC?')) != 1:
             print('opc?2')
         if mode == 1:
-            if np.abs(float(med_v)) > float(dpg.get_value('v_scale_max')):
+            if np.abs(float(med_v)) > float(vmax):
                 if float(i_bias) > 1e-9:
                     i_bias = format(float(i_bias)/10, '.3e')
                 pass
-            elif np.abs(float(med_v)) < float(dpg.get_value('v_scale_min')):
+            elif np.abs(float(med_v)) < float(vmin):
                 if float(i_bias) < 10e-3:
                     i_bias = format(float(i_bias)*10, '.3e')
                 pass
@@ -98,6 +98,10 @@ def measurement_worker(worker_params):
         "M_in": instrument_params['M_in'],
         "i_bias": instrument_params['i_bias'],
         "rango_v": instrument_params['rango_v'],
+        "N_stat": instrument_params['N_stat'],
+        "auto": instrument_params['auto'], 
+        "vmax": instrument_params['vmax'],
+        "vmin": instrument_params['vmin'],
     }
 
     # Initialize plot data lists
@@ -125,11 +129,15 @@ def measurement_worker(worker_params):
         supply.apply(2.6) # Voltaje inicial del motor
         v = 2.6
         pause_v = 0
-        
+        N_stat = instrument_params['N_stat']
+        vmax = instrument_params['vmax']
+        vmin = instrument_params['vmin']
+        auto = instrument_params['auto']
+
         tmed = 1
         t0_lectura = time.time()
 
-        window_size = 7 
+        window_size = 15
         t_window = deque(maxlen=window_size)
         T_window = deque(maxlen=window_size)
         dTdt = 0.0 # Initialize the derivative
@@ -150,6 +158,10 @@ def measurement_worker(worker_params):
                     instrument_c.voltage = worker_state['vlim']
                     worker_state['rango_v'] = cmd['rango_v']
                     instrument_v.set_range(worker_state['rango_v'])
+                    worker_state['N_stat'] = cmd['N_stat']
+                    N_stat = worker_state['N_stat']
+                    worker_state['auto'] = cmd['auto']
+                    auto = worker_state['auto']
             except queue.Empty:
                 pass
             
@@ -183,7 +195,7 @@ def measurement_worker(worker_params):
             current_time = time.time()
             t_window.append(current_time)
             T_window.append(current_temp)
-            v_mean, i_mean, data_ls = N_stat_msr()
+            v_mean, i_mean, data_ls = N_stat_msr(N_stat, vmax, vmin, auto)
             resistance = v_mean / i_mean if i_mean != 0 else float('inf')
             if len(t_window) > 1:
                 # np.polyfit(x, y, 1) fits a 1st-degree polynomial (a line) to the data
@@ -261,7 +273,7 @@ def measurement_worker(worker_params):
                     supply.apply(v)
 
             # --- Lectura durante la estabilización ---
-            v_mean, i_mean, data_ls = N_stat_msr()
+            v_mean, i_mean, data_ls = N_stat_msr(N_stat, vmax, vmin, auto)
             resistance = v_mean / i_mean if i_mean != 0 else float('inf')
 
             # Preparar y enviar resultados a la GUI
@@ -378,34 +390,41 @@ def resize_layout_callback(sender, app_data):
 def start_measurement_callback():
     """ Gathers all parameters from the GUI and starts the worker thread. """
     # 1. Gather all parameters from GUI widgets
-    instrument_params = {
-        'vlim': float(dpg.get_value("vlim")),
-        'M_in': float(dpg.get_value("M_in")),
-        'i_bias': float(dpg.get_value("i_bias")),
-        'rango_v': float(dpg.get_value("rango_v")),
-    }
-    
-    file_info = {
-        'directory': dpg.get_value("selected_file_text"),
-        'file_name': dpg.get_value("Muestra")
-    }
-
-    measurement_table = []
-    table_rows = dpg.get_item_children("Tabla", 1)
-    for row in table_rows:
-        cells = dpg.get_item_children(row, 1)
-        measurement_table.append({
-            'setpoint': float(dpg.get_value(cells[0])),
-            'rate': float(dpg.get_value(cells[1])),
-            'estable': float(dpg.get_value(cells[2])),
-        })
+    try:
+        instrument_params = {
+            'vlim': float(dpg.get_value("vlim")),
+            'M_in': float(dpg.get_value("M_in")),
+            'i_bias': float(dpg.get_value("i_bias")),
+            'rango_v': float(dpg.get_value("rango_v")),
+            'N_stat': float(dpg.get_value("N_stat")),
+            'auto': float(dpg.get_value("auto")),
+            'vmax': float(dpg.get_value("v_scale_max")),
+            'vmin': float(dpg.get_value("v_scale_min")),
+        }
         
-    worker_params = {
-        'instrument_params': instrument_params,
-        'measurement_table': measurement_table,
-        'file_info': file_info,
-    }
+        file_info = {
+            'directory': dpg.get_value("selected_file_text"),
+            'file_name': dpg.get_value("Muestra")
+        }
 
+        measurement_table = []
+        table_rows = dpg.get_item_children("Tabla", 1)
+        for row in table_rows:
+            cells = dpg.get_item_children(row, 1)
+            measurement_table.append({
+                'setpoint': float(dpg.get_value(cells[0])),
+                'rate': float(dpg.get_value(cells[1])),
+                'estable': float(dpg.get_value(cells[2])),
+            })
+            
+        worker_params = {
+            'instrument_params': instrument_params,
+            'measurement_table': measurement_table,
+            'file_info': file_info,
+        }
+    except Exception as e:
+        print(f"GUI ERROR: Failed to gather parameters: {e}")
+        return
     # 2. Reset state and start the thread
     stop_event.clear()
     # Clear old data from queues
@@ -447,15 +466,21 @@ def pause_measurement_callback():
 
 def update_vars_callback():
     """ Puts an 'update vars' command into the command queue for the worker. """
-    voltage = float(dpg.get_value("M_in"))
-    i_bias = float(dpg.get_value("i_bias"))
-    vlim = float(dpg.get_value("vlim"))
-    rango_v = float(dpg.get_value("rango_v"))
-    command_queue.put({'action': 'update_vars', 'voltage': voltage, 'i_bias': i_bias, 'vlim': vlim, 'rango_v': rango_v})
+    try:
+        voltage = float(dpg.get_value("M_in"))
+        i_bias = float(dpg.get_value("i_bias"))
+        vlim = float(dpg.get_value("vlim"))
+        rango_v = float(dpg.get_value("rango_v"))
+        N_stat = float(dpg.get_value("N_stat"))
+        auto = float(dpg.get_value("auto"))
+    except Exception as e:
+        print(f"GUI ERROR: Invalid input for update_vars: {e}")
+        return
+    command_queue.put({'action': 'update_vars', 'voltage': voltage, 'i_bias': i_bias,
+                        'vlim': vlim, 'rango_v': rango_v, 'N_stat': N_stat, 'auto': auto})
     print(f"GUI: Actualizando por 'update_vars'.")
-    # For immediate feedback, also update mock supply from GUI thread
     supply.apply(voltage) 
-    saved = np.loadtxt('config.txt', delimiter=',')
+    saved = np.loadtxt('config.txt', delimiter=',', dtype='str')
     np.savetxt('config.txt', [f'{0},{0},{0},{0},{dpg.get_value("M_in")},{saved[5]}'], fmt='%s')
 
 # --- GUI HELPER FUNCTIONS ---
@@ -471,7 +496,11 @@ def add_row(values):
         print(f"Error writing to file: {e}")
 
 def crea_tablas_T():
-    T0, TF, sep, rate, est = map(float, [dpg.get_value(t) for t in ["T0", "TF", "sep", "rate", "est"]])
+    try:
+        T0, TF, sep, rate, est = map(float, [dpg.get_value(t) for t in ["T0", "TF", "sep", "rate", "est"]])
+    except Exception as e:
+        print(f"GUI ERROR: Invalid input for temperature table: {e}")
+        return
     N = int(np.abs(T0 - TF) / sep) + 1
     tes = np.round(np.linspace(T0, TF, N), 1)
     for t in tes:
@@ -581,8 +610,7 @@ def create_help_window():
     v_h = dpg.get_viewport_client_height() 
     height_ayu = v_h // 2
     with dpg.window(label="Ayuda", width=width_ayu, height=height_ayu, pos=(viewport_width // 3,v_h // 4), 
-                    tag="Ayuda", 
-                    on_close=lambda: dpg.delete_item("Ayuda")):
+                    tag="Ayuda", on_close=lambda: dpg.delete_item("Ayuda")):
         dpg.add_text("Ayuda")
 
 # --- INITIALIZATION AND GUI LAYOUT ---
@@ -601,8 +629,8 @@ dpg.add_file_dialog(directory_selector=True, show=False, callback=file_selected_
 with dpg.window(label="Archivo", tag="Archivo"):
     dpg.add_button(label="Choose Directory", callback=lambda: dpg.show_item("file_dialog"), width=-1)
     dpg.add_input_text(default_value=os.getcwd(), tag="selected_file_text", width=-1, readonly=True)
-    dpg.add_input_text(label=f"-{time.strftime(' @ %Y-%m-%d %H:%M:%S')}", tag="Muestra", 
-                       default_value=f"Muestra", 
+    dpg.add_input_text(label=f"Nombre del archivo", tag="Muestra", 
+                       default_value=f"Muestra - {time.strftime('%Y-%m-%d %H-%M-%S')}", 
                        width=-200)
 
 # Control Instrumental
