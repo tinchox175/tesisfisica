@@ -341,14 +341,12 @@ def resize_layout_callback(sender, app_data):
         h_arch = 100
         h_fuente = 220
         h_temp = 130
-        h_live = 220
         h_tabla = 670
         h_plot = 335
     else:
         h_arch = 100
         h_fuente = v_h * 0.35
         h_temp = v_h * 0.2
-        h_live = v_h * 0.35
         h_tabla = v_h
         h_plot = v_h * 0.5
 
@@ -381,11 +379,6 @@ def resize_layout_callback(sender, app_data):
                        pos=[win_ctrl * 2 + win_short, h_plot + 18], 
                        width=win_short, 
                        height=h_plot)
-    if dpg.does_item_exist("live_control_window"):
-        dpg.configure_item("live_control_window", 
-                           pos=[0, h_arch+h_fuente+h_temp + 18], 
-                           width=win_ctrl, 
-                           height=h_live)
 
 def start_measurement_callback():
     """ Gathers all parameters from the GUI and starts the worker thread. """
@@ -431,8 +424,6 @@ def start_measurement_callback():
     while not results_queue.empty(): results_queue.get()
     while not command_queue.empty(): command_queue.get()
 
-    # Create the live control window
-    create_live_control_window()
     add_row(['Tiempo', 'T(K)', 'Setpoint(K)', 'Heater','V muestra 1 (V)', 'I muestra 1 (A)', 'R muestra 1 (Ohm)', 'V muestra 2 (V)', 'I muestra 2 (A)', 'R muestra 2 (Ohm)'])
 
     worker_thread = threading.Thread(target=measurement_worker, args=(worker_params,), daemon=True)
@@ -529,79 +520,6 @@ def set_default_directory(sender, app_data):
     print(f"GUI: Default directory set to {app_data['file_path_name']}")
     print(f'{os.getcwd()}\\config.txt')
 
-def create_live_control_window():
-    if dpg.does_item_exist("live_control_window"):
-        return
-    viewport_width = dpg.get_viewport_client_width()
-    win_ctrl = viewport_width // 3.5
-
-    v_h = dpg.get_viewport_client_height() 
-    
-    if v_h >= 670:
-        h_arch = 100
-        h_fuente = 220
-        h_temp = 130
-        h_live = 220
-        h_tabla = 670
-        h_plot = 335
-    else:
-        h_arch = 100
-        h_fuente = v_h * 0.35
-        h_temp = v_h * 0.2
-        h_live = v_h * 0.35
-        h_tabla = v_h
-        h_plot = v_h * 0.5
-
-
-    
-    with dpg.window(label="Control en vivo", width=win_ctrl, height=h_live, pos=(0,h_arch+h_fuente+h_temp+18), 
-                    tag="live_control_window", 
-                    on_close=lambda: dpg.delete_item("live_control_window")):
-        
-        with dpg.table(header_row=False, resizable=True, policy=dpg.mvTable_SizingStretchSame, 
-                       height=-1): 
-            dpg.add_table_column()
-            dpg.add_table_column()
-            dpg.add_table_column()
-
-            with dpg.table_row():
-                with dpg.group():
-                    dpg.add_text("T actual (K)")
-                    dpg.add_text("0.00 K", tag="tl")
-                with dpg.group():
-                    dpg.add_text("T setpoint (K)")
-                    dpg.add_text("0.00 K", tag="sl")
-                with dpg.group():
-                    dpg.add_text("Potencia (%)")
-                    dpg.add_text("0.00 %", tag="pl")
-            
-            with dpg.table_row():
-                with dpg.group():
-                    dpg.add_text("Volt. motor (V)")
-                    dpg.add_text("2.6 V", tag="vl")
-                with dpg.group():
-                    dpg.add_text("dT/dt")
-                    dpg.add_text("0 K/min", tag="dTdt")
-
-            with dpg.table_row():
-                with dpg.group():
-                    dpg.add_text("R muestra 1")
-                    dpg.add_text("0.00e+0 Ohm", tag="r1l")
-                with dpg.group():
-                    dpg.add_text("R muestra 2")
-                    dpg.add_text("0.00e+0 Ohm", tag="r2l")
-            
-            with dpg.table_row():
-                with dpg.group():
-                    dpg.add_text("Tiempo total")
-                    dpg.add_text("00:00:00", tag="ttot")
-                with dpg.group():
-                    dpg.add_text("Tiempo tarea")
-                    dpg.add_text("00:00:00", tag="ttar")
-                with dpg.group():
-                    dpg.add_text("Tarea actual")
-                    dpg.add_text("Idle", tag="tal")
-
 def create_help_window():
     if dpg.does_item_exist("Ayuda"):
         return
@@ -627,7 +545,10 @@ instrument_c = k224.KEITHLEY_224()
 # File Dialog
 dpg.add_file_dialog(directory_selector=True, show=False, callback=file_selected_callback, tag="file_dialog")
 with dpg.window(label="Archivo", tag="Archivo"):
-    dpg.add_button(label="Choose Directory", callback=lambda: dpg.show_item("file_dialog"), width=-1)
+    # dpg.add_button(label="Elegir directorio", callback=lambda: dpg.show_item("file_dialog"), width=300)
+    with dpg.group(horizontal=True):
+        dpg.add_button(label="Elegir directorio", callback=lambda: dpg.show_item("file_dialog"))
+        dpg.add_button(label="Cargar archivo", callback=start_measurement_callback)
     dpg.add_input_text(default_value=os.getcwd(), tag="selected_file_text", width=-1, readonly=True)
     dpg.add_input_text(label=f"Nombre del archivo", tag="Muestra", 
                        default_value=f"Muestra - {time.strftime('%Y-%m-%d %H-%M-%S')}", 
@@ -733,7 +654,7 @@ with dpg.window(label="Medición T", tag="Medición T"):
 
     with dpg.group(tag="g_col"):
         with dpg.table(header_row=True, tag="Tabla", borders_innerH=True, borders_outerH=True,
-                       borders_innerV=True, borders_outerV=True, height=-30, 
+                       borders_innerV=True, borders_outerV=True, height=-220, 
                        no_host_extendY=True, scrollY=True):
             dpg.add_table_column(label="T (K)")
             dpg.add_table_column(label="Rate (K/min)")
@@ -744,6 +665,50 @@ with dpg.window(label="Medición T", tag="Medición T"):
         dpg.add_button(label="Comenzar", callback=start_measurement_callback, tag="comenzar_button", width=70)
         dpg.add_button(label="Detener", callback=stop_measurement_callback, tag="stop_button", enabled=False, width=70)
         dpg.add_button(label="Pausa", callback=pause_measurement_callback, tag="pause_button", enabled=True, width=70)
+    
+    with dpg.table(header_row=False, resizable=True, policy=dpg.mvTable_SizingStretchSame, 
+                       height=-1): 
+            dpg.add_table_column()
+            dpg.add_table_column()
+            dpg.add_table_column()
+
+            with dpg.table_row():
+                with dpg.group():
+                    dpg.add_text("T actual (K)")
+                    dpg.add_text("0.00 K", tag="tl")
+                with dpg.group():
+                    dpg.add_text("T setpoint (K)")
+                    dpg.add_text("0.00 K", tag="sl")
+                with dpg.group():
+                    dpg.add_text("Potencia (%)")
+                    dpg.add_text("0.00 %", tag="pl")
+            
+            with dpg.table_row():
+                with dpg.group():
+                    dpg.add_text("Volt. motor (V)")
+                    dpg.add_text("2.6 V", tag="vl")
+                with dpg.group():
+                    dpg.add_text("dT/dt")
+                    dpg.add_text("0 K/min", tag="dTdt")
+
+            with dpg.table_row():
+                with dpg.group():
+                    dpg.add_text("R muestra 1")
+                    dpg.add_text("0.00e+0 Ohm", tag="r1l")
+                with dpg.group():
+                    dpg.add_text("R muestra 2")
+                    dpg.add_text("0.00e+0 Ohm", tag="r2l")
+            
+            with dpg.table_row():
+                with dpg.group():
+                    dpg.add_text("Tiempo total")
+                    dpg.add_text("00:00:00", tag="ttot")
+                with dpg.group():
+                    dpg.add_text("Tiempo tarea")
+                    dpg.add_text("00:00:00", tag="ttar")
+                with dpg.group():
+                    dpg.add_text("Tarea actual")
+                    dpg.add_text("Idle", tag="tal")
 
 # Plots
 with dpg.theme(tag="latest_point_theme"):
