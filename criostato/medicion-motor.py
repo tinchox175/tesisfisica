@@ -5,23 +5,19 @@ import dearpygui.dearpygui as dpg # type: ignore
 #import pymeasure.instruments.agilent as agi # type: ignore
 import numpy as np # type: ignore
 import time
-test = 1 # 0 instrumentos reales, 1 mocks
-if test == 0:
-    import a34420a
-    #import ls340
-    import lsdrc91ca
-    import agie3643a
-    #import hp34970a
-    import k224
-    import csv
-else:
-    import a34420a_mock as a34420a
-    #import ls340_mock as ls340
-    import lsdrc91ca_mock as lsdrc91ca
-    import agie3643a_mock as agie3643a
-    #import hp34970a_mock as hp34970a
-    import k224_mock as k224
-    import csv
+import a34420a
+#import ls340
+import lsdrc91ca
+import agie3643a
+#import hp34970a
+import k224
+import a34420a_mock
+#import ls340_mock
+import lsdrc91ca_mock
+import agie3643a_mock
+#import hp34970a_mock
+import k224_mock
+import csv
 from decimal import Decimal
 import threading
 import queue
@@ -36,7 +32,7 @@ pause_event = threading.Event()
 # --- MEDICION ---
 def N_stat_msr(N_stat, vmax, vmin, auto):
     i_bias = instrument_c.current
-    print('curent'+str(i_bias))
+    print('current'+str(i_bias))
     mode = auto
     meas_v = []
     sent_i = []
@@ -75,6 +71,7 @@ def N_stat_msr(N_stat, vmax, vmin, auto):
                 pass
         meas_v.append(np.abs(med_v))
         sent_i.append(np.abs(float(i_bias)))
+    instrument_c.current = float(i_bias)
     instrument_c.operate = False
     v_mean = np.mean(meas_v)
     i_mean = np.mean(sent_i)
@@ -111,7 +108,7 @@ def measurement_worker(worker_params):
     # --- MAIN MEASUREMENT LOOP ---
     for n, row_params in enumerate(measurement_table):
         if stop_event.is_set(): break
-        
+            
         # --- RAMP TEMPERATURE ---
         target_setpoint = row_params['setpoint']
         rate = row_params['rate']
@@ -137,11 +134,11 @@ def measurement_worker(worker_params):
         tmed = 1
         t0_lectura = time.time()
 
-        window_size = 15
+        window_size = 12
         t_window = deque(maxlen=window_size)
         T_window = deque(maxlen=window_size)
         dTdt = 0.0 # Initialize the derivative
-
+        
         while abs(current_temp - target_setpoint) > 0.5:
             if stop_event.is_set(): return
             calc_tmed = time.time()
@@ -164,35 +161,10 @@ def measurement_worker(worker_params):
                     auto = worker_state['auto']
             except queue.Empty:
                 pass
-            
-            # Mover el setpoint en pasos pequeños
-            step = rate / 60 * tmed # K per second
-            if not pause_event.is_set():
-                pause_v = 0
-                if target_setpoint > current_temp:
-                    new_setpoint = min(new_setpoint + step, target_setpoint)
-                else:
-                    new_setpoint = max(new_setpoint - step, target_setpoint)
-                controller.set_setpoint(new_setpoint)
-                current_temp = controller.read_temperature()
-                supply.apply(v)
-                if float(current_temp)>float(new_setpoint)+1.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<10.0:
-                    v -= 0.1
-                elif float(current_temp)<float(new_setpoint)-1.5 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
-                    v += 0.1
-                elif float(current_temp)<float(new_setpoint)+1.5 and float(current_temp)>float(new_setpoint)-1.5:
-                    v = 2.6
-                if v < float(dpg.get_value("mlo")): v = float(dpg.get_value("mlo"))
-                if v > float(dpg.get_value("mhi")): v = float(dpg.get_value("mhi"))
-            
-            if pause_event.is_set():
-                if pause_v == 0:
-                    pause_v = 1
-                    v = 2.6
-                    supply.apply(v)
 
             # --- Lectura durante la rampa ---
             current_time = time.time()
+            current_temp = controller.read_temperature()
             t_window.append(current_time)
             T_window.append(current_temp)
             v_mean, i_mean, data_ls = N_stat_msr(N_stat, vmax, vmin, auto)
@@ -208,6 +180,39 @@ def measurement_worker(worker_params):
             else:
                 # Not enough data yet, keep derivative at 0
                 dTdt = 0.0
+
+            step = rate / 60 * tmed # K per second
+            if not pause_event.is_set():
+                pause_v = 0
+                if target_setpoint > current_temp:
+                    new_setpoint = min(new_setpoint + step, target_setpoint)
+                else:
+                    new_setpoint = max(new_setpoint - step, target_setpoint)
+                controller.set_setpoint(new_setpoint)
+                current_temp = controller.read_temperature()
+                supply.apply(v)
+                if target_setpoint < current_temp:
+                    if dTdt > -1.9 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<30.0:
+                        v -= 0.1
+                    elif dTdt < -2.5 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
+                        v += 0.1
+                    elif dTdt < -1.9 and dTdt > -2.5:
+                        v = 2.6
+                elif target_setpoint > current_temp:
+                    if dTdt < 1.9 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
+                        v += 0.1
+                    elif dTdt > 2.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<30.0:
+                        v -= 0.1
+                    elif dTdt > 1.9 and dTdt < 2.5:
+                        v = 2.6
+                if v < float(dpg.get_value("mlo")): v = float(dpg.get_value("mlo"))
+                if v > float(dpg.get_value("mhi")): v = float(dpg.get_value("mhi"))
+            
+            if pause_event.is_set():
+                if pause_v == 0:
+                    pause_v = 1
+                    v = 2.6
+                    supply.apply(v)
 
             # Preparar y enviar resultados a la GUI
             t_tot = time.time() - tiempo_total
@@ -255,14 +260,27 @@ def measurement_worker(worker_params):
             
             if not pause_event.is_set():
                 pause_v = 0
+                if target_setpoint > current_temp:
+                    new_setpoint = min(new_setpoint + step, target_setpoint)
+                else:
+                    new_setpoint = max(new_setpoint - step, target_setpoint)
+                controller.set_setpoint(new_setpoint)
                 current_temp = controller.read_temperature()
                 supply.apply(v)
-                if float(current_temp)>float(new_setpoint)+1.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<10.0:
-                    v -= 0.1
-                elif float(current_temp)<float(new_setpoint)-1.5 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
-                    v += 0.1
-                elif float(current_temp)<float(new_setpoint)+1.5 and float(current_temp)>float(new_setpoint)-1.5:
-                    v = 2.6
+                if target_setpoint > current_temp:
+                    if dTdt > -1.9 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<30.0:
+                        v -= 0.1
+                    elif dTdt < -2.5 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
+                        v += 0.1
+                    elif dTdt < -1.9 and dTdt > -2.5:
+                        v = 2.6
+                elif target_setpoint < current_temp:
+                    if dTdt < 1.9 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
+                        v += 0.1
+                    elif dTdt > 2.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<30.0:
+                        v -= 0.1
+                    elif dTdt > 1.9 and dTdt < 2.5:
+                        v = 2.6
                 if v < float(dpg.get_value("mlo")): v = float(dpg.get_value("mlo"))
                 if v > float(dpg.get_value("mhi")): v = float(dpg.get_value("mhi"))
             
@@ -310,6 +328,11 @@ def measurement_worker(worker_params):
 
     results_queue.put({'type': 'dpg_set_value', 'tag': 'tal', 'value': "Terminado"})
     results_queue.put({'type': 'measurement_finished'})
+    instrument_c.shutdown()
+    controller.close()
+    supply.close()
+    instrument_v.close()
+
     print("Worker Thread: Finished.")
 
 # --- DPG CALLBACKS (run in the main GUI thread) ---
@@ -381,6 +404,18 @@ def resize_layout_callback(sender, app_data):
                        height=h_plot)
 
 def start_measurement_callback():
+    # Initialize instruments
+    global controller, supply, instrument_v, instrument_c
+    if dpg.get_value('test_mode_var'):
+        controller = lsdrc91ca_mock.LakeShoreDRC91CA()
+        supply = agie3643a_mock.AgilentE3643A()
+        instrument_v = a34420a_mock.Agilent34420A()
+        instrument_c = k224_mock.KEITHLEY_224()
+    else:
+        controller = lsdrc91ca.LakeShoreDRC91CA()
+        supply = agie3643a.AgilentE3643A()
+        instrument_v = a34420a.Agilent34420A()
+        instrument_c = k224.KEITHLEY_224()
     """ Gathers all parameters from the GUI and starts the worker thread. """
     # 1. Gather all parameters from GUI widgets
     try:
@@ -470,6 +505,10 @@ def update_vars_callback():
     command_queue.put({'action': 'update_vars', 'voltage': voltage, 'i_bias': i_bias,
                         'vlim': vlim, 'rango_v': rango_v, 'N_stat': N_stat, 'auto': auto})
     print(f"GUI: Actualizando por 'update_vars'.")
+    if dpg.get_value('test_mode_var'):
+        supply = agie3643a_mock.AgilentE3643A()
+    else:
+        supply = agie3643a.AgilentE3643A()
     supply.apply(voltage) 
     saved = np.loadtxt('config.txt', delimiter=',', dtype='str')
     np.savetxt('config.txt', [f'{0},{0},{0},{0},{dpg.get_value("M_in")},{saved[5]}'], fmt='%s')
@@ -503,7 +542,7 @@ def crea_tablas_T():
 def reset_table_T():
     dpg.delete_item("Tabla", children_only=False)
     with dpg.table(header_row=True, tag="Tabla", borders_innerH=True, borders_outerH=True,
-                    borders_innerV=True, borders_outerV=True, height=-30, 
+                    borders_innerV=True, borders_outerV=True, height=-220, 
                     no_host_extendY=True, scrollY=True, parent="g_col"):
         dpg.add_table_column(label="T (K)")
         dpg.add_table_column(label="Rate (K/min)")
@@ -519,6 +558,39 @@ def set_default_directory(sender, app_data):
     np.savetxt(f'{os.getcwd()}\\config.txt', [f'{0},{0},{0},{0},{dpg.get_value("M_in")},{app_data['file_path_name']}'], fmt='%s')
     print(f"GUI: Default directory set to {app_data['file_path_name']}")
     print(f'{os.getcwd()}\\config.txt')
+
+def test_callback(sender, app_data):
+    if not dpg.get_value('test_mode_var'):
+        dpg.set_value('test_mode_var', True)  
+    else:      
+        dpg.set_value('test_mode_var', False)
+
+def load_selected_file_callback(sender, app_data):
+    try:
+        t_plot, T_plot, Ts_plot, Pot_plot, r1_plot, r2_plot = np.loadtxt(app_data['file_path_name'], delimiter=',', unpack=True, dtype='str', skiprows=1, usecols=(0,1,2,3,6,9))
+        try:
+            if not np.issubdtype(t_plot.dtype, np.number):
+                s = np.array([int(p[0])*3600+int(p[1])*60+int(p[2]) for p in ((t.decode() if isinstance(t, bytes) else t).split(':') for t in t_plot)])
+                t_plot = (s - s[0]).astype(float)
+        except Exception:
+            t_plot = np.arange(len(t_plot)).astype(float)
+        T_plot = T_plot.astype(float)
+        Ts_plot = Ts_plot.astype(float)
+        Pot_plot = Pot_plot.astype(float)
+        r1_plot = r1_plot.astype(float)
+        r2_plot = r2_plot.astype(float)
+        plot_data = {
+            "T_act_p": [t_plot, T_plot], "T_setp_p": [t_plot, Ts_plot], "Pot_p": [t_plot, Pot_plot],
+            "r_1_p": [t_plot[:-1], r1_plot[:-1]], "r_2_p": [t_plot[:-1], r2_plot[:-1]],
+            "R1_p": [T_plot[:-1], r1_plot[:-1]], "R2_p": [T_plot[:-1], r2_plot[:-1]],
+            "r_1_p_latest": [t_plot[-1:], r1_plot[-1:]], "r_2_p_latest": [t_plot[-1:], r2_plot[-1:]],
+            "R1_p_latest": [T_plot[-1:], r1_plot[-1:]], "R2_p_latest": [T_plot[-1:], r2_plot[-1:]],
+        }
+        print(t_plot)
+        results_queue.put({'type': 'plot_data', 'data': plot_data})
+        print("GUI: Measurement file loaded successfully.")
+    except Exception as e:
+        print(f"GUI ERROR: Failed to load measurement file: {e}")
 
 def create_help_window():
     if dpg.does_item_exist("Ayuda"):
@@ -536,19 +608,15 @@ dpg.create_context()
 dpg.create_viewport(title='Medición', width=1280, height=720)
 w=370 # window width
 
-# Initialize instruments
-controller = lsdrc91ca.LakeShoreDRC91CA()
-supply = agie3643a.AgilentE3643A()
-instrument_v = a34420a.Agilent34420A()
-instrument_c = k224.KEITHLEY_224()
-
 # File Dialog
-dpg.add_file_dialog(directory_selector=True, show=False, callback=file_selected_callback, tag="file_dialog")
+dpg.add_file_dialog(directory_selector=True, show=False, callback=file_selected_callback, tag="file_dialog", width=600, height = 400, modal=True)
+with dpg.file_dialog(directory_selector=False, show=False, callback=load_selected_file_callback, tag="file_load_dialog", width=600, height = 400, modal=True):
+    dpg.add_file_extension(".csv")
+
 with dpg.window(label="Archivo", tag="Archivo"):
-    # dpg.add_button(label="Elegir directorio", callback=lambda: dpg.show_item("file_dialog"), width=300)
     with dpg.group(horizontal=True):
         dpg.add_button(label="Elegir directorio", callback=lambda: dpg.show_item("file_dialog"))
-        dpg.add_button(label="Cargar archivo", callback=start_measurement_callback)
+        dpg.add_button(label="Cargar archivo", callback=lambda: dpg.show_item("file_load_dialog"))
     dpg.add_input_text(default_value=os.getcwd(), tag="selected_file_text", width=-1, readonly=True)
     dpg.add_input_text(label=f"Nombre del archivo", tag="Muestra", 
                        default_value=f"Muestra - {time.strftime('%Y-%m-%d %H-%M-%S')}", 
@@ -567,7 +635,7 @@ with dpg.window(label="Fuente & Nanovoltímetro", tag="Fuente & Nanovoltímetro"
             dpg.add_text("Autorange (1/0)")
 
         with dpg.table_row():
-            dpg.add_input_text(label="V", default_value=f"{1}", tag="vlim", width=-20)
+            dpg.add_input_text(label="V", default_value=f"{10}", tag="vlim", width=-20)
             dpg.add_input_text(label="A", default_value=f"{0.001}", tag="i_bias", width=-20)
             dpg.add_input_text(default_value=f"{0}", tag="auto", width=-20)
 
@@ -611,7 +679,7 @@ with dpg.window(label="Control Temperatura", tag="Control Temperatura"):
             dpg.add_text("Motor Máx")
 
         with dpg.table_row():
-            dpg.add_input_text(default_value=f"60", tag="T_est", width=-1)
+            dpg.add_input_text(default_value=f"20", tag="T_est", width=-1)
             dpg.add_input_text(default_value=f"{2.6}", tag="M_in", width=-1)
             dpg.add_input_text(default_value=f"{4.8}", tag="mhi", width=-1)
 
@@ -767,10 +835,12 @@ if os.path.exists('config.txt'):
 else:
     np.savetxt('config.txt', [f'{0},{0},{0},{0},{dpg.get_value("M_in")},{os.getcwd()}'], fmt='%s')
 
+with dpg.value_registry():
+    dpg.add_bool_value(default_value=False, tag="test_mode_var")
 with dpg.viewport_menu_bar():
     with dpg.menu(label="Opciones"):
         dpg.add_menu_item(label="Directorio default", callback=default_file_selected_callback)
-        dpg.add_menu_item(label="Setting 2")
+        dpg.add_menu_item(label="Test Mode", callback=test_callback, check=True)
 
     dpg.add_menu_item(label="Ayuda", callback=create_help_window)
 

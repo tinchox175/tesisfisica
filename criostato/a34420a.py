@@ -74,10 +74,10 @@ class Agilent34420A:
         """
         return self.instrument.query(command) if "?" in command else self.instrument.write(command)
     
-    #def close(self):
-    #    """Closes the connection to the instrument."""
-    #    self.instrument.close()
-    #    self.rm.close()
+    def close(self):
+        """Closes the connection to the instrument."""
+        self.instrument.close()
+        self.rm.close()
 
 # Example usage in a larger script
 #if __name__ == "__main__":
