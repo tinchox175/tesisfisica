@@ -68,8 +68,25 @@ class KEITHLEY_224(object):
         self.time = 0.05
         self.operate = False
 
-    def __del__(self):
-        self.operate = False
+    def shutdown(self):
+        """
+        Puts the instrument in a safe state (output off)
+        and properly closes the VISA connection.
+        """
+        print("Shutting down KEITHLEY 224...")
+        try:
+            # 1. Poner en estado seguro (apagar salida)
+            self.operate = False
+        except Exception as e:
+            # Captura un error por si el instrumento ya está desconectado
+            print(f"K224: Error setting operate=false during shutdown: {e}")
+        
+        try:
+            # 2. Cerrar la conexión VISA
+            self._inst.close()
+            print("K224: VISA resource closed.")
+        except Exception as e:
+            print(f"K224: Error closing VISA resource: {e}")
 
     def get_measurement(self):
         self._inst.timeout = 1000
@@ -108,7 +125,7 @@ class KEITHLEY_224(object):
 
     @current.setter
     def current(self, current):
-        if (current < -0.11):
+        if (current < -0.011):
             self._current = current
             self._inst.write('I' + '-0.10' + 'X')
         elif (current > 0.011):
