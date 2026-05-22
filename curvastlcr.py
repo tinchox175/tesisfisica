@@ -42,7 +42,14 @@ marker_l = lambda : itertools.cycle(('.',
  10,
  11,
 ))
-
+mpl.rcParams.update({
+    'font.size': 20,
+    'axes.titlesize': 20,
+    'axes.labelsize': 18,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16
+})
 def get_files_with_path(folder):
     print(folder)
     return [os.path.join(folder, file) for file in natsorted(os.listdir(folder)) if os.path.isfile(os.path.join(folder, file))]
@@ -50,12 +57,16 @@ def list_folders_in_folder(folder_path):
     # List only directories in the given folder
     return [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
 #%%
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-# dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+# dirs = "E:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+%matplotlib qt
+dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 
 fil = list_folders_in_folder(dirs)
 for j in fil:
-    fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
+    if '280.79' not in j:
+        continue
+    fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(12, 6), dpi=200, sharex=True)
+    fig.patch.set_facecolor("#e3eeffff")
     folder_path = dirs+j
     if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
         pass
@@ -75,21 +86,21 @@ for j in fil:
         ax2.plot(data[0], data[3],markerfacecolor=None, marker= mk, label=str(off)+ 'mV')
         name = str(folder_path.split('_')[5]) +'K'
         max.append(np.nanmax(data[1]))
-        # plt.text(14, 1.75, 'HRS', color='blue', fontsize=11)
-        # plt.text(25, 1.0, 'Transición', color='grey', fontsize=11)
-        # plt.text(14, 0.2, 'LRS', color='red', fontsize=11)
-        # if int(off)==0:
-        #     plt.fill_between(data[0], data[1][2]+0.1, data[1][2]-0.1, color='blue', alpha=0.15)
-        # if int(off)==200:
-        #     plt.fill_between(data[0], data[1][2]+0.3, data[1][2]-0.1, color='red', alpha=0.15)
+        plt.text(14, 1.75, 'HRS', color="#3385ffff", fontsize=11)
+        plt.text(25, 1.0, 'Transición', color='grey', fontsize=11)
+        plt.text(14, 0.2, 'LRS', color="#ff4646ff", fontsize=11)
+        if int(off)==0:
+            plt.fill_between(data[0], data[1][2]+0.1, data[1][2]-0.1, color="#65a3ffff", alpha=0.4)
+        if int(off)==200:
+            plt.fill_between(data[0], data[1][2]+0.3, data[1][2]-0.1, color="#ff8888ff", alpha=0.4)
         # if (int(off)==0 or int(off)==200):
-        #     plt.fill_between(data[0], data[1]+0.3, data[1]-0.1, color='blue', alpha=0.3, label='Region')    
+        #     plt.fill_between(data[0], data[1]+0.3, data[1]-0.1, color='blue', alpha=0.3)    
     # ax1.set_ylim(-0.1,np.nanmax(max)*1.1)
     # ax1.set_ylim(-0.1,3)
-    ax1.set_ylabel('R ($\Omega$)')
+    ax1.set_ylabel('Z\' ($\Omega$)')
     ax1.set_xlabel('Frecuencia (Hz)')
     ax2.set_xscale('log')
-    ax2.set_ylabel('X')
+    ax2.set_ylabel('Z\'\' ($\Omega$)')
 
     ax1.grid()
     ax2.grid()
@@ -99,9 +110,10 @@ for j in fil:
     # plt.title(name)
     #plt.tight_layout()
 
-    plt.savefig(f'{folder_path} {name}.png')
+    plt.savefig(f'nuevo {name}.png', bbox_inches='tight')
     # plt.show()
     # plt.close()
+    break
 # 
 
 data[1]

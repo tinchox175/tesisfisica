@@ -167,6 +167,22 @@ def measurement_worker(worker_params):
             
             # Mover el setpoint en pasos pequeños
             step = rate / 60 * tmed # K per second
+            current_time = time.time()
+            current_temp = controller.read_temperature()
+            t_window.append(current_time)
+            T_window.append(current_temp)
+            if len(t_window) > 1:
+                # np.polyfit(x, y, 1) fits a 1st-degree polynomial (a line) to the data
+                # and returns the coefficients [slope, intercept]. We only need the slope.
+                # The slope is the derivative in degrees per second.
+                slope_per_second = np.polyfit(t_window, T_window, 1)[0]
+                
+                # Convert from degrees/second to degrees/minute
+                dTdt = slope_per_second * 60
+            else:
+                # Not enough data yet, keep derivative at 0
+                dTdt = 0.0
+
             if not pause_event.is_set():
                 pause_v = 0
                 if target_setpoint > current_temp:
@@ -176,7 +192,7 @@ def measurement_worker(worker_params):
                 controller.set_setpoint(new_setpoint)
                 current_temp = controller.read_temperature()
                 supply.apply(v)
-                if float(current_temp)>float(new_setpoint)+1.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<10.0:
+                if float(current_temp)>float(new_setpoint)+1.5 and v > float(dpg.get_value("mlo")) and float(controller.get_HTR())<30.0:
                     v -= 0.1
                 elif float(current_temp)<float(new_setpoint)-1.5 and v < float(dpg.get_value("mhi")) and float(controller.get_HTR())>70.0:
                     v += 0.1
@@ -192,22 +208,8 @@ def measurement_worker(worker_params):
                     supply.apply(v)
 
             # --- Lectura durante la rampa ---
-            current_time = time.time()
-            t_window.append(current_time)
-            T_window.append(current_temp)
             v_mean, i_mean, data_ls = N_stat_msr(N_stat, vmax, vmin, auto)
             resistance = v_mean / i_mean if i_mean != 0 else float('inf')
-            if len(t_window) > 1:
-                # np.polyfit(x, y, 1) fits a 1st-degree polynomial (a line) to the data
-                # and returns the coefficients [slope, intercept]. We only need the slope.
-                # The slope is the derivative in degrees per second.
-                slope_per_second = np.polyfit(t_window, T_window, 1)[0]
-                
-                # Convert from degrees/second to degrees/minute
-                dTdt = slope_per_second * 60
-            else:
-                # Not enough data yet, keep derivative at 0
-                dTdt = 0.0
 
             # Preparar y enviar resultados a la GUI
             t_tot = time.time() - tiempo_total

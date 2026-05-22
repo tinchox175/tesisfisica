@@ -6,9 +6,17 @@ from scipy.optimize import curve_fit
 import os
 from os.path import abspath, dirname
 from numpy import diff
+import matplotlib as mpl
 %matplotlib inline
 #%%
-
+mpl.rcParams.update({
+    'font.size': 14,
+    'axes.titlesize': 16,
+    'axes.labelsize': 18,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16
+})
 os.chdir('e:/porno/tesis 3/tesisfisica')
 def calculate_dV_dI_diff(V_array, I_array):
     dV = np.diff(V_array)
@@ -51,31 +59,31 @@ def sclc_p(x, A, R):
 #     return A()
 
 # archivo_actual = '/IVs/escrituras/IV_1234_14-11-24/300.txt'
-files=[
+# files=[
 #        '/IVs/1411/IV_1234_14-11-24b/130.txt']
-       '/IVs/1411/IV_1234_14-11-24b/85.txt']
+    #    '/IVs/1411/IV_1234_14-11-24b/85.txt']
 #        '/criostato/Archivos/iv/1012/iv(ac20hz)-x5-c-95K.csv',
 #        '/criostato/Archivos/iv/1012/iv(ac100hz)-x5-a-95K.csv',
 #        '/criostato/Archivos/iv/1012/iv(ac29khz)-x5-e-95K.csv']
-n=0
+# n=0
 # files = ['/IVs/1411/IV_1234_14-11-24/300.txt','/IVs/1411/IV_1234_14-11-24b/130.txt','/IVs/1411/IV_1234_14-11-24b/85.txt',]
-# files = ['/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-f1-15K-2nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-h-15K-0.2nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-j-15K-1nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-q-14K-1nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv',
-#          '/criostato/Archivos/iv/1312/iv-x5-r2-14K-1nplc.csv']
+files = ['/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-e-15K-2nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-f1-15K-2nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-h-15K-0.2nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-j-15K-1nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-q-14K-1nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv',
+         '/criostato/Archivos/iv/1312/iv-x5-r2-14K-1nplc.csv']
 # files = ['IVs/escrituras/IV_1234_04.txt']
 # files = get_files_with_path('IVs/escrituras/')
 name = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 # name = ['a', 'b', 'd', 'e', 'g', 'i']
 for i in files:
     archivo_actual = i
-    channel = '1'
+    channel = 'crio'
     modo = 'si_t'
     data = np.genfromtxt(os.getcwd()+'/'+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
     data_t = np.genfromtxt(os.getcwd()+'/'+archivo_actual, delimiter='\t', dtype='str', unpack=True)
@@ -181,7 +189,7 @@ for i in files:
     gam1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
     # iin1 /= 1
     from matplotlib.colors import LinearSegmentedColormap
-    cmap = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
+    cmap = LinearSegmentedColormap.from_list("custom_blue", ["#DCEFFF", "#90b7ff", "#018DFF"])
     i = 0
     # f = -500 #for esc1
     f = -1
@@ -197,32 +205,35 @@ for i in files:
     r = '$R_{inst}$ ($\Omega$)'
     r2 = '$R_{rem}$ ($\Omega$)'
     r3 = '$R$ ($\Omega$)'
-    # fig, ax = plt.subplots(2,1,figsize=(5, 8), dpi=200) # gamma
-    # ax[0].scatter(x, z, s=30, c=time, cmap=cmap)
-    # ax[0].set_xlabel(v)
-    # ax[0].set_ylabel(i)
-    # ax[0].grid()
-    # ax[1].scatter(x[:-1], g, s=30, c='#4c86f0', cmap=cmap)
-    # ax[1].set_xlabel(v)
-    # ax[1].set_ylabel('$\gamma$')
-    # ax[1].set_ylim(0.9,1.5)
-    # ax[1].grid()
-    # ax[0].tick_params(axis='both')
-    # ax[1].tick_params(axis='both')
-    # # ax[0].xaxis.label.set_size(14)
-    # # ax[0].yaxis.label.set_size(14)
-    # # ax[1].xaxis.label.set_size(14)
-    # # ax[1].yaxis.label.set_size(14)
-    # plt.tight_layout()
-    # ax.plot(x, z, lw=8, c='#4c86f0')
-    fig, ax = plt.subplots(1,1,figsize=(4, 4), dpi=300) # I, R
-    ax.scatter(x, w, s=50, c=time, cmap=cmap)
+    fig, ax = plt.subplots(1,2,figsize=(8, 4), dpi=200) # gamma
+    fig.patch.set_facecolor('#e3eeff')
+    ax[0].scatter(x, z, marker=None, lw=1, s=50, c=time, cmap=cmap)
+    ax[0].set_xlabel(v)
+    ax[0].set_ylabel(i)
+    ax[0].grid()
+    ax[1].scatter(x[:-1], g, s=50, c=time[:-1], cmap=cmap)
+    ax[1].set_xlabel(v)
+    ax[1].set_ylabel('$\gamma$')
+    ax[1].set_ylim(-0.2,3)
+    ax[1].grid()
+    ax[0].tick_params(axis='both')
+    ax[1].tick_params(axis='both')
+    # ax[0].xaxis.label.set_size(14)
+    # ax[0].yaxis.label.set_size(14)
+    # ax[1].xaxis.label.set_size(14)
+    # ax[1].yaxis.label.set_size(14)
+    plt.tight_layout()
+    # # ax.plot(x, z, lw=8, c='#4c86f0')
+    # fig, ax = plt.subplots(1,1,figsize=(5, 3), dpi=200) # I, R
+    # fig.patch.set_facecolor('#e3eeff')
+    # ax.scatter(x, z, s=70, c=time, cmap=cmap)
     # # sc4 = ax.scatter(vin1[:-1],vdif*1000, c=time[:], s=100, cmap=cmap, label='$R_{dif}$')
-    ax.set_xlabel(v)
-    ax.set_ylabel(r2)
-    ax.grid()
-    # ax.set_ylim(90,300)
-    # # ax.set_xticks([-0.075, -0.04, 0, 0.04, 0.075])
+    # ax.set_xlabel(v)
+    # ax.set_ylabel(i)
+    # ax.grid()
+    # ax.set_ylim(-0.3,3)
+    # ax.set_xlim(0, 0.006)
+    # # # ax.set_xticks([-0.075, -0.04, 0, 0.04, 0.075])
     # plt.tight_layout()
     # ax.plot(x, z, lw=8, c='#4c86f0')
     # ax.set_xticks([-0.075, -0.05, -0.025, 0, 0.025, 0.05, 0.075])

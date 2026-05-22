@@ -2,20 +2,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-data = np.genfromtxt('e:/porno/tesis 3/tesisfisica/squid/SIO1/MdeH5T50K.rso.dat', skip_header=32, delimiter=',', unpack=True)
+data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/squid/SIO1/MdeT_1000G_FC.rso.dat', skip_header=32, delimiter=',', unpack=True)
 # Create the plot
-plt.figure(figsize=(6, 5), dpi=150)
-plt.plot(data[2], data[4], c="#4A85F1", lw=4)
+plt.figure(figsize=(4, 3), dpi=450)
+plt.plot(data[3][:-100], data[4][:-100], c="#47C0B0", lw=2)
 
-plt.xlabel('Temperatura (K)')
-plt.ylabel('Magnetización (emu)')
+plt.xlabel('T (K)')
+plt.ylabel('M (emu)')
 
 # Show the plot
 # plt.vlines(100,0,0.000178, linestyles='--', label='$T_M=100 $ K', color='k')
 # plt.vlines(240,-0.000043,0, linestyles='-.', label='$T_N=240 $ K', color='k')
 # plt.ylim(-0.00005, 0.00020)
-plt.legend()
-plt.grid()
+plt.legend(fontsize='large', frameon=False)
+# plt.grid()
 plt.show()
 
 #%%
