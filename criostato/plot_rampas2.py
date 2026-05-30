@@ -59,7 +59,7 @@ for filename in rampas:
         # continue
         r1 = r1[:1571]
         T = T[:1571]
-        filename = 'X1a'
+        filename = 'X5-a'
         cor = "#47C0B0"
         # print('8-11')
         # print(r1[:5])
@@ -92,7 +92,7 @@ for filename in rampas:
         # continue
     elif filename == './Archivos/X5/rampas\\RampaRdeT1712b.csv':
         # continue
-        filename = 'X1b'
+        filename = 'X5-b'
         cor = '#E63946'
         # pass
         # continue
@@ -205,7 +205,11 @@ ax.set_ylabel('$\\rho$ ($\Omega$ cm)')
 ax.set_xlabel('$T$ (K)')
 # ax.set_ylabel('Resistencia ($\Omega$)')
 # ax.set_yscale('log')
-ax.legend(fontsize='large', frameon=False)
+handles, labels = plt.gca().get_legend_handles_labels()
+
+# 3. Define your new order (e.g., swapping first and last)
+order = [1, 0, 3, 2]
+ax.legend([handles[idx] for idx in order], [labels[idx] for idx in order], fontsize='large', frameon=False)
 # ax.grid()
 def format_func(value, tick_number):
     # Only format non-zero values (symlog has a linear region around 0)
@@ -229,18 +233,33 @@ def format_func(value, tick_number):
     # We use LaTeX formatting for the superscript
     return r"${0}\ 10^{{{1}}}$".format(mantissa_str, exponent)
 ax.yaxis.set_major_formatter(ticker.FuncFormatter(format_func))
-data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/squid/SIO1/MdeT_1000G_FC.rso.dat', skip_header=32, delimiter=',', unpack=True)
+#%%
+data = np.genfromtxt('C:/LBT/tesisfisica/squid/SIO1/MdeT_1000G_FC.rso.dat', skip_header=32, delimiter=',', unpack=True)
 # Create the plot
+import pandas as pd
+
+# Constants for Sr2IrO4 (n=1 phase)
+M_w = 431.46           # Molar mass in g/mol
+n_ir = 1               # Number of Ir atoms per formula unit
+conversion_factor = 5585
+
+# You must input the mass of the specific sample measured in the magnetometer
+sample_mass_g = 0.0006  # Example: 15.5 mg converted to grams
+
+# Assuming df['emu_raw'] is your flat emu data column
+data_M = (data[4][:-100] * M_w) / (sample_mass_g * n_ir * conversion_factor)
+
 plt.figure(figsize=(4, 3), dpi=450)
-plt.plot(data[3][:-100], data[4][:-100], c="#47C0B0", lw=2)
+plt.plot(data[3][:-100], data_M, c="#47C0B0", lw=2)
 
 plt.xlabel('T (K)')
-plt.ylabel('M (emu)')
+plt.ylabel('M ($\mu_B$/Ir)')
 
 # Show the plot
 # plt.vlines(100,0,0.000178, linestyles='--', label='$T_M=100 $ K', color='k')
 # plt.vlines(240,-0.000043,0, linestyles='-.', label='$T_N=240 $ K', color='k')
 # plt.ylim(-0.00005, 0.00020)
+
 plt.legend(fontsize='large', frameon=False)
 # plt.grid()
 plt.show()

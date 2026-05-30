@@ -6,7 +6,7 @@ import time
 import csv
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('TkAgg')  # Use the TkAgg backend
+# matplotlib.use('TkAgg')  # Use the TkAgg backend
 #%%
 icurr = KEITHLEY_224()
 ivolt = Agilent34420A()
@@ -58,7 +58,7 @@ def msr(cu,bias=True):
     return [tr, v_iv, cu,v_bias, cu]
 #%%
 def add_row(values, file_name, ctrl=0):
-    directory = 'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1312'
+    directory = 'e://tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1312'
     file_path = directory +'/'+ file_name + '.csv'
     with open(file_path, mode='a+', newline='') as file:
         writer = csv.writer(file)
@@ -156,8 +156,8 @@ for k in curva_r:
 #%%
 for i in ['c-207K']:
     nm=i
-    V, I, Vb, Ib = np.loadtxt(f'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}.csv', delimiter=',', unpack=True)
-    #Vn, In, Vbn, Ibn = np.loadtxt(f'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}-n.csv', delimiter=',', unpack=True)
+    V, I, Vb, Ib = np.loadtxt(f'e://tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}.csv', delimiter=',', unpack=True)
+    #Vn, In, Vbn, Ibn = np.loadtxt(f'e://tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/2911/iv-x5-{nm}-n.csv', delimiter=',', unpack=True)
     from scipy.optimize import curve_fit
     def r(V,R):
         return V/R
@@ -186,7 +186,7 @@ plt.show()
 p=0
 for i in ['a-100K']:
     nm=i
-    V, I, Vb, Ib = np.loadtxt(f'e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1012/iv(+-)-x5-{nm}.csv', delimiter=',', unpack=True)
+    V, I, Vb, Ib = np.loadtxt(f'e://tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1012/iv(+-)-x5-{nm}.csv', delimiter=',', unpack=True)
     from scipy.optimize import curve_fit
     def r(V,R):
         return V/R
@@ -219,11 +219,10 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.colors as mcolors
-%matplotlib qt
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "e:/porno/tesis 3//tesis git/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "C:/LBT/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 for i in files[2:]:
     data = np.genfromtxt(folder_path+i, unpack=True, delimiter=',', skip_header=1)
@@ -246,11 +245,22 @@ from matplotlib import ticker
 import matplotlib.colors as mcolors
 import itertools
 from matplotlib.colors import LinearSegmentedColormap
+import matplotlib as mpl
+from figure_editor import save_figure_data, load_figure, edit_cosmetics
+
+mpl.rcParams.update({
+    'font.size': 5.5,
+    'axes.titlesize': 16,
+    'axes.labelsize': 10,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'legend.fontsize': 10
+})
 %matplotlib inline
 def get_files_in_folder(folder_path):
     # Get all files in the folder
     return [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
-folder_path = "e:/porno/tesis 3//tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
+folder_path = "C:/LBT/tesisfisica/criostato/Archivos/iv/1312/"  # Replace with your folder path
 files = get_files_in_folder(folder_path)
 rmin = []
 rmax = []
@@ -285,23 +295,31 @@ for i in files[:]:
     ax.axvline(t0,0,15,c='gray',ls='dashed')
     if i.split('-')[2] in ['d','e', 'f1','h','i','j','p','q','r1','r2']:
         print(i.split('-')[2])
-        ax.text(t0, 0.99, lb, size='15', color='r', ha='right', va='top', rotation=90,
-                transform=ax.get_xaxis_transform())
+        # ax.text(t0, 0.99, lb, size='15', color='r', ha='right', va='top', rotation=90,
+                # transform=ax.get_xaxis_transform())
         lb = next(lbl)
         tos.append(t0)
+ax.fill_between(tcont[298:495], -1, 15, color='green', alpha=0.2)
+ax.fill_between(tcont[1613:], -1, 15, color='green', alpha=0.2)
+# ax.fill_between(t[16:], [-6,-6,-6,-6,-6,-6,-6,-6,-6], [18,18,18,18,18,18,18,18,19], color='green', alpha=0.2)    
 ax.grid(True)
 ax.set_ylabel('$R_{inst} (\Omega)$')
-ax.set_xlabel('Tiempo (s)')
+ax.set_xlabel('Time (s)')
 # Adjust the colorbar to shift cyan to blue around 2.5
 # Create a custom colormap from '#084887' (blue) to '#E63946' (red)
-blue = LinearSegmentedColormap.from_list('blue_red', ['#4c86f0', '#E63946'])
+blue = LinearSegmentedColormap.from_list('Blues_r', ['#4c86f0', '#E63946'])
 norm = mcolors.LogNorm(vmin=0.5, vmax=30)  # Set logarithmic normalization
-sc = ax.scatter(tcont, rcont, s=6, c=icont, cmap=blue, norm=norm)  # Apply normalization
-cbar4 = plt.colorbar(sc, ax=ax, ticks=[1, 5, 10, 20, 30])  # Set specific ticks
+sc = ax.scatter(tcont, rcont, s=6, c=icont, cmap=blue, norm=norm, label='c')  # Apply normalization
+cbar4 = plt.colorbar(sc, ax=ax, ticks=[1.0, 5.0, 10.0, 20.0, 30.0])  # Set specific ticks
 cbar4.ax.yaxis.set_major_formatter(ticker.FixedFormatter([1, 5, 10, 15, 20, 25, 30]))  # Ensure ticks match
-cbar4.set_label('Corriente (mA)')
+cbar4.set_label('Current (mA)')
+
 ax.set_xlim(0,2950)
 ax.set_ylim(0,15)
+plt.savefig('Fig 4.pdf', format='pdf')
+save_figure_data(fig, filename="Fig 4")
+
+#%%
 # ax.legend()
 fig, ax = plt.subplots(1,1, figsize=(10,5), dpi=300)
 ax.set_ylabel('$R_{inst} (\Omega)$')

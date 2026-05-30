@@ -9,7 +9,7 @@ from numpy import diff
 
 #%%
 %matplotlib inline
-os.chdir('e:/porno/tesis 3/tesisfisica')
+os.chdir('C:/LBT/tesisfisica')
 def calculate_dV_dI_diff(V_array, I_array):
     dV = np.diff(V_array)
     dI = np.diff(I_array)
@@ -40,15 +40,18 @@ files=['/criostato/Archivos/iv/1312/iv-x5-d-15K-2nplc.csv',
        '/criostato/Archivos/iv/1312/iv-x5-i-15K-0.2nplc.csv',
        '/criostato/Archivos/iv/1312/iv-x5-p-14K-1nplc.csv',
        '/criostato/Archivos/iv/1312/iv-x5-r1-14K-1nplc.csv']
+# files=['/criostato/Archivos/iv/1312/iv-x5-f2-15K-2nplc.csv',
+    #    '/criostato/Archivos/iv/1312/iv-x5-w1-14K-2nplc.csv',]
+# files = get_files_with_path('C:/LBT/tesisfisica/criostato/Archivos/iv/1312/')
+files = [os.getcwd() +f for f in files if f.endswith('.csv')]
 n=0
 # files = ['/IVs/escrituras/IV_1234_01.txt']
 for i in files:
     archivo_actual = i
-    fig, ax = plt.subplots(1,1,figsize=(4, 3), dpi=150)
     channel = 'crio'
     modo = 'si_t'
-    data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', skip_header=1, unpack=True)
-    data_t = np.genfromtxt(os.getcwd()+archivo_actual, delimiter='\t', dtype='str', unpack=True)
+    data = np.genfromtxt(archivo_actual, delimiter='\t', skip_header=1, unpack=True)
+    data_t = np.genfromtxt(archivo_actual, delimiter='\t', dtype='str', unpack=True)
     if '(K)' in data_t[1][0]:
         modo = 'si_t'
     elif '(K)' not in data_t[1][0]:
@@ -127,7 +130,7 @@ for i in files:
             peri = data[16][~np.isnan(data[16])] #periodo
             temperatura = temp[0]
     elif channel == 'crio':
-        data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
+        data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
         indoff = 0
         vin1 = np.array(data[0][~np.isnan(data[0])])
         iin1 = data[1][~np.isnan(data[1])]*1000 #I instant
@@ -136,7 +139,7 @@ for i in files:
         time = np.linspace(0,1,len(iin1)) #tiempo
         temperatura = archivo_actual.split('-')[-1]
         if 'nplc' in archivo_actual:
-            data = np.genfromtxt(os.getcwd()+archivo_actual, delimiter=',', skip_header=1, unpack=True)
+            data = np.genfromtxt(archivo_actual, delimiter=',', skip_header=1, unpack=True)
             indoff = 0
             time = data[0][~np.isnan(data[0])]
             vin1 = np.array(data[1][~np.isnan(data[1])])
@@ -146,18 +149,20 @@ for i in files:
             temperatura = archivo_actual.split('-')[-2]
         rin1 = np.array(vin1)/np.array(iin1)*1000
         print('hola')
+    from matplotlib.colors import LinearSegmentedColormap
+    cmap = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
     # iin1 = [np.abs(iin1[j]) for j in np.arange(len(iin1)) if vin1[j]>0]
-    # vin1 = [j for j in vin1 if j>0]
+    vin1 = [j for j in vin1 if j>0]
     vdif = calculate_dV_dI_diff(vin1, iin1)
+    fig, ax = plt.subplots(1,1,figsize=(4, 3), dpi=150)
     sc4 = ax.scatter(vin1[:-1],vdif*1000, c=time[:-1], cmap=cmap)
     # gam1 = diff(np.log(np.abs(iin1)))/diff(np.log(np.abs(vin1))) #gamma
     # iin1 /= 1
-    from matplotlib.colors import LinearSegmentedColormap
-    cmap = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
     # ax.scatter(vin1, rin1, s=30, c=time, cmap=cmap)
     # Create a colormap from light blue to '#4c86f0'
-    sc = ax.scatter(vin1, rin1, s=6, c='gray')
+    sc = ax.plot(vin1, rin1, c='gray')
     # ax.scatter(vin1[:-1], gam1, s=30, c=time[:-1], cmap=cmap)
+    ax.set_title(f'{i} K')
     # popt, pcov = curve_fit(sclc_p, vin1, iin1, sigma=np.full_like(iin1, 0.05e-1), p0=[1,3], absolute_sigma = True, bounds=[[0,0],[1e3,100e3]])
     # A, R = popt[0], popt[1]
     # plt.plot(vin1, sclc_p(vin1, *popt), label='Ajuste', c='r', zorder=10)
@@ -166,7 +171,7 @@ for i in files:
     r = '$R_{inst}$ ($\Omega$)'
     ax.set_xlabel(v)
     # # plt.legend()
-    ax.set_ylabel(r)
+    ax.set_ylabel(i)
     # ax[1].set_xlabel(v)
     # ax[1].set_ylabel('$\gamma$')
     # ax.set_ylim(-50,63)
@@ -192,7 +197,7 @@ import os
 from os.path import abspath, dirname
 from matplotlib.colors import LinearSegmentedColormap
 %matplotlib inline
-os.chdir('e:/porno/tesis 3/tesisfisica/')
+os.chdir('e://tesis 3/tesisfisica/')
 
 files = ['14-11-ajustes-canal1b.csv']
 fig, ax = plt.subplots(1,1, figsize=(6,4), dpi=300)
@@ -400,7 +405,7 @@ plt.tight_layout()
 # %%
 files=['datos1VNOV.csv']
 i = files[0]
-dire = 'e:/porno/tesis 3/tesisfisica/'
+dire = 'e://tesis 3/tesisfisica/'
 data = np.genfromtxt(dire+i, unpack=True, skip_header=1, delimiter=',')
 fig, ax = plt.subplots(1,1, figsize=(4,3), dpi=150)
 ax2 = ax.twinx()
@@ -414,7 +419,7 @@ ax2.set_ylabel('$\gamma$')
 ax.legend([l[0], le[0]], [l[0].get_label(), le[0].get_label()], loc='upper right')
 #%%
 i = files[1]
-dire = 'E:/porno/tesis 3/tesisfisica/'
+dire = 'E://tesis 3/tesisfisica/'
 data = np.genfromtxt(dire+i, unpack=True, skip_header=1, delimiter=',')
 fig, ax = plt.subplots(1,1, figsize=(8,5))
 ax2 = ax.twinx()
