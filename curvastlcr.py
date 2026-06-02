@@ -57,16 +57,16 @@ def list_folders_in_folder(folder_path):
     # List only directories in the given folder
     return [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
 #%%
-# dirs = "E:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-%matplotlib qt
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+# dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+# %matplotlib qt
+dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 
 fil = list_folders_in_folder(dirs)
 for j in fil:
     if '280.79' not in j:
         continue
     fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(12, 6), dpi=200, sharex=True)
-    fig.patch.set_facecolor("#e3eeffff")
+    # fig.patch.set_facecolor("white")
     folder_path = dirs+j
     if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
         pass
@@ -74,7 +74,7 @@ for j in fil:
 
     T = int(np.round(float(folder_path.split('_')[5]),0))
     
-    fig.suptitle(f'{T} K')
+    # fig.suptitle(f'{T} K')
     max = []
     marker = marker_l()
     for i in files:
@@ -86,13 +86,13 @@ for j in fil:
         ax2.plot(data[0], data[3],markerfacecolor=None, marker= mk, label=str(off)+ 'mV')
         name = str(folder_path.split('_')[5]) +'K'
         max.append(np.nanmax(data[1]))
-        plt.text(14, 1.75, 'HRS', color="#3385ffff", fontsize=11)
-        plt.text(25, 1.0, 'Transición', color='grey', fontsize=11)
-        plt.text(14, 0.2, 'LRS', color="#ff4646ff", fontsize=11)
-        if int(off)==0:
-            plt.fill_between(data[0], data[1][2]+0.1, data[1][2]-0.1, color="#65a3ffff", alpha=0.4)
-        if int(off)==200:
-            plt.fill_between(data[0], data[1][2]+0.3, data[1][2]-0.1, color="#ff8888ff", alpha=0.4)
+        # plt.text(14, 1.75, 'HRS', color="#3385ffff", fontsize=11)
+        # plt.text(25, 1.0, 'Transición', color='grey', fontsize=11)
+        # plt.text(14, 0.2, 'LRS', color="#ff4646ff", fontsize=11)
+        # if int(off)==0:
+        #     plt.fill_between(data[0], data[1][2]+0.1, data[1][2]-0.1, color="#65a3ffff", alpha=0.4)
+        # if int(off)==200:
+        #     plt.fill_between(data[0], data[1][2]+0.3, data[1][2]-0.1, color="#ff8888ff", alpha=0.4)
         # if (int(off)==0 or int(off)==200):
         #     plt.fill_between(data[0], data[1]+0.3, data[1]-0.1, color='blue', alpha=0.3)    
     # ax1.set_ylim(-0.1,np.nanmax(max)*1.1)
@@ -102,8 +102,8 @@ for j in fil:
     ax2.set_xscale('log')
     ax2.set_ylabel('Z\'\' ($\Omega$)')
 
-    ax1.grid()
-    ax2.grid()
+    # ax1.grid()
+    # ax2.grid()
     handles1, labels1 = ax1.get_legend_handles_labels()
     ax2.legend(handles1, labels1, loc='center left', bbox_to_anchor=(1, 0))
     # Adjust layout to make room for the legend
@@ -144,7 +144,7 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
         xplot = []
 #         %matplotlib qt
         yplot = []
-        dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+        dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
         fil = list_folders_in_folder(dirs)
         for j in [1]:
             j = a
@@ -186,7 +186,7 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
 plt.show()
 #%%
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 7))
-dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 marker = marker_l()
 for j in fil:
@@ -230,7 +230,7 @@ plt.show()
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/912/"
+dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/912/"
 for i in list_folders_in_folder(dirs):
     fig, axs = plt.subplots(2, 2, figsize=(9, 5), sharex=True)
     marker = marker_l()
@@ -354,7 +354,7 @@ colors = [
     '#ff9896'   # Light Red
 ]
 
-dirs2 = get_files_with_path('e:\porno/tesis 3/tesisfisica\IVs/rampasT-ZdeW')
+dirs2 = get_files_with_path('e:\trabajo/tesis 3/tesisfisica\IVs/rampasT-ZdeW')
 dirs = []
 for i in dirs2:
     if 'txt' in i:
@@ -421,7 +421,7 @@ plt.tight_layout()
 #     ticks=([])
 # )
 
-# plt.savefig(f'E:/porno/tesis 3/tesisfisica/IVs/rampasT-ZdeW/RampaTenLCRRX.png')
+# plt.savefig(f'E:/trabajo/tesis 3/tesisfisica/IVs/rampasT-ZdeW/RampaTenLCRRX.png')
 fig, axs = plt.subplots(2, 2, figsize=(9.5, 7), sharex=True)
 n=0
 for i in dirs:
@@ -481,14 +481,14 @@ plt.tight_layout()
 #     location='right',
 #     ticks=([])
 # )
-# plt.savefig(f'E:/porno/tesis 3/tesisfisica/IVs/rampasT-ZdeW/RampaTenLCRZT.png')
+# plt.savefig(f'E:/trabajo/tesis 3/tesisfisica/IVs/rampasT-ZdeW/RampaTenLCRZT.png')
 
 
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/rampasT-ZdeW/"
+dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/rampasT-ZdeW/"
 for i in get_files_with_path(dirs):
     data = np.genfromtxt(i, unpack=True, delimiter=',', skip_header=1)
     print(i.split('_')[1],',',data[10][0], ',', data[11][0])

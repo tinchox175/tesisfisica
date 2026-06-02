@@ -23,53 +23,10 @@ mpl.rcParams.update({
     'ytick.labelsize': 16,
     'legend.fontsize': 16
 })
-#%%
-# %matplotlib qt
-# X = []
-# Y = []
-# Z = []
-# dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
-# fil = list_folders_in_folder(dirs)
-# for j in fil:
-#     print(j)
-#     if '_11.' in j or '_30.' in j or '_50.' in j or '_70.' in j or '_90.' in j:
-#         print(j)
-#         pass
-#     else:
-#         continue
-#     folder_path = dirs+j
-#     if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
-#         pass
-#     files = get_files_with_path(folder_path)
-
-#     fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(12,8))
-#     ax = fig.add_subplot(111, projection='3d')
-#     fig.suptitle(f'{folder_path.split('_')[5]} K')
-#     fig.subplots_adjust(top=1.1, bottom=-.1)
-#     Zfalse = []
-#     for i in files:
-#         data = np.genfromtxt(i, unpack=True, delimiter=',')
-#         Zfalse.append(data[1][2:])
-#     for i in files:
-#         data = np.genfromtxt(i, unpack=True, delimiter=',')
-#         X = data[0][2:]
-#         Z = data[1][2:]
-#         Y = np.full_like(X, (i.split('_')[-2]).split('.')[0])
-#         norm = Normalize(vmin=np.min(Zfalse), vmax=np.max(Zfalse))
-#         sc = ax.scatter(np.log10(X), Y, Z, edgecolors= "black", c=Z, cmap='viridis', norm=norm, s=500)
-#         ax.xaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
-#         ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-#         ax.set_xlabel('f [Hz]')
-#         ax.set_ylabel('Offset [mV]')
-#         ax.set_zlabel('Resistencia [Ohm]')
-#     cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
-#     plt.tight_layout()
-#     plt.savefig(f'e:/porno/tesis 3/tesisfisica/{folder_path.split('_')[5]} 1611.png')
-# # plt.show()
 #%% Resistance
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.interpolate import griddata
-%matplotlib qt
+# %matplotlib qt
 mpl.rcParams.update({
     'font.size': 14,
     'axes.titlesize': 16,
@@ -98,8 +55,8 @@ colors = [
 ]
 
 n = 0
-# dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+# dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     # if (j.split('_')[3]).split('.')[0] in ['291','150','90','50','11']:
@@ -157,7 +114,7 @@ for j in fil:
 
     # plt.colorbar(mesh, label='Z ($\Omega$)')
     # plt.tight_layout()
-    plt.savefig(f'e:/porno/tesis 3/tesisfisica/{folder_path.split('_')[5]} nuevo.png')
+    # plt.savefig(f'e:/trabajo/tesis 3/tesisfisica/{folder_path.split('_')[5]} nuevo.png')
 #%% Reactance
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.interpolate import griddata
@@ -190,8 +147,8 @@ mpl.rcParams.update({
     'legend.fontsize': 16
 })
 n = 0
-# dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+# dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     print(j)
@@ -275,7 +232,7 @@ for j in fil:
     # plt.colorbar(mesh, label='Z\'\' ($\Omega$)')
     # plt.tight_layout()
     # break
-    plt.savefig(f'E:/porno/tesis 3/tesisfisica/{folder_path.split('_')[5]} nuevo X.png')
+    plt.savefig(f'E:/trabajo/tesis 3/tesisfisica/{folder_path.split('_')[5]} nuevo X.png')
 #plt.show()
 #%% Resistance
 from matplotlib.colors import LinearSegmentedColormap
@@ -302,8 +259,8 @@ colors = [
 ]
 
 n = 0
-# dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-dirs = "E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+# dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+dirs = "E:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 for j in fil:
     print(j)
@@ -367,7 +324,7 @@ for j in fil:
     plt.colorbar(mesh, label='Z\' ($\Omega$)')
     plt.tight_layout()
     # break
-    # plt.savefig(f'E:/porno/tesis 3/tesisfisica/{folder_path.split('_')[5]} 1812.png')
+    # plt.savefig(f'E:/trabajo/tesis 3/tesisfisica/{folder_path.split('_')[5]} 1812.png')
 plt.close()
 plt.show()
 # %%
@@ -398,8 +355,8 @@ plt.show()
 # Y0 = []
 # Z0 = []
 # n=0
-# dirs = "e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
-# #dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+# dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/"
+# #dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 # fil = list_folders_in_folder(dirs)
 # for j in fil:
 #     folder_path = dirs+j
@@ -438,5 +395,49 @@ plt.show()
 #     cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
 #     #break
 #     # plt.tight_layout()
-#     # plt.savefig(f'e:/porno/tesis 3/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
+#     # plt.savefig(f'e:/trabajo/tesis 3/tesisfisica/figuras/{float(folder_path.split('_')[5])} fvr.png')
 # plt.show()
+#%%
+#%%
+# %matplotlib qt
+X = []
+Y = []
+Z = []
+dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+fil = list_folders_in_folder(dirs)
+for j in fil:
+    print(j)
+    if '_11.' in j or '_30.' in j or '_50.' in j or '_70.' in j or '_90.' in j:
+        print(j)
+        pass
+    else:
+        continue
+    folder_path = dirs+j
+    if folder_path.split('.')[-1] == 'png' or folder_path.split('.')[-1] == 'txt':
+        pass
+    files = get_files_with_path(folder_path)
+
+    fig = plt.figure(f'{folder_path.split('_')[5]} K', figsize=(12,8))
+    ax = fig.add_subplot(111, projection='3d')
+    fig.suptitle(f'{folder_path.split('_')[5]} K')
+    fig.subplots_adjust(top=1.1, bottom=-.1)
+    Zfalse = []
+    for i in files:
+        data = np.genfromtxt(i, unpack=True, delimiter=',')
+        Zfalse.append(data[1][2:])
+    for i in files:
+        data = np.genfromtxt(i, unpack=True, delimiter=',')
+        X = data[0][2:]
+        Z = data[1][2:]
+        Y = np.full_like(X, (i.split('_')[-2]).split('.')[0])
+        norm = Normalize(vmin=np.min(Zfalse), vmax=np.max(Zfalse))
+        sc = ax.scatter(np.log10(X), Y, Z, edgecolors= "black", c=Z, cmap='viridis', norm=norm, s=500)
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
+        ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        ax.set_xlabel('f [Hz]')
+        ax.set_ylabel('Offset [mV]')
+        ax.set_zlabel('Resistencia [Ohm]')
+    cbar = fig.colorbar(sc, ax=ax, label='Resistencia [Ohm]')
+    plt.tight_layout()
+    # plt.savefig(f'e:/trabajo/tesis 3/tesisfisica/{folder_path.split('_')[5]} 1611.png')
+plt.show()

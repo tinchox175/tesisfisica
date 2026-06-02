@@ -6,7 +6,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 from figure_editor import save_figure_data, load_figure, edit_cosmetics
 
-os.chdir('C:/LBT/tesisfisica')
+os.chdir('.')
 
 # Custom colormap
 cmap = LinearSegmentedColormap.from_list("custom_blue", ["#b3d1ff", "#4c86f0"])
@@ -74,11 +74,10 @@ for n, archivo_actual in enumerate(files):
     
     # Only put Y-labels on the left column (indices 0, 2, 4)
     # if n % 2 == 0:
-    ax.set_ylabel('$R$ ($\Omega$)')
+    ax.set_ylabel('R ($\Omega$)')
         
     # Only put X-labels on the bottom row (indices 4, 5)
-    if n >= 4:
-        ax.set_xlabel('$V$ (V)')
+    ax.set_xlabel('V (V)')
         
     # Add a custom legend to the very first plot only
     if n == 0:

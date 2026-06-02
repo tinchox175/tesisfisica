@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 from natsort import natsorted
 import csv
 %matplotlib inline
-dire = 'e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/'
-os.chdir('e:/porno/tesis 3/tesisfisica/eis/')
+dire = 'e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
+os.chdir('e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/')
 def get_files_with_path(folder):
     print(folder)
     return natsorted([os.path.join(folder, file) for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
 def list_folders_in_folder(folder_path):
     # List only directories in the given folder
     return natsorted([name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))])
-files = (list_folders_in_folder('e:/porno/tesis 3/tesisfisica/IVs/1812/ZdeW_1234_18-12-24/'))
+files = (list_folders_in_folder('e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'))
 
 def z(w, R1, L1, C1, R2, C2, R3, C3):
     w = 2*np.pi*w
@@ -63,7 +63,7 @@ for i in files:
 #%%
 fig, ax = plt.subplots(1,1,figsize=(9,7), dpi=800)
 ax2 = ax.twinx()
-data = np.genfromtxt('e:/porno/tesis 3/tesisfisica/IVs/1611_ajuste_zdew.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/IVs/1611_ajuste_zdew.csv', unpack=True, delimiter=',', skip_header=1)
 ln1 = ax.scatter((1/data[0]), np.log(data[1]), color="#9858db", label='$R_{real}$')
 ln2 = ax2.scatter((1/data[0]), np.log(data[2]), color="#c7c750", label='$C_{real}$')
 ln3 = ax.scatter((1/data[0]), np.log(data[3]), color="#609ee0", label='$R_{img}$')
@@ -110,7 +110,7 @@ t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90',
     '50', '30', '11']
 initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-20,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'e:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/0mvx5b/{i}k0.00mV_eisanalyser/eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -141,7 +141,7 @@ with open('Parametros_ajustados_b.csv', mode='w', newline='') as file:
 t = ['290', '270', '250', '230', '210', '190', '170', '150', '130', '110', '90']
 initial_guess = [16, 4,1,24.9e-9,-1.3,1e-4]
 for i in t:
-    data = np.genfromtxt(f'e:/porno/tesis 3/tesisfisica/eis/0mvx5b/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/0mvx5b/{i}k0.00mV_eisanalyser/eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -161,9 +161,9 @@ for i in t:
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
     plt.show()
     print(circuit)
-data = np.genfromtxt('e:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 #%%
-data = np.genfromtxt('e:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 T, Lr, Rr, Rl, Cl, Rn, Cn = data
 fig, ax= plt.subplots(3,1,figsize=(8, 7), sharex=True, dpi=800)
 ax[1].set_ylabel('Capacitancia (F)')
@@ -187,37 +187,37 @@ ax[2].set_xlabel('1/T (1/K)')
 ax[0].set_ylabel('Resisencia ($\Omega$)')
 ax[2].set_ylabel('Inductancia (H)')
 #%% CON EL CIRCUITO NUEVO
-from impedance import preprocessing
-from impedance.models.circuits import CustomCircuit
-import csv
-%matplotlib inline
-with open('Parametros_ajustados_cx5a.csv', mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['T', 'R1', 'L1', 'C1', 'R2', 'C2', 'R3', 'C3'])
-t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85',]
-initial_guess = [3.65, 0.46, 22e-9, -1.47, 47e-8, 3 , 1e-3]
-for i in t:
-    data = np.genfromtxt(f'e:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
-    f = data[2][1:-1]
-    Z = data[0][1:-1] - 1j*data[1][1:-1]
-    circuit = 'p(R1,L1,C1)-p(R2,C2)-p(R3,C3)'
-    # if i == '240':
-    #     initial_guess = [5.59,0,1.28e-8,-3.09,1.33e-8,2.01e-2,7.78e-2]
-    circuit = CustomCircuit(circuit, initial_guess=initial_guess)
-    circuit.fit(f, Z, 
-                bounds=([0, 0, 0, -1000, 1e-15, 0, 0],
-                        [1000, 100, 10, 0, 10, np.inf, 20]))
+# from impedance import preprocessing
+# from impedance.models.circuits import CustomCircuit
+# import csv
+# %matplotlib inline
+# with open('Parametros_ajustados_cx5a.csv', mode='w', newline='') as file:
+#         writer = csv.writer(file)
+#         writer.writerow(['T', 'R1', 'L1', 'C1', 'R2', 'C2', 'R3', 'C3'])
+# t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85',]
+# initial_guess = [3.65, 0.46, 22e-9, -1.47, 47e-8, 3 , 1e-3]
+# for i in t:
+#     data = np.genfromtxt(f'e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/0mvx5a/{i}k0.00mV_eisanalyser/eis', unpack=True, delimiter='', skip_header=1)
+#     f = data[2][1:-1]
+#     Z = data[0][1:-1] - 1j*data[1][1:-1]
+#     circuit = 'p(R1,L1,C1)-p(R2,C2)-p(R3,C3)'
+#     # if i == '240':
+#     #     initial_guess = [5.59,0,1.28e-8,-3.09,1.33e-8,2.01e-2,7.78e-2]
+#     circuit = CustomCircuit(circuit, initial_guess=initial_guess)
+#     circuit.fit(f, Z, 
+#                 bounds=([0, 0, 0, -1000, 1e-15, 0, 0],
+#                         [1000, 100, 10, 0, 10, np.inf, 20]))
 
-    paramteres = [f"{p}@{c}" for p, c in zip(circuit.parameters_, circuit.conf_)]
-    initial_guess = circuit.parameters_
-    with open('Parametros_ajustados_cx5a.csv', mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([str(i)] + list(paramteres))
-    print(f'T = {i}K')
-    circuit.plot(f_data=f, Z_data=Z, kind='nyquist')
-    circuit.plot(f_data=f, Z_data=Z, kind='bode')
-    plt.show()
-    print(circuit)
+#     paramteres = [f"{p}@{c}" for p, c in zip(circuit.parameters_, circuit.conf_)]
+#     initial_guess = circuit.parameters_
+#     with open('Parametros_ajustados_cx5a.csv', mode='a', newline='') as file:
+#         writer = csv.writer(file)
+#         writer.writerow([str(i)] + list(paramteres))
+#     print(f'T = {i}K')
+#     circuit.plot(f_data=f, Z_data=Z, kind='nyquist')
+#     circuit.plot(f_data=f, Z_data=Z, kind='bode')
+#     plt.show()
+#     print(circuit)
     # if i=='240':
 
     #     break
@@ -229,7 +229,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.legend import Legend
 import matplotlib
 matplotlib.rcParams.update({'font.size': 13})
-data = np.genfromtxt('e:/porno/tesis 3/tesisfisica/eis/Parametros_ajustados_cx5a.csv', dtype=str, unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/Parametros_ajustados_cx5a.csv', dtype=str, unpack=True, delimiter=',', skip_header=1)
 T, Rl, Ll, Cl, Rn, Cn, Ra, Ca = data
 # Separate magnitude and error for each parameter
 def split_mag_err(arr):
@@ -263,7 +263,7 @@ for i in range(len(T)):
     )
     all_params.append(params_tuple)
 fig, ax= plt.subplots(3,1,figsize=(7, 9), sharex=False, dpi=300)
-ax[2].set_ylabel('Capacitancia (F)')
+ax[2].set_ylabel('Capacitance (F)')
 ax[0].errorbar(1/T, Rl, yerr=Rl_err, fmt='o-', label='$R_L$', c='#e07b67', capsize=3, elinewidth=1)      # Rl
 ax[1].errorbar(T, Ll, yerr=Ll_err, fmt='o-', label='$L$', c='#e07b67', capsize=3, elinewidth=1)      # Ll
 ax[2].errorbar(T, Cl, yerr=Cl_err, fmt='o-', label='$C_L$', c='#e07b67', capsize=3, elinewidth=1)     # Cl
@@ -286,8 +286,8 @@ ax[1].grid()
 ax[0].set_xlabel('1/T (1/K)')
 ax[1].set_xlabel(' ')
 ax[2].set_xlabel('T (K)')
-ax[0].set_ylabel('Resistencia ($\Omega$)')
-ax[1].set_ylabel('Inductancia (H)')
+ax[0].set_ylabel('Resistance ($\Omega$)')
+ax[1].set_ylabel('Inductance (H)')
 plt.tight_layout()
 # Use a pastel colormap with distinct colors
 pastel_colors = [
@@ -295,6 +295,7 @@ pastel_colors = [
     "#ffd92f", "#e5c494", "#b3b3b3", "#b15928", "#1f78b4",
     "#fdbf6f", "#cab2d6", "#6a3d9a", "#ffff99", "#b2df8a"
 ]
+#%%
 fig, ax = plt.subplots(3,1, figsize=(7,9), dpi=300)
 handles = []
 labels = []

@@ -16,12 +16,12 @@
         3
     ],
     "subplots_adjust": {
-        "left": 0.06245370370370371,
-        "right": 0.9750506573840644,
-        "top": 0.9728619564582649,
-        "bottom": 0.09824074074074075,
-        "wspace": 0.24370331092003264,
-        "hspace": 0.15637646501182345
+        "left": 0.0757175925925926,
+        "right": 0.9674117684951754,
+        "top": 0.9611952897915982,
+        "bottom": 0.11824074074074074,
+        "wspace": 0.3143448606696157,
+        "hspace": 0.32631016377748834
     },
     "suptitle": "",
     "suptitle_obj": {
@@ -44,7 +44,7 @@
         {
             "title": {
                 "text": "",
-                "fontsize": 12.0,
+                "fontsize": 16.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -56,8 +56,8 @@
                 "visible": true
             },
             "xlabel": {
-                "text": "",
-                "fontsize": 10.0,
+                "text": "V (V)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -69,8 +69,8 @@
                 "visible": true
             },
             "ylabel": {
-                "text": "$R$ ($\\Omega$)",
-                "fontsize": 10.0,
+                "text": "R ($\\Omega$)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -98,10 +98,10 @@
                 1.0
             ],
             "position": [
-                0.06245370370370371,
-                0.5672643115624658,
-                0.2616835524613548,
-                0.4055976448957991
+                0.0757175925925926,
+                0.5988383856365398,
+                0.24573447838728069,
+                0.3623569041550584
             ],
             "aspect": "auto",
             "spines": {
@@ -155,7 +155,7 @@
             },
             "ticks": {
                 "x": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -166,7 +166,7 @@
                     "direction": "out"
                 },
                 "y": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -1255,7 +1255,7 @@
         {
             "title": {
                 "text": "",
-                "fontsize": 12.0,
+                "fontsize": 16.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -1267,8 +1267,8 @@
                 "visible": true
             },
             "xlabel": {
-                "text": "",
-                "fontsize": 10.0,
+                "text": "V (V)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -1280,8 +1280,8 @@
                 "visible": true
             },
             "ylabel": {
-                "text": "$R$ ($\\Omega$)",
-                "fontsize": 10.0,
+                "text": "R ($\\Omega$)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -1309,10 +1309,10 @@
                 1.0
             ],
             "position": [
-                0.3879104043132067,
-                0.5672643115624658,
-                0.26168355246135483,
-                0.4055976448957991
+                0.39869744135024365,
+                0.5988383856365398,
+                0.24573447838728069,
+                0.3623569041550584
             ],
             "aspect": "auto",
             "spines": {
@@ -1366,7 +1366,7 @@
             },
             "ticks": {
                 "x": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -1377,7 +1377,7 @@
                     "direction": "out"
                 },
                 "y": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -3010,7 +3010,7 @@
         {
             "title": {
                 "text": "",
-                "fontsize": 12.0,
+                "fontsize": 16.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -3022,8 +3022,8 @@
                 "visible": true
             },
             "xlabel": {
-                "text": "",
-                "fontsize": 10.0,
+                "text": "V (V)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -3035,8 +3035,8 @@
                 "visible": true
             },
             "ylabel": {
-                "text": "$R$ ($\\Omega$)",
-                "fontsize": 10.0,
+                "text": "R ($\\Omega$)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -3064,10 +3064,10 @@
                 1.0
             ],
             "position": [
-                0.7133671049227098,
-                0.5672643115624658,
-                0.2616835524613548,
-                0.4055976448957991
+                0.7216772901078947,
+                0.5988383856365398,
+                0.24573447838728069,
+                0.3623569041550584
             ],
             "aspect": "auto",
             "spines": {
@@ -3121,7 +3121,7 @@
             },
             "ticks": {
                 "x": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -3132,7 +3132,7 @@
                     "direction": "out"
                 },
                 "y": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -4765,7 +4765,7 @@
         {
             "title": {
                 "text": "",
-                "fontsize": 12.0,
+                "fontsize": 16.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -4777,8 +4777,8 @@
                 "visible": true
             },
             "xlabel": {
-                "text": "",
-                "fontsize": 10.0,
+                "text": "V (V)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -4790,8 +4790,8 @@
                 "visible": true
             },
             "ylabel": {
-                "text": "$R$ ($\\Omega$)",
-                "fontsize": 10.0,
+                "text": "R ($\\Omega$)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -4819,10 +4819,10 @@
                 1.0
             ],
             "position": [
-                0.06245370370370371,
-                0.09824074074074085,
-                0.2616835524613548,
-                0.4055976448957991
+                0.0757175925925926,
+                0.11824074074074076,
+                0.24573447838728069,
+                0.3623569041550584
             ],
             "aspect": "auto",
             "spines": {
@@ -4876,7 +4876,7 @@
             },
             "ticks": {
                 "x": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -4887,7 +4887,7 @@
                     "direction": "out"
                 },
                 "y": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -6520,7 +6520,7 @@
         {
             "title": {
                 "text": "",
-                "fontsize": 12.0,
+                "fontsize": 16.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -6532,8 +6532,8 @@
                 "visible": true
             },
             "xlabel": {
-                "text": "$V$ (V)",
-                "fontsize": 10.0,
+                "text": "V (V)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -6545,8 +6545,8 @@
                 "visible": true
             },
             "ylabel": {
-                "text": "$R$ ($\\Omega$)",
-                "fontsize": 10.0,
+                "text": "R ($\\Omega$)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -6574,10 +6574,10 @@
                 1.0
             ],
             "position": [
-                0.3879104043132067,
-                0.09824074074074085,
-                0.26168355246135483,
-                0.4055976448957991
+                0.39869744135024365,
+                0.11824074074074076,
+                0.24573447838728069,
+                0.3623569041550584
             ],
             "aspect": "auto",
             "spines": {
@@ -6631,7 +6631,7 @@
             },
             "ticks": {
                 "x": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -6642,7 +6642,7 @@
                     "direction": "out"
                 },
                 "y": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -8723,7 +8723,7 @@
         {
             "title": {
                 "text": "",
-                "fontsize": 12.0,
+                "fontsize": 16.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -8735,8 +8735,8 @@
                 "visible": true
             },
             "xlabel": {
-                "text": "$V$ (V)",
-                "fontsize": 10.0,
+                "text": "V (V)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -8748,8 +8748,8 @@
                 "visible": true
             },
             "ylabel": {
-                "text": "$R$ ($\\Omega$)",
-                "fontsize": 10.0,
+                "text": "R ($\\Omega$)",
+                "fontsize": 14.0,
                 "fontweight": "normal",
                 "fontstyle": "normal",
                 "color": [
@@ -8777,10 +8777,10 @@
                 1.0
             ],
             "position": [
-                0.7133671049227098,
-                0.09824074074074085,
-                0.2616835524613548,
-                0.4055976448957991
+                0.7216772901078947,
+                0.11824074074074076,
+                0.24573447838728069,
+                0.3623569041550584
             ],
             "aspect": "auto",
             "spines": {
@@ -8834,7 +8834,7 @@
             },
             "ticks": {
                 "x": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,
@@ -8845,7 +8845,7 @@
                     "direction": "out"
                 },
                 "y": {
-                    "fontsize": 10.0,
+                    "fontsize": 12.0,
                     "rotation": 0.0,
                     "color": [
                         0.0,

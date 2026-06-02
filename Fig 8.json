@@ -1,0 +1,1784 @@
+{
+    "format_version": 40,
+    "size": [
+        16.0,
+        10.0
+    ],
+    "dpi": 250.0,
+    "figure_facecolor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "subplot_layout": [
+        3,
+        4
+    ],
+    "subplots_adjust": {
+        "left": 0.04695486111111112,
+        "right": 0.9485138888888889,
+        "top": 0.9781,
+        "bottom": 0.06305777777777777,
+        "wspace": 0.29553025312882236,
+        "hspace": 0.10563352821443356
+    },
+    "suptitle": "",
+    "suptitle_obj": {
+        "text": ""
+    },
+    "export_prefs": {
+        "bbox_mode": "content",
+        "pad_inches": 0.02,
+        "autocrop_white": false,
+        "autocrop_tol": 250,
+        "autocrop_pad_px": 2,
+        "content_include_suptitle": true
+    },
+    "layout_engine": {
+        "serialize_positions": true,
+        "apply_tight_layout_on_load": false,
+        "save_subplots_adjust_none": false
+    },
+    "axes": [
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "DC Bias (mV)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.04695486111111112,
+                0.6931525925925925,
+                0.1727347883597884,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.28597569444444443,
+                0.6931525925925925,
+                0.17273478835978845,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.5249965277777777,
+                0.6931525925925925,
+                0.1727347883597885,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.7640173611111112,
+                0.6931525925925925,
+                0.1727347883597884,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "DC Bias (mV)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.04695486111111112,
+                0.3781051851851851,
+                0.1727347883597884,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.28597569444444443,
+                0.3781051851851851,
+                0.17273478835978845,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.5249965277777777,
+                0.3781051851851851,
+                0.1727347883597885,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.7640173611111112,
+                0.3781051851851851,
+                0.1727347883597884,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "f (Hz)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "DC Bias (mV)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.04695486111111112,
+                0.06305777777777766,
+                0.1727347883597884,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "f (Hz)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.28597569444444443,
+                0.06305777777777766,
+                0.17273478835978845,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "f (Hz)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.5249965277777777,
+                0.06305777777777766,
+                0.1727347883597885,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        },
+        {
+            "title": {
+                "text": "",
+                "fontsize": 13.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlabel": {
+                "text": "f (Hz)",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "ylabel": {
+                "text": "",
+                "fontsize": 12.0,
+                "fontweight": "normal",
+                "fontstyle": "normal",
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "visible": true
+            },
+            "xlim": [
+                20.0,
+                200000.0
+            ],
+            "ylim": [
+                0.0,
+                200.0
+            ],
+            "xscale": "log",
+            "yscale": "linear",
+            "facecolor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "position": [
+                0.7640173611111112,
+                0.06305777777777766,
+                0.1727347883597884,
+                0.2849474074074074
+            ],
+            "aspect": "auto",
+            "spines": {
+                "left": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "right": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "bottom": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                },
+                "top": {
+                    "visible": true,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "linewidth": 0.8
+                }
+            },
+            "grid": {
+                "visible": true,
+                "color": [
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    0.6901960784313725,
+                    1.0
+                ],
+                "linestyle": "-",
+                "linewidth": 0.8,
+                "alpha": 0.3
+            },
+            "ticks": {
+                "x": {
+                    "fontsize": 10.0,
+                    "rotation": 0.0,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "direction": "out"
+                },
+                "y": {
+                    "fontsize": null,
+                    "rotation": null,
+                    "color": null,
+                    "direction": "out"
+                }
+            },
+            "lines": [],
+            "scatters": [],
+            "vlines": [],
+            "hlines": [],
+            "bars": [],
+            "line_collections": [],
+            "images": [],
+            "texts": [],
+            "legend": null,
+            "shared_legend": null
+        }
+    ]
+}

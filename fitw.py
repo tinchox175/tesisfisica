@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 from natsort import natsorted
 import csv
 %matplotlib inline
-dire = 'E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
-os.chdir('E:/porno/tesis 3/tesisfisica/IVs/')
+dire = 'E:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'
+os.chdir('E:/trabajo/tesis 3/tesisfisica/IVs/')
 def get_files_with_path(folder):
     print(folder)
     return natsorted([os.path.join(folder, file) for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
 def list_folders_in_folder(folder_path):
     # List only directories in the given folder
     return natsorted([name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))])
-files = (list_folders_in_folder('E:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'))
+files = (list_folders_in_folder('E:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/'))
 
 def zr(w, R, C):
     return R/(1+(w*R*C)**2)
@@ -63,7 +63,7 @@ for i in files:
 #%%
 fig, ax = plt.subplots(1,1,figsize=(9,7), dpi=800)
 ax2 = ax.twinx()
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/1611_ajuste_zdew.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('E:/trabajo/tesis 3/tesisfisica/IVs/1611_ajuste_zdew.csv', unpack=True, delimiter=',', skip_header=1)
 ln1 = ax.scatter((1/data[0]), np.log(data[1]), color="#9858db", label='$R_{real}$')
 ln2 = ax2.scatter((1/data[0]), np.log(data[2]), color="#c7c750", label='$C_{real}$')
 ln3 = ax.scatter((1/data[0]), np.log(data[3]), color="#609ee0", label='$R_{img}$')
@@ -107,7 +107,7 @@ with open('Parametros_ajustados.csv', mode='w', newline='') as file:
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
 initial_guess = [16.1,79.3e-6,0.855,3.48,24.9e-9,-1.3,67.9e-9]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/trabajo/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
     circuit = 'p(R1-C1-L1,R2,C2)-p(R3,C3)'
@@ -126,7 +126,7 @@ for i in t:
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
     print(circuit)
     # break
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('E:/trabajo/tesis 3/tesisfisica/IVs/Parametros_ajustados.csv', unpack=True, delimiter=',', skip_header=1)
 print(data)
 #%%
 from impedance import preprocessing
@@ -139,7 +139,7 @@ with open('Parametros_ajustados_b.csv', mode='w', newline='') as file:
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
 initial_guess = [16, 4,1,24.9e-9,-1.3,1e-4]
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/trabajo/tesis 3/tesisfisica/eis/20mvx5a/{i}k20.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -159,10 +159,10 @@ for i in t:
     circuit.plot(f_data=f, Z_data=Z, kind='bode')
     plt.show()
     print(circuit)
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('E:/trabajo/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 print(data)
 #%%
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('E:/trabajo/tesis 3/tesisfisica/IVs/Parametros_ajustados_b.csv', unpack=True, delimiter=',', skip_header=1)
 T, Lr, Rr, Rl, Cl, Rn, Cn = data
 fig, ax= plt.subplots(3,1,figsize=(8, 7), sharex=True, dpi=800)
 ax[1].set_ylabel('Capacitancia (F)')
@@ -194,7 +194,7 @@ with open('Parametros_ajustados.csv', mode='w', newline='') as file:
         writer.writerow(['T', 'R1', 'C1', 'L1', 'R2', 'C2', 'R3', 'C3'])
 t = ['280', '260', '240', '220', '200', '180', '160', '140', '120', '100', '85']
 for i in t:
-    data = np.genfromtxt(f'E:/porno/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
+    data = np.genfromtxt(f'E:/trabajo/tesis 3/tesisfisica/eis/0mvx5a/{i}k0.00mV_eis', unpack=True, delimiter='', skip_header=1)
     f = data[2][1:]
     Z = data[0][1:] - 1j*data[1][1:]
 
@@ -216,7 +216,7 @@ for i in t:
 # plt.show()
 # print(circuit)
 #%%
-data = np.genfromtxt('E:/porno/tesis 3/tesisfisica/eis/0mvx5a/Parametros 0mV ZdeW X5-a.csv', unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('E:/trabajo/tesis 3/tesisfisica/eis/0mvx5a/Parametros 0mV ZdeW X5-a.csv', unpack=True, delimiter=',', skip_header=1)
 T, Rr, Cr, Lr, Rl, Cl, Rn, Cn = data
 fig, ax= plt.subplots(figsize=(10, 6))
 ax2 = ax.twinx()

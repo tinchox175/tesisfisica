@@ -49,7 +49,7 @@ def list_folders_in_folder(folder_path):
     return [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
 #%%
 # Example usage
-dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 # import matplotlib
 # matplotlib.rcParams['figure.figsize'] = [10, 10]
@@ -136,7 +136,7 @@ for j in fil:
 plt.show()
 #%% UNA CELDA IDENTICA AL DE ARRIBA#############################################################################
 # Example usage
-dirs = "e:/porno/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 fig, (ax2, ax1) = plt.subplots(2, 1, figsize=(6, 3), dpi=300, sharex=True)
 for j in natsorted(fil)[::3]:
@@ -227,7 +227,7 @@ for fi in [1, 8, 12, 18, 22, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
         xplot = []
         %matplotlib qt
         yplot = []
-        dirs = "e:/porno/tesis 3/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+        dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
         fil = list_folders_in_folder(dirs)
         for j in [1]:
             j = a
@@ -272,7 +272,7 @@ plt.show()
 # Example usage
 %matplotlib qt
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 7))
-dirs = "e:/porno/tesis 3/tesis git/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
+dirs = "e:/trabajo/tesis 3/tesisfisica/IVs/2011/ZdeW_1234_16-11-24/"
 fil = list_folders_in_folder(dirs)
 marker = marker_l()
 for j in fil:
