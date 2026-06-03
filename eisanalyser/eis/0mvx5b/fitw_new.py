@@ -236,7 +236,7 @@ for i in t:
 #%%
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.patches import Rectangle
-data = np.genfromtxt('e:/porno/tesis 3/tesisfisica/eis/Parametros_ajustados_cx5b.csv', dtype=str, unpack=True, delimiter=',', skip_header=1)
+data = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/Parametros_ajustados_cx5b.csv', dtype=str, unpack=True, delimiter=',', skip_header=1)
 T, Rl, Ll, Cl, Rn, Cn, Ra, Ca = data
 # Separate magnitude and error for each parameter
 def split_mag_err(arr):
@@ -269,7 +269,6 @@ for i in range(len(T)):
         Rn[:i+1], Cn[:i+1], Ra[:i+1], Ca[:i+1]
     )
     all_params.append(params_tuple)
-
 fig, ax= plt.subplots(3,1,figsize=(7, 9), sharex=False, dpi=300)
 ax[2].set_ylabel('Capacitancia (F)')
 ax[0].errorbar(1/T, Rl, yerr=Rl_err, fmt='o-', label='$R_L$', c='#e07b67', capsize=3, elinewidth=1)      # Rl

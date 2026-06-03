@@ -30,18 +30,15 @@ except FileNotFoundError:
     files = []
     print(f"Warning: Directory {dire} not found!")
 
-# NOTE: Ensure your equivalent circuit impedance function 'z' is loaded!
-def z(w, rl, ll, cl, rn, cn, ra, ca):
-    return np.ones_like(w) + 1j * np.ones_like(w)
+def z(w, R1, L1, C1, R2, C2, R3, C3):
+    w = 2*np.pi*w
+    return 1/(1/R1+1/(1j*w*L1)+1j*w*C1)+1/(1/R2+1j*w*C2)+1/(1/R3+1j*w*C3)
 
 # =========================================================================
 # 1. LOAD & PARSE PARAMETERS
 # =========================================================================
 data_params = np.genfromtxt('e:/trabajo/tesis 3/tesisfisica/eisanalyser/eis/Parametros_ajustados_cx5a.csv', 
                             dtype=str, unpack=True, delimiter=',', skip_header=1)
-
-if data_params.ndim == 2 and data_params.shape[1] > 0:
-    data_params = data_params[:, :-1]
 
 T_params, Rl, Ll, Cl, Rn, Cn, Ra, Ca = data_params
 
@@ -89,7 +86,7 @@ def log_tick_formatter(val, pos=None):
 # =========================================================================
 # 2. FIGURE LAYOUT (3x2)
 # =========================================================================
-fig, axs = plt.subplots(3, 2, figsize=(11, 10), dpi=300)
+fig, axs = plt.subplots(3, 2, figsize=(14, 8), dpi=300)
 
 ax_nyq  = axs[0, 0]
 ax_bmag = axs[1, 0]
@@ -116,7 +113,7 @@ if files:
             w = data_eis[1:, 0]
             re = data_eis[1:, 1]
             im = data_eis[1:, 3]
-            
+
             color = cmap(norm(T_val))
             
             # Plot Raw Data
