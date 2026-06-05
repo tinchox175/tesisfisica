@@ -8,7 +8,15 @@ Created on Wed Mar 12 12:16:47 2025
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
-
+import matplotlib as mpl
+mpl.rcParams.update({
+    'font.size': 5.5,
+    'axes.titlesize': 16,
+    'axes.labelsize': 16,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
+    'legend.fontsize': 16
+})
 def duffing_equations_dc(y, t, gamma, alpha, beta, F_ac, omega, F_dc):
     """
     y[0] = x(t)
@@ -49,15 +57,15 @@ def plot_time_series(t, sol, title=''):
     v = sol[:, 1]
 
     plt.figure()
-    plt.plot(t, x, label='x(t)')
+    plt.plot(t, x, label='x(t)', c='#4d7bbd', lw=2.5)
     #plt.plot(t, v, label='v(t)')
-    plt.xlabel('Tiempo')
-    plt.ylabel('Amplitud')
+    plt.xlabel('Time (a.u.)')
+    plt.ylabel('Amplitude (a.u.)')
     plt.title(title)
-    plt.legend()
+    plt.legend(frameon=False)
     plt.show()
 
-def plot_phase_space(sol, w, t=None):
+def plot_phase_space(sol, w, t=None, title=''):
     """
     Grafica el diagrama de espacio fase (v vs x) con colormap basado en el tiempo.
     """
@@ -67,9 +75,24 @@ def plot_phase_space(sol, w, t=None):
         t = np.arange(len(x))
     # Normalize t for colormap
     t_norm = (t - np.min(t)) / (np.max(t) - np.min(t))
-    # plt.figure()
-    sc = plt.scatter(x, v, s=2, label=f'{w}')
-    # plt.show()
+    # Emphasize color variation at low time values by applying a power-law
+    # mapping (exponent < 1 stretches low values). Adjust exponent as needed.
+    t_norm = t_norm ** 0.35
+    cmap = mpl.colors.LinearSegmentedColormap.from_list(
+        'pastel_blue_black',
+        ['#dceeff', '#9cc5ff', '#75a7e6', '#4d7bbd', '#000000']
+    )
+    plt.figure()
+    # If arrays are very long, allow plotting a subset; otherwise plot all.
+    cutoff = 14000
+    if len(x) > cutoff:
+        sc = plt.scatter(x[:-cutoff], v[:-cutoff], c=t_norm[:-cutoff], cmap=cmap, s=6)
+    else:
+        sc = plt.scatter(x, v, c=t_norm, cmap=cmap, s=6)
+    plt.xlabel('x (a.u.)')
+    plt.ylabel('v = dx/dt (a.u.)')
+    plt.title(title)
+    plt.show()
 
 def main():
     """
@@ -88,34 +111,32 @@ def main():
     
     # --- 1) Variación en F_dc ---
     #    Manteniendo F_ac y omega constantes, veamos cómo cambia la dinámica.
-    dc_values = [-2, -1, -0.5, 0.0]
+    dc_values = [-2,  -0.5, 0.0]
     omega_fixed = 1.0
     
-    # for fdc in dc_values:
-    #     t, sol = simulate_duffing_dc(gamma=gamma, alpha=alpha, beta=beta,
-    #                                  F_ac=F_ac1, omega=omega_fixed, F_dc=fdc,
-    #                                  x0=0.1, v0=0.0,
-    #                                  tmax=200, dt=0.01)
-    #     title_time = f'Duffing DC: F_ac={F_ac1}, omega={omega_fixed}, F_dc={fdc}'
-    #     # plot_time_series(t, sol, title=title_time)
-    #     plot_phase_space(sol, title=title_time)
+    for fdc in dc_values:
+        t, sol = simulate_duffing_dc(gamma=gamma, alpha=alpha, beta=beta,
+                                     F_ac=F_ac1, omega=omega_fixed, F_dc=fdc,
+                                     x0=0.1, v0=0.0,
+                                     tmax=200, dt=0.01)
+        title_time = f'$F_{{ac}}$={F_ac1}, $F_{{dc}}$={fdc}, $\\omega$={omega_fixed}'
+        plot_time_series(t, sol, title=title_time)
+        # plot_phase_space(sol, title=title_time)
 
     # --- 2) Exploración de la frecuencia crítica al variar omega ---
     #    Fijamos un F_dc > 0 (un valor que genere la inclinación de potencial)
-    F_dc_chosen = -0.1
-    omegas = np.round(np.geomspace(0.5, 2, 4),3 )
-    F_ac2 = 0.4 
+    F_dc_chosen = 0.1
+    omegas = [2,4,16]
+    F_ac2 = 0.5
     
     for w in omegas:
         t, sol = simulate_duffing_dc(gamma=gamma, alpha=alpha, beta=beta,
                                      F_ac=F_ac2, omega=w, F_dc=F_dc_chosen,
                                      x0=0, v0=0.0,
                                      tmax=200, dt=0.01)
-        # plot_time_series(t, sol, title=title_time)
-        plot_phase_space(sol[:], w)
-    plt.legend()
-    plt.xlabel('x')
-    plt.ylabel('v = dx/dt')
+        title_time = f'$F_{{ac}}$={F_ac2}, $F_{{dc}}$={F_dc_chosen}, $\\omega$={w}'
+        plot_time_series(t, sol, title=title_time)
+        plot_phase_space(sol[:], w, title=title_time)
 if __name__ == '__main__':
     main()
 

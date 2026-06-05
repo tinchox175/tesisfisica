@@ -104,7 +104,7 @@ norm = Normalize(vmin=np.nanmin(T_params), vmax=np.nanmax(T_params))
 cmap = cm.get_cmap('coolwarm')
 
 if files:
-    for n, i in enumerate(files[::-1]):
+    for n, i in enumerate(files[::-1][:12]):
         try:
             T_str = i.split('_')[-3].split('.')[0]
             T_val = float(T_str)
@@ -153,13 +153,13 @@ ax_bmag.set_xlabel(" ")
 ax_bmag.set_ylabel("$|Z|$ ($\Omega$)")
 ax_bmag.set_xscale('log')
 ax_bmag.set_yscale('log')
-ax_bmag.set_ylim(1.7e0, 2.8e1)
+# ax_bmag.set_ylim(1.7e0, 2.8e1)
 # ax_bmag.grid(True, alpha=0.5)
 
 ax_bphs.set_xlabel("$f$ (Hz)")
 ax_bphs.set_ylabel("$\\theta$ (rad)")
 ax_bphs.set_xscale('log')
-ax_bphs.set_ylim(-2.1, 0.5)
+# ax_bphs.set_ylim(-2.1, 0.5)
 # ax_bphs.grid(True, alpha=0.5)
 
 # =========================================================================
@@ -194,9 +194,10 @@ ax_C.plot(T_params, log_Ca, 'o-', label='$C_{est}$', c="#6f67e0")
 ax_C.set_ylabel('Capacitance (F)')
 ax_C.set_xlabel('Temperature (K)')
 ax_C.invert_xaxis()
+ax_C.set_ylim(-16,4)
 ax_C.yaxis.set_major_formatter(ticker.FuncFormatter(log_tick_formatter))
 ax_C.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-ax_C.legend(frameon=False)
+ax_C.legend(frameon=False, loc=[0, 0.65])
 # ax_C.grid(True, alpha=0.5)
 
 # =========================================================================
