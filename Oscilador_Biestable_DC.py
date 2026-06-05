@@ -57,7 +57,7 @@ def plot_time_series(t, sol, title=''):
     v = sol[:, 1]
 
     plt.figure()
-    plt.plot(t, x, label='x(t)', c='#4d7bbd', lw=2.5)
+    plt.plot(t, x, label='x(t)', c='#4d7bbd', lw=3)
     #plt.plot(t, v, label='v(t)')
     plt.xlabel('Time (a.u.)')
     plt.ylabel('Amplitude (a.u.)')
@@ -77,14 +77,14 @@ def plot_phase_space(sol, w, t=None, title=''):
     t_norm = (t - np.min(t)) / (np.max(t) - np.min(t))
     # Emphasize color variation at low time values by applying a power-law
     # mapping (exponent < 1 stretches low values). Adjust exponent as needed.
-    t_norm = t_norm ** 0.35
+    t_norm = t_norm ** 0.4
     cmap = mpl.colors.LinearSegmentedColormap.from_list(
         'pastel_blue_black',
-        ['#dceeff', '#9cc5ff', '#75a7e6', '#4d7bbd', '#000000']
+        ['#dceeff', "#b9d6ff", "#84aee0", '#4d7bbd', '#000000']
     )
     plt.figure()
     # If arrays are very long, allow plotting a subset; otherwise plot all.
-    cutoff = 14000
+    cutoff = 12000
     if len(x) > cutoff:
         sc = plt.scatter(x[:-cutoff], v[:-cutoff], c=t_norm[:-cutoff], cmap=cmap, s=6)
     else:
