@@ -37,13 +37,13 @@ from figure_editor import save_figure_data, load_figure, edit_cosmetics
 
 
 #%% Guardamos una fig que vemos graficada con toda su info cosmética (.json) y data (.csv)
-figxx = plt.figure(20)  # En este caso es la figure(1)
-save_figure_data(figxx, filename="D_Nyquist") #el nombre que elegimos para su archivo
+# figxx = plt.figure(20)  # En este caso es la figure(1)
+# save_figure_data(figxx, filename="D_Nyquist") #el nombre que elegimos para su archivo
 
 
 #%% Cargamos y recreamos una fig guardada con este script: escribir entre "" el nombre sin las extensiones .json ni .csv
 
-fig_ed = load_figure("Fig 4")
+fig_ed = load_figure("M-rho vs T 1x2")
 
 
 #%% Luego, editamos su cosmética
